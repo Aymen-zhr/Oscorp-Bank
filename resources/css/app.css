@@ -139,5 +139,95 @@
 
     body {
         @apply bg-background text-foreground;
+        background-color: var(--color-canvas);
     }
 }
+
+/* Base Theme Variables (Light Mode: Ivory & Gold) */
+:root {
+    --color-bg-base: #F9F8F6;          /* Soft Ivory background */
+    --color-bg-card: rgba(255, 255, 255, 0.95);  /* Pure white cards */
+    --color-bg-elevated: rgba(255, 255, 255, 1);
+    
+    --color-text-main: #1A1A1A;        /* Deep charcoal */
+    --color-text-muted: rgba(26, 26, 26, 0.5);
+    
+    --color-border: rgba(212, 175, 55, 0.2);
+    --color-border-hover: rgba(212, 175, 55, 0.4);
+    
+    /* Shared Luxury Accents */
+    --color-gold: #D4AF37;
+    --color-gold-dark: #B8860B;
+    --color-bronze: #CD7F32;
+    --color-champagne: #F7E7CE;
+    
+    /* Contextual background for gold text */
+    --color-gold-bg: rgba(212, 175, 55, 0.1);
+}
+
+/* Dark Mode Variables (Royal Midnight & Bronze) */
+.dark {
+    --color-bg-base: #0A0908;          /* Absolute deep warm black */
+    --color-bg-card: rgba(22, 20, 18, 0.95);  /* Midnight charcoal glass */
+    --color-bg-elevated: rgba(30, 28, 25, 1);
+    
+    --color-text-main: #FFFFFF;        /* Pure white */
+    --color-text-muted: rgba(255, 255, 255, 0.4);
+    
+    --color-border: rgba(212, 175, 55, 0.15);
+    --color-border-hover: rgba(212, 175, 55, 0.35);
+    
+    --color-gold-bg: rgba(212, 175, 55, 0.15);
+}
+
+/* Base body styling based on variables */
+body {
+    background-color: var(--color-bg-base);
+    color: var(--color-text-main);
+}
+
+/* Beautiful Custom Scrollbars */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-hover) transparent;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-border-hover);
+}
+
+/* View Transition API Animations */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+    display: block;
+}
+
+/* Ensure the expanding/shrinking view stays on top */
+::view-transition-old(root) {
+    z-index: 1;
+}
+::view-transition-new(root) {
+    z-index: 2147483646;
+}
+
+/* Prevent CSS transitions from ruining the View Transition screenshots */
+.theme-transitioning * {
+    transition: none !important;
+}
+
