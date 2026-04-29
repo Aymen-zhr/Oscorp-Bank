@@ -99,7 +99,7 @@ export default function AIChat({ auth }) {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 },
-                body: JSON.stringify({ message: messageText })
+                body: JSON.stringify({ messages: updatedMessages })
             });
 
             if (!response.ok) {
@@ -319,9 +319,15 @@ export default function AIChat({ auth }) {
                 {/* Chat History Sidebar */}
                 <div className={`${showHistory ? 'w-64' : 'w-0'} transition-all duration-300 bg-[#0A0A0B] border-r border-white/5 flex flex-col overflow-hidden`}>
                     <div className="p-4 border-b border-white/5">
-                        <button onClick={createNewChat} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-[13px] hover:brightness-110 transition-all shadow-[0_0_15px_rgba(212,175,55,0.15)]" style={{ background: 'var(--color-gold)', color: '#0A0A0B' }}>
+                        <motion.button 
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={createNewChat} 
+                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-[13px] hover:brightness-110 transition-all shadow-[0_0_15px_rgba(212,175,55,0.15)]" 
+                            style={{ background: 'var(--color-gold)', color: '#0A0A0B' }}
+                        >
                             <Plus className="w-4 h-4" /> New Chat
-                        </button>
+                        </motion.button>
                     </div>
                     <div className="flex-1 overflow-y-auto p-2 space-y-1">
                         {chatHistory.map(chat => (
@@ -425,6 +431,8 @@ export default function AIChat({ auth }) {
                                         initial={{ opacity: 0, y: 10 }} 
                                         animate={{ opacity: 1, y: 0 }} 
                                         transition={{ delay: i * 0.05 }}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
                                         onClick={() => handleQuickAction(action)} 
                                         disabled={isLoading} 
                                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-[11px] text-[#94A3B8] whitespace-nowrap disabled:opacity-50 hover:bg-white/10 hover:border-white/10"
@@ -444,9 +452,16 @@ export default function AIChat({ auth }) {
                             <div className="absolute -inset-0.5 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-500" style={{ background: 'linear-gradient(to right, transparent, var(--color-gold-bg), transparent)' }} />
                             <div className="relative flex items-center bg-[#0A0A0B] border rounded-2xl px-4 py-3 transition-all focus-within:border-[var(--color-gold)]" style={{ borderColor: 'var(--color-border)' }}>
                                 <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Ask anything about your finances..." className="flex-1 bg-transparent text-[14px] text-[#F8FAFC] placeholder-[#475569] outline-none" disabled={isLoading} />
-                                <button onClick={() => handleSend(input)} disabled={!input.trim() || isLoading} className="p-2 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-110 shadow-[0_0_10px_rgba(212,175,55,0.15)]" style={{ background: 'var(--color-gold)', color: '#0A0A0B' }}>
+                                <motion.button 
+                                    whileHover={!input.trim() || isLoading ? {} : { scale: 1.1 }}
+                                    whileTap={!input.trim() || isLoading ? {} : { scale: 0.9 }}
+                                    onClick={() => handleSend(input)} 
+                                    disabled={!input.trim() || isLoading} 
+                                    className="p-2 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-110 shadow-[0_0_10px_rgba(212,175,55,0.15)]" 
+                                    style={{ background: 'var(--color-gold)', color: '#0A0A0B' }}
+                                >
                                     <Send className="w-4 h-4" />
-                                </button>
+                                </motion.button>
                             </div>
                         </div>
                     </div>

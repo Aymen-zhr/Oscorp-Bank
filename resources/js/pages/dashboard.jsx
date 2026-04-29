@@ -31,19 +31,19 @@ export default function Dashboard({ balance, totalSpending, transactions, earnin
                     }}
                     className="flex-1 grid grid-cols-3 grid-rows-2 gap-3.5 p-4 overflow-y-auto"
                 >
-                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} whileHover={{ scale: 1.01, y: -2 }} whileTap={{ scale: 0.99 }}>
                         <AIInsightsCard />
                     </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} whileHover={{ scale: 1.01, y: -2 }} whileTap={{ scale: 0.99 }}>
                         <BalanceCard balance={balance} />
                     </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} whileHover={{ scale: 1.01, y: -2 }} whileTap={{ scale: 0.99 }}>
                         <EarningsCard percentage={earningsPercentage} />
                     </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-2">
+                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-2" whileHover={{ scale: 1.01, y: -2 }} whileTap={{ scale: 0.99 }}>
                         <TransactionsCard transactions={transactions} />
                     </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} whileHover={{ scale: 1.01, y: -2 }} whileTap={{ scale: 0.99 }}>
                         <SpendingCard total={totalSpending} />
                     </motion.div>
                 </motion.div>

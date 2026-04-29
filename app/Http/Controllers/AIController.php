@@ -22,7 +22,7 @@ class AIController extends Controller
     public function chat(Request $request)
     {
         $request->validate([
-            'message' => 'required|string',
+            'messages' => 'required|array',
         ]);
 
         $apiKey = config('services.gemini.api_key');
@@ -127,9 +127,26 @@ PROMPT . json_encode($fullContext);
             ]
         ];
 
+        $contents = [];
+        foreach ($request->messages as $msg) {
+            if (isset($msg['id']) && $msg['id'] === 'init') continue;
+            $role = (isset($msg['role']) && $msg['role'] === 'user') ? 'user' : 'model';
+            $text = $msg['text'] ?? '';
+            if (empty($text)) continue;
+            
+            $contents[] = [
+                'role' => $role,
+                'parts' => [['text' => $text]]
+            ];
+        }
+
+        if (empty($contents)) {
+            $contents[] = ['role' => 'user', 'parts' => [['text' => 'Hello']]];
+        }
+
         $payload = [
             'system_instruction' => ['parts' => [['text' => $systemPrompt]]],
-            'contents' => [['role' => 'user', 'parts' => [['text' => $request->message]]]],
+            'contents' => $contents,
             'tools' => $tools,
             'generationConfig' => [
                 'temperature' => 0.4,
@@ -140,7 +157,7 @@ PROMPT . json_encode($fullContext);
         try {
             $response = Http::withHeaders(['Content-Type' => 'application/json'])
                 ->withoutVerifying()
-                ->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}", $payload);
+                ->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}", $payload);
 
             if (!$response->successful()) {
                 Log::error('Gemini API Error', ['response' => $response->body()]);
