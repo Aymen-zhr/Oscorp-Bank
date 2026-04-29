@@ -14,64 +14,121 @@ class TransactionSeeder extends Seeder
      */
     public function run(): void
     {
-        $now = Carbon::now();
-        
-        DB::table('transactions')->insert([
-            [
-                'merchant' => 'PlayStation',
-                'logo_color' => '#0041ff',
-                'card_last4' => '0224',
-                'amount' => -19.99,
-                'type' => 'debit',
-                'category' => 'Entertainment',
-                'transacted_at' => $now->copy()->subDays(2)->setHour(15)->setMinute(20),
-                'created_at' => $now,
-                'updated_at' => $now,
+        $transactions = [];
+        $startDate = Carbon::now()->subYears(3)->startOfMonth();
+        $endDate = Carbon::now();
+
+        $merchants = [
+            'Food & Dining' => [
+                ['name' => 'Starbucks', 'color' => '#00704A'],
+                ['name' => 'McDonalds', 'color' => '#FFC72C'],
+                ['name' => 'Uber Eats', 'color' => '#06C167'],
+                ['name' => 'Local Grocery', 'color' => '#10B981'],
             ],
-            [
-                'merchant' => 'Netflix',
-                'logo_color' => '#e50914',
-                'card_last4' => '0224',
-                'amount' => -30.00,
-                'type' => 'debit',
-                'category' => 'Entertainment',
-                'transacted_at' => $now->copy()->subDays(4)->setHour(17)->setMinute(11),
-                'created_at' => $now,
-                'updated_at' => $now,
+            'Shopping' => [
+                ['name' => 'Amazon', 'color' => '#FF9900'],
+                ['name' => 'Apple', 'color' => '#000000'],
+                ['name' => 'Zara', 'color' => '#000000'],
+                ['name' => 'Nike', 'color' => '#F1152B'],
             ],
-            [
-                'merchant' => 'Airbnb',
-                'logo_color' => '#ff5a5f',
-                'card_last4' => '4432',
-                'amount' => -300.00,
-                'type' => 'debit',
-                'category' => 'Travel',
-                'transacted_at' => $now->copy()->subDays(4)->setHour(13)->setMinute(20),
-                'created_at' => $now,
-                'updated_at' => $now,
+            'Entertainment' => [
+                ['name' => 'Netflix', 'color' => '#E50914'],
+                ['name' => 'Spotify', 'color' => '#1DB954'],
+                ['name' => 'PlayStation', 'color' => '#00439C'],
+                ['name' => 'Steam', 'color' => '#171A21'],
             ],
-            [
-                'merchant' => 'Tommy C.',
-                'logo_color' => '#BF00FF',
-                'card_last4' => '0224',
-                'amount' => 27.00,
-                'type' => 'credit',
-                'category' => 'Transfer',
-                'transacted_at' => $now->copy()->subDays(6)->setHour(2)->setMinute(31),
-                'created_at' => $now,
-                'updated_at' => $now,
+            'Transportation' => [
+                ['name' => 'Uber', 'color' => '#000000'],
+                ['name' => 'Shell', 'color' => '#FBCE07'],
+                ['name' => 'Public Transit', 'color' => '#3B82F6'],
             ],
-            [
-                'merchant' => 'Apple',
-                'logo_color' => '#ffffff',
-                'card_last4' => '4432',
-                'amount' => -10.00,
-                'type' => 'debit',
-                'category' => 'Software',
-                'transacted_at' => $now->copy()->subDays(6)->setHour(23)->setMinute(4),
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-        ]);
+            'Utilities' => [
+                ['name' => 'Electric Co', 'color' => '#F59E0B'],
+                ['name' => 'Water Co', 'color' => '#3B82F6'],
+                ['name' => 'Internet Provider', 'color' => '#8B5CF6'],
+            ]
+        ];
+
+        $currentDate = $startDate->copy();
+
+        while ($currentDate <= $endDate) {
+            // Salary
+            $txDate = $currentDate->copy()->setDay(1)->setHour(9)->setMinute(0);
+            if ($txDate <= $endDate) {
+                $transactions[] = [
+                    'merchant' => 'Tech Corp Inc.',
+                    'logo_color' => '#1D4ED8',
+                    'card_last4' => null,
+                    'amount' => rand(40000, 45000), // MAD 40k+
+                    'type' => 'credit',
+                    'category' => 'Salary',
+                    'transacted_at' => $txDate,
+                    'created_at' => $txDate,
+                    'updated_at' => $txDate,
+                ];
+            }
+
+            // Rent
+            $txDate = $currentDate->copy()->setDay(2)->setHour(10)->setMinute(15);
+            if ($txDate <= $endDate) {
+                $transactions[] = [
+                    'merchant' => 'Property Management',
+                    'logo_color' => '#4B5563',
+                    'card_last4' => '0224',
+                    'amount' => -rand(12000, 15000), // MAD 12k+
+                    'type' => 'debit',
+                    'category' => 'Housing & Rent',
+                    'transacted_at' => $txDate,
+                    'created_at' => $txDate,
+                    'updated_at' => $txDate,
+                ];
+            }
+
+            // Other expenses throughout the month
+            $numExpenses = rand(15, 25);
+            for ($i = 0; $i < $numExpenses; $i++) {
+                $maxDays = $currentDate->isCurrentMonth() ? max(1, min($endDate->day, $currentDate->daysInMonth)) : $currentDate->daysInMonth;
+                $randomDay = rand(1, $maxDays);
+                $randomHour = rand(8, 22);
+                $randomMinute = rand(0, 59);
+
+                $categoryKey = array_rand($merchants);
+                $merchantData = $merchants[$categoryKey][array_rand($merchants[$categoryKey])];
+
+                $amount = 0;
+                switch ($categoryKey) {
+                    case 'Food & Dining': $amount = -rand(50, 400); break;
+                    case 'Shopping': $amount = -rand(200, 2000); break;
+                    case 'Entertainment': $amount = -rand(100, 600); break;
+                    case 'Transportation': $amount = -rand(30, 200); break;
+                    case 'Utilities': $amount = -rand(300, 1000); break;
+                }
+
+                $txDate = $currentDate->copy()->setDay($randomDay)->setHour($randomHour)->setMinute($randomMinute);
+
+                if ($txDate > $endDate) {
+                    continue;
+                }
+
+                $transactions[] = [
+                    'merchant' => $merchantData['name'],
+                    'logo_color' => $merchantData['color'],
+                    'card_last4' => '0224',
+                    'amount' => $amount,
+                    'type' => 'debit',
+                    'category' => $categoryKey,
+                    'transacted_at' => $txDate,
+                    'created_at' => $txDate,
+                    'updated_at' => $txDate,
+                ];
+            }
+
+            $currentDate->addMonth();
+        }
+
+        $chunks = array_chunk($transactions, 200);
+        foreach ($chunks as $chunk) {
+            DB::table('transactions')->insert($chunk);
+        }
     }
 }

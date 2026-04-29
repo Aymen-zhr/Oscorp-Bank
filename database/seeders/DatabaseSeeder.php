@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'George',
             'email' => 'george@oscorp.com',
             'password' => bcrypt('password'),
+            'created_at' => now()->subYears(3),
+            'updated_at' => now()->subYears(3),
         ]);
 
         $this->call([

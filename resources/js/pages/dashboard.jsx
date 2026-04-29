@@ -12,7 +12,7 @@ import OISPanel from '@/components/dashboard/OISPanel';
 export default function Dashboard({ balance, totalSpending, transactions, earningsPercentage }) {
     return (
         <div className="flex h-screen w-full overflow-hidden bg-[var(--color-bg-base)] text-[var(--color-text-main)] font-sans antialiased selection:bg-[var(--color-gold)] selection:text-white transition-colors duration-0">
-            <Head title="NeuroBank Dashboard" />
+            <Head title="OSCORP Dashboard" />
             
             <Sidebar />
 

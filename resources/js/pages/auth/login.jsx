@@ -22,7 +22,7 @@ export default function Login({ status, canResetPassword }) {
 
     return (
         <div className="min-h-screen w-full bg-[var(--color-canvas)] text-white font-sans flex items-center justify-center relative overflow-hidden selection:bg-[var(--color-purple)] selection:text-white">
-            <Head title="NeuroBank | Authorization Core" />
+            <Head title="OSCORP | Authorization Core" />
 
             {/* Background Effects */}
             <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[radial-gradient(circle,rgba(191,0,255,0.15),transparent_70%)] rounded-full pointer-events-none blur-3xl"></div>
@@ -34,7 +34,7 @@ export default function Login({ status, canResetPassword }) {
                         <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         <Brain className="w-8 h-8 text-white" />
                     </div>
-                    <h1 className="text-[28px] font-bold tracking-tight mb-2">NeuroBank Core</h1>
+                    <h1 className="text-[28px] font-bold tracking-tight mb-2">OSCORP Core</h1>
                     <p className="text-[13px] text-muted-foreground uppercase tracking-[2px]">Terminal Authorization Required</p>
                 </div>
 

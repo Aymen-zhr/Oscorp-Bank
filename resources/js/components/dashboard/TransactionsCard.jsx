@@ -1,219 +1,119 @@
-import { ArrowUpRight, Filter, ArrowDownLeft, Calendar, DollarSign, ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 
-// Map merchant names → domain for Clearbit Logo API
-const MERCHANT_DOMAINS = {
-    // Streaming
-    'Netflix':          'netflix.com',
-    'Spotify':          'spotify.com',
-    'Disney+':          'disneyplus.com',
-    'Disney Plus':      'disneyplus.com',
-    'HBO':              'hbomax.com',
-    'Apple TV':         'apple.com',
-    'YouTube':          'youtube.com',
-    'Twitch':           'twitch.tv',
-    // Gaming
-    'Steam':            'steampowered.com',
-    'PlayStation':      'playstation.com',
-    'Xbox':             'xbox.com',
-    'Epic Games':       'epicgames.com',
-    // Food & Delivery
-    'Glovo':            'glovoapp.com',
-    'Uber Eats':        'ubereats.com',
-    'Deliveroo':        'deliveroo.com',
-    'Dominos':          'dominos.com',
-    'McDonald\'s':      'mcdonalds.com',
-    'Starbucks':        'starbucks.com',
-    'KFC':              'kfc.com',
-    // Retail / Shopping
-    'Amazon':           'amazon.com',
-    'Zara':             'zara.com',
-    'H&M':              'hm.com',
-    'Nike':             'nike.com',
-    'Adidas':           'adidas.com',
-    'IKEA':             'ikea.com',
-    'Apple':            'apple.com',
-    // Transport
-    'Uber':             'uber.com',
-    'Bolt':             'bolt.eu',
-    'InDrive':          'indrive.com',
-    // Finance
-    'PayPal':           'paypal.com',
-    'Wise':             'wise.com',
-    // Utilities / Telecom
-    'Maroc Telecom':    'iam.ma',
-    'Orange':           'orange.com',
-    'Inwi':             'inwi.ma',
+import { useState } from 'react';
+
+const LOGO_KEY = 'pk_binMfKfXSiOiYpfo3CyL2w';
+
+const DOMAIN_MAP = {
+    // Tech / Subscriptions
+    apple: 'apple.com', netflix: 'netflix.com', spotify: 'spotify.com',
+    amazon: 'amazon.com', adobe: 'adobe.com', github: 'github.com',
+    microsoft: 'microsoft.com', google: 'google.com', playstation: 'playstation.com',
+    zoom: 'zoom.us', slack: 'slack.com', paypal: 'paypal.com',
+    steam: 'steampowered.com', airbnb: 'airbnb.com', uber: 'uber.com',
+    // Food & retail
+    mcdonald: 'mcdonalds.com', starbucks: 'starbucks.com', kfc: 'kfc.com',
+    'pizza hut': 'pizzahut.com', domino: 'dominos.com',
+    carrefour: 'carrefour.com', zara: 'zara.com', 'h&m': 'hm.com',
+    jumia: 'jumia.ma',
+    // Morocco
+    marjane: 'marjane.ma', inwi: 'inwi.ma',
+    'maroc telecom': 'iam.ma', orange: 'orange.ma', lydec: 'lydec.ma',
+    bmce: 'banqueofafrica.com', attijariwafa: 'attijariwafabank.com',
+    cih: 'cihbank.com', wafacash: 'wafacash.ma',
 };
 
-function MerchantLogo({ merchant, color }) {
-    const [imgFailed, setImgFailed] = useState(false);
-    const logoKey = import.meta.env.VITE_LOGO_DEV_KEY;
-
-    // Try to find a matching domain (case-insensitive partial match)
-    const domain = Object.entries(MERCHANT_DOMAINS).find(
-        ([key]) => merchant.toLowerCase().includes(key.toLowerCase())
-    )?.[1];
-
-    if (domain && !imgFailed && logoKey) {
-        return (
-            <div
-                className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center shrink-0 bg-white"
-                style={{ border: `1px solid ${color ?? '#3b82f6'}22` }}
-            >
-                <img
-                    src={`https://img.logo.dev/${domain}?token=${logoKey}&size=60&format=png`}
-                    alt={merchant}
-                    className="w-9 h-9 object-cover"
-                    onError={() => setImgFailed(true)}
-                />
-            </div>
-        );
+function getDomain(merchant) {
+    if (!merchant) return null;
+    const lower = merchant.toLowerCase();
+    for (const [key, domain] of Object.entries(DOMAIN_MAP)) {
+        if (lower.includes(key)) return domain;
     }
+    return null;
+}
 
-    // Fallback: letter avatar
+function TransactionItem({ tx, index }) {
+    const [failed, setFailed] = useState(false);
+    const domain = getDomain(tx.merchant);
+    const color = tx.logo_color || (tx.type === 'credit' ? '#10B981' : '#EF4444');
+    
     return (
-        <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-[13px] font-bold shrink-0"
-            style={{
-                backgroundColor: `${color ?? '#3b82f6'}22`,
-                color: color ?? '#3b82f6',
-                border: `1px solid ${color ?? '#3b82f6'}33`
-            }}
+        <motion.div 
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.05 }}
+            className="flex items-center justify-between p-3 rounded-xl hover:bg-[var(--color-bg-elevated)] transition-colors"
         >
-            {merchant.charAt(0).toUpperCase()}
-        </div>
+            <div className="flex items-center gap-3">
+                <div 
+                    className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden" 
+                    style={{ 
+                        background: `linear-gradient(135deg, ${color}28, ${color}0f)`, 
+                        border: `1.5px solid ${color}40` 
+                    }}
+                >
+                    {domain && !failed ? (
+                        <img
+                            src={`https://img.logo.dev/${domain}?token=${LOGO_KEY}&size=40&format=png`}
+                            alt={tx.merchant}
+                            className="w-full h-full object-contain p-1.5"
+                            onError={() => setFailed(true)}
+                        />
+                    ) : (
+                        <span style={{ color, fontWeight: 700, fontSize: '14px' }}>
+                            {(tx.merchant || '?').charAt(0).toUpperCase()}
+                        </span>
+                    )}
+                </div>
+                <div>
+                    <div className="text-[13px] font-medium text-[var(--color-text-main)]">{tx.merchant}</div>
+                    <div className="text-[10px] text-[var(--color-text-muted)]">{tx.category}</div>
+                </div>
+            </div>
+            <div className={`text-[14px] font-bold ${tx.type === 'credit' ? 'text-emerald-400' : 'text-red-400'}`}>
+                {tx.type === 'credit' ? '+' : '-'}{Math.abs(Number(tx.amount)).toLocaleString()}
+            </div>
+        </motion.div>
     );
 }
 
 export default function TransactionsCard({ transactions }) {
-    const [sortMode, setSortMode] = useState('latest');
-    const [showSortMenu, setShowSortMenu] = useState(false);
-
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: 'numeric', minute: 'numeric' });
-    };
-
-    const sortedTransactions = useMemo(() => {
-        if (!transactions) return [];
-        return [...transactions].sort((a, b) => {
-            const dateA = new Date(a.transacted_at ?? a.created_at).getTime();
-            const dateB = new Date(b.transacted_at ?? b.created_at).getTime();
-            const amountA = Number(Math.abs(a.amount));
-            const amountB = Number(Math.abs(b.amount));
-
-            switch (sortMode) {
-                case 'oldest': return dateA - dateB;
-                case 'highest': return amountB - amountA;
-                case 'lowest': return amountA - amountB;
-                case 'latest':
-                default:
-                    return dateB - dateA;
-            }
-        });
-    }, [transactions, sortMode]);
-
-    const sortOptions = [
-        { id: 'latest', label: 'Newest First', icon: Calendar },
-        { id: 'oldest', label: 'Oldest First', icon: Calendar },
-        { id: 'highest', label: 'Highest Amount', icon: DollarSign },
-        { id: 'lowest', label: 'Lowest Amount', icon: DollarSign },
-    ];
-
     return (
-        <div className="h-full w-full rounded-2xl p-5 relative overflow-hidden transition-all duration-300 group flex flex-col"
-            style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', backdropFilter: 'blur(20px)' }}
+        <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="h-full w-full rounded-2xl p-5 relative overflow-hidden flex flex-col"
+            style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
         >
-            <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-gold-bg)] to-transparent pointer-events-none opacity-50" />
-            
-            <div className="flex items-center justify-between mb-4 relative z-20 shrink-0">
-                <div>
-                    <span className="text-[15px] font-bold text-[var(--color-gold)]">Ledger Activity</span>
-                    <div className="text-[11px] text-[var(--color-text-muted)] mt-0.5">Recent financial movements</div>
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'var(--color-gold-bg)' }}>
+                        <svg className="w-4 h-4" style={{ color: 'var(--color-gold)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div className="text-[14px] font-semibold text-[var(--color-text-main)]">Recent Activity</div>
+                        <div className="text-[10px] text-[var(--color-text-muted)]">Latest transactions</div>
+                    </div>
                 </div>
-                <div className="flex gap-2 relative">
-                    <button 
-                        onClick={() => setShowSortMenu(!showSortMenu)}
-                        className={`px-2 h-8 rounded-xl flex items-center gap-1.5 text-[11px] font-semibold transition-all border ${showSortMenu ? 'bg-[var(--color-bg-elevated)] border-[var(--color-border)] text-[var(--color-text-main)]' : 'bg-transparent border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-bg-elevated)] hover:border-[var(--color-border-hover)]'}`}
-                    >
-                        <Filter className="w-3 h-3" />
-                        Sort
-                        <ChevronDown className={`w-3 h-3 transition-transform ${showSortMenu ? 'rotate-180' : ''}`} />
-                    </button>
-                    
-                    <AnimatePresence>
-                        {showSortMenu && (
-                            <>
-                                <div className="fixed inset-0 z-40" onClick={() => setShowSortMenu(false)} />
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                    transition={{ duration: 0.2 }}
-                                    className="absolute right-0 top-10 w-40 bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-xl shadow-xl z-50 p-1.5 backdrop-blur-xl"
-                                >
-                                    {sortOptions.map(option => {
-                                        const Icon = option.icon;
-                                        const isActive = sortMode === option.id;
-                                        return (
-                                            <button
-                                                key={option.id}
-                                                onClick={() => { setSortMode(option.id); setShowSortMenu(false); }}
-                                                className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-[11px] font-semibold transition-all ${isActive ? 'bg-[var(--color-gold-bg)] text-[var(--color-gold)]' : 'text-[var(--color-text-main)] hover:bg-[var(--color-bg-base)]'}`}
-                                            >
-                                                <Icon className="w-3.5 h-3.5" />
-                                                {option.label}
-                                            </button>
-                                        );
-                                    })}
-                                </motion.div>
-                            </>
-                        )}
-                    </AnimatePresence>
-                </div>
+                <a href="/transactions" className="text-[11px] text-[var(--color-gold)] hover:underline">View All</a>
             </div>
 
-            {/* List */}
-            <div className="flex flex-col gap-1 relative z-10 overflow-y-auto max-h-[calc(100%-50px)] pr-2">
-                {sortedTransactions && sortedTransactions.length > 0 ? sortedTransactions.map((tx, i) => {
-                    const isCredit = tx.type === 'credit';
-                    return (
-                        <motion.div
-                            key={tx.id}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.3, delay: i * 0.06 }}
-                            className="flex items-center gap-3 py-2.5 px-2 rounded-xl transition-all hover:bg-[var(--color-bg-elevated)] cursor-default"
-                        >
-                            <MerchantLogo merchant={tx.merchant} color="var(--color-gold)" />
-                            <div className="text-[13px] font-semibold text-[var(--color-text-main)] flex-1 truncate">{tx.merchant}</div>
-                            <div className="text-[11px] text-[var(--color-text-muted)] flex-1 hidden sm:block font-mono">
-                                ···· {tx.card_last4 ?? '0000'}
-                            </div>
-                            <div className="text-[11px] text-[var(--color-text-muted)] flex-1 hidden md:block">
-                                {formatDate(tx.transacted_at ?? tx.created_at)}
-                            </div>
-                            
-                            <div className="flex items-center gap-2 min-w-[90px] justify-end">
-                                <span className={`text-[13px] font-bold ${isCredit ? 'text-[var(--color-gold-dark)]' : 'text-[var(--color-text-main)]'}`}>
-                                    {isCredit ? '+' : '-'}{Number(Math.abs(tx.amount)).toFixed(2)} MAD
-                                </span>
-                                {isCredit ? (
-                                    <ArrowDownLeft className="w-3.5 h-3.5 text-[var(--color-gold)]" />
-                                ) : (
-                                    <ArrowUpRight className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
-                                )}
-                            </div>
-                        </motion.div>
-                    )
-                }) : (
-                    <div className="py-10 text-center text-[var(--color-text-muted)] text-[13px]">
-                        No transactions yet. Issue a directive to O.I.S. to transfer funds.
+            <div className="flex-1 overflow-y-auto space-y-2">
+                {transactions?.length > 0 ? (
+                    transactions.slice(0, 6).map((tx, i) => (
+                        <TransactionItem key={tx.id || i} tx={tx} index={i} />
+                    ))
+                ) : (
+                    <div className="flex-1 flex items-center justify-center py-8">
+                        <div className="text-center">
+                            <div className="text-[14px] text-[var(--color-text-muted)]">No transactions yet</div>
+                            <div className="text-[11px] text-[var(--color-text-muted)]">Your activity will appear here</div>
+                        </div>
                     </div>
                 )}
             </div>
-        </div>
+        </motion.div>
     );
 }

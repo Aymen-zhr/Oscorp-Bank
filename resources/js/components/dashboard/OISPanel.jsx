@@ -10,7 +10,7 @@ export default function OISPanel() {
         {
             id: 'welcome',
             role: 'ai',
-            text: 'Executive Channel established. I am **NeuroBank Elite AI**. Your financial portfolio has been analyzed.\n\nCurrent Liquid Assets: <strong style="color:#D4AF37">' + Number(props.balance || 0).toLocaleString() + ' MAD</strong>. Capital allocation actively monitored.\n\nIssue your directive below.'
+            text: 'Executive Channel established. I am **O.I.S.** — Clearance Level: **UNRESTRICTED**.\n\nFull account dossier loaded. Identity confirmed: <strong style="color:#D4AF37">' + (props.auth?.user?.name || 'Account Holder') + '</strong>.\n\nLiquid Assets: <strong style="color:#D4AF37">' + Number(props.balance || 0).toLocaleString() + ' MAD</strong>. All systems authorized. Issue your directive.'
         }
     ]);
     const [input, setInput] = useState('');
@@ -43,11 +43,6 @@ export default function OISPanel() {
                 },
                 body: JSON.stringify({
                     message: text,
-                    snapshot: {
-                        balance: props.balance,
-                        spending: props.totalSpending,
-                        transactionsCount: props.transactions?.length || 0
-                    }
                 })
             });
 
@@ -140,10 +135,10 @@ export default function OISPanel() {
                                     <BrainCircuit className="w-4 h-4 text-white" />
                                 </div>
                                 <div>
-                                    <div className="text-[15px] font-bold text-[var(--color-gold)] tracking-wide">Elite AI Assistant</div>
+                                    <div className="text-[15px] font-bold text-[var(--color-gold)] tracking-wide">O.I.S. — Elite Core</div>
                                     <div className="text-[11px] text-[var(--color-text-muted)] flex items-center gap-1.5 mt-0.5 uppercase tracking-widest">
                                         <span className="w-1.5 h-1.5 rounded-full bg-[#34d399] shadow-[0_0_5px_#34d399] animate-pulse"></span>
-                                        Core Online
+                                        Clearance: Unrestricted
                                     </div>
                                 </div>
                             </div>
