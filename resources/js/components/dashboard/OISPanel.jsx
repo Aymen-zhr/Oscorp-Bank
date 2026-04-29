@@ -30,7 +30,8 @@ export default function OISPanel() {
 
         const newMsgId = Date.now().toString();
         const newMsg = { id: newMsgId, role: 'user', text };
-        setMessages(prev => [...prev, newMsg]);
+        const updatedMessages = [...messages, newMsg];
+        setMessages(updatedMessages);
         setInput('');
         setIsLoading(true);
 
@@ -42,7 +43,7 @@ export default function OISPanel() {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 },
                 body: JSON.stringify({
-                    message: text,
+                    messages: updatedMessages,
                 })
             });
 

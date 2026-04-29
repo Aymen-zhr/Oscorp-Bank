@@ -25,5 +25,3 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('settings/preferences', [\App\Http\Controllers\SettingsController::class, 'updatePreferences'])->name('settings.preferences.update');
 });
 
-require __DIR__.'/settings.php';
-
