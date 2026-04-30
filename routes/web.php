@@ -12,6 +12,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('ai', [\App\Http\Controllers\AIController::class, 'page'])->name('ai');
     Route::post('ai/chat', [\App\Http\Controllers\AIController::class, 'chat'])->name('ai.chat');
     Route::get('transactions', [\App\Http\Controllers\TransactionController::class, 'page'])->name('transactions');
+    Route::get('accounts', [\App\Http\Controllers\AccountController::class, 'page'])->name('accounts');
 
     Route::get('reports', [\App\Http\Controllers\ReportsController::class, 'page'])->name('reports');
     Route::get('loans', [\App\Http\Controllers\LoansController::class, 'page'])->name('loans');

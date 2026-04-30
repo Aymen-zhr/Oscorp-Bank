@@ -1,5 +1,5 @@
 import { Bell, Search, Zap, User, Settings, LogOut, ChevronDown, Menu } from 'lucide-react';
-import { usePage, Link } from '@inertiajs/react';
+import { usePage, Link, router } from '@inertiajs/react';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -148,7 +148,10 @@ export default function Topbar() {
                                     <Settings className="w-4 h-4" /> Settings
                                 </Link>
                                 <hr className="my-2" style={{ borderColor: 'var(--color-border)' }} />
-                                <button className="flex items-center gap-2 px-4 py-2 text-[13px] text-red-400 hover:bg-red-500/10 w-full">
+                                <button 
+                                    onClick={() => router.post('/logout')}
+                                    className="flex items-center gap-2 px-4 py-2 text-[13px] text-red-400 hover:bg-red-500/10 w-full text-left transition-colors"
+                                >
                                     <LogOut className="w-4 h-4" /> Sign Out
                                 </button>
                             </motion.div>

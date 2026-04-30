@@ -1,4 +1,4 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
 import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -16,6 +16,7 @@ const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', month: 'long'
 const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
     { icon: Sparkles, label: 'Oscar AI', href: '/ai' },
+    { icon: CreditCard, label: 'Accounts', href: '/accounts' },
     { icon: ArrowRightLeft, label: 'Transactions', href: '/transactions' },
     { icon: FileText, label: 'Reports', href: '/reports' },
     { icon: Landmark, label: 'Loans', href: '/loans' },
@@ -142,6 +143,17 @@ export default function Sidebar() {
                         {item.label}
                     </Link>
                 ))}
+
+                <button
+                    onClick={() => {
+                        setIsOpen(false);
+                        router.post('/logout');
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium text-red-400 hover:bg-red-500/10 transition-all hover:translate-x-1 mt-auto"
+                >
+                    <LogOut className="w-5 h-5" />
+                    Logout
+                </button>
             </nav>
         </div>
     );
