@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
+use App\Http\Controllers\DepositController;
+use App\Http\Controllers\WithdrawalController;
 
 Route::inertia('/', 'home', [
     'canRegister' => Features::enabled(Features::registration()),
@@ -18,6 +20,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('loans', [\App\Http\Controllers\LoansController::class, 'page'])->name('loans');
     Route::get('taxes', [\App\Http\Controllers\TaxesController::class, 'page'])->name('taxes');
     Route::get('subscriptions', [\App\Http\Controllers\SubscriptionsController::class, 'page'])->name('subscriptions');
+
+    // Deposit & Withdrawal
+    Route::get('deposit',     [DepositController::class,    'page'])->name('deposit');
+    Route::post('deposit',    [DepositController::class,    'store'])->name('deposit.store');
+    Route::get('withdrawal',  [WithdrawalController::class, 'page'])->name('withdrawal');
+    Route::post('withdrawal', [WithdrawalController::class, 'store'])->name('withdrawal.store');
     
     // Consolidated Settings & Profile Routes
     Route::get('settings', [\App\Http\Controllers\SettingsController::class, 'page'])->name('settings');

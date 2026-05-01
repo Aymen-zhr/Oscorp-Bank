@@ -5,7 +5,8 @@ import { useTheme } from '../../contexts/ThemeContext';
 import {
     LayoutDashboard, Sparkles, CreditCard, ArrowRightLeft,
     FileText, Landmark, Receipt, Moon, Sun,
-    Bell, Settings, LogOut, HelpCircle, User, Cog, Package, X
+    Bell, Settings, LogOut, HelpCircle, User, Cog, Package, X,
+    ArrowDownToLine, ArrowUpFromLine
 } from 'lucide-react';
 
 const now = new Date();
@@ -14,14 +15,16 @@ const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', month: 'long'
     .replace(/\s\d{4}/, '');
 
 const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
-    { icon: Sparkles, label: 'Oscar AI', href: '/ai' },
-    { icon: CreditCard, label: 'Accounts', href: '/accounts' },
-    { icon: ArrowRightLeft, label: 'Transactions', href: '/transactions' },
-    { icon: FileText, label: 'Reports', href: '/reports' },
-    { icon: Landmark, label: 'Loans', href: '/loans' },
-    { icon: Receipt, label: 'Taxes', href: '/taxes' },
-    { icon: Package, label: 'Subscriptions', href: '/subscriptions' },
+    { icon: LayoutDashboard,  label: 'Dashboard',   href: '/dashboard' },
+    { icon: Sparkles,         label: 'Oscar AI',    href: '/ai' },
+    { icon: CreditCard,       label: 'Accounts',    href: '/accounts' },
+    { icon: ArrowDownToLine,  label: 'Deposit',     href: '/deposit' },
+    { icon: ArrowUpFromLine,  label: 'Withdrawal',  href: '/withdrawal' },
+    { icon: ArrowRightLeft,   label: 'Transactions',href: '/transactions' },
+    { icon: FileText,         label: 'Reports',     href: '/reports' },
+    { icon: Landmark,         label: 'Loans',       href: '/loans' },
+    { icon: Receipt,          label: 'Taxes',       href: '/taxes' },
+    { icon: Package,          label: 'Subscriptions', href: '/subscriptions' },
 ];
 
 const bottomItems = [
