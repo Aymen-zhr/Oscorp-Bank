@@ -11,7 +11,7 @@ export default function Subscriptions({ subscriptions = [], billingHistory = [],
     const [activeTab, setActiveTab] = useState('active');
 
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        return `MAD ${new Intl.NumberFormat('en-MA', { minimumFractionDigits: 2 }).format(amount)}`;
     };
 
     return (

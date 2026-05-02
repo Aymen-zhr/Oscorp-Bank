@@ -62,74 +62,48 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.87 0 0);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.87 0 0);
+    --background: #FFFFFF;
+    --foreground: #000000;
+    --card: #FAFAFA;
+    --card-foreground: #000000;
+    --popover: #FFFFFF;
+    --popover-foreground: #000000;
+    --primary: #D4AF37;
+    --primary-foreground: #000000;
+    --secondary: #F0F0F0;
+    --secondary-foreground: #000000;
+    --muted: #F0F0F0;
+    --muted-foreground: #888888;
+    --accent: #F7E7CE;
+    --accent-foreground: #000000;
+    --destructive: #EF4444;
+    --destructive-foreground: #FFFFFF;
+    --border: #E5E5E5;
+    --input: #E5E5E5;
+    --ring: #D4AF37;
+    --radius: 1rem;
 }
-
+ 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.145 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.396 0.141 25.723);
-    --destructive-foreground: oklch(0.637 0.237 25.331);
-    --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
-    --ring: oklch(0.439 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.985 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
+    --background: #000000;
+    --foreground: #FFFFFF;
+    --card: #0A0A0A;
+    --card-foreground: #FFFFFF;
+    --popover: #0A0A0A;
+    --popover-foreground: #FFFFFF;
+    --primary: #D4AF37;
+    --primary-foreground: #000000;
+    --secondary: #141414;
+    --secondary-foreground: #FFFFFF;
+    --muted: #141414;
+    --muted-foreground: #888888;
+    --accent: #1A1A1A;
+    --accent-foreground: #FFFFFF;
+    --destructive: #EF4444;
+    --destructive-foreground: #FFFFFF;
+    --border: #222222;
+    --input: #222222;
+    --ring: #D4AF37;
 }
 
 html {
@@ -143,23 +117,24 @@ html {
 
     body {
         @apply bg-background text-foreground;
-        background-color: var(--color-canvas);
+        background-color: var(--color-bg-base);
     }
 }
 
 /* Base Theme Variables (Light Mode: Ivory & Gold) */
 :root {
-    --color-bg-base: #F9F8F6;          /* Soft Ivory background */
-    --color-bg-card: rgba(255, 255, 255, 0.95);  /* Pure white cards */
-    --color-bg-elevated: rgba(255, 255, 255, 1);
+    /* Stark Minimalist Light Theme */
+    --color-bg-base: #FFFFFF;          /* Pure white */
+    --color-bg-card: #FAFAFA;          /* Subtle off-white for cards */
+    --color-bg-elevated: #F0F0F0;      /* Slightly darker for elevated elements */
     
-    --color-text-main: #1A1A1A;        /* Deep charcoal */
-    --color-text-muted: rgba(26, 26, 26, 0.5);
+    --color-text-main: #000000;        /* Pure black */
+    --color-text-muted: #888888;       /* Neutral gray */
     
-    --color-border: rgba(212, 175, 55, 0.2);
-    --color-border-hover: rgba(212, 175, 55, 0.4);
+    --color-border: #E5E5E5;           /* Clean, neutral gray border */
+    --color-border-hover: #000000;     /* Stark black on hover */
     
-    /* Shared Luxury Accents */
+    /* Shared Luxury Accents (Used minimally for highlights) */
     --color-gold: #D4AF37;
     --color-gold-dark: #B8860B;
     --color-bronze: #CD7F32;
@@ -169,17 +144,18 @@ html {
     --color-gold-bg: rgba(212, 175, 55, 0.1);
 }
 
-/* Dark Mode Variables (Royal Midnight & Bronze) */
+/* Dark Mode Variables (Stark Black & White) */
 .dark {
-    --color-bg-base: #0A0908;          /* Absolute deep warm black */
-    --color-bg-card: rgba(22, 20, 18, 0.95);  /* Midnight charcoal glass */
-    --color-bg-elevated: rgba(30, 28, 25, 1);
+    /* Stark Minimalist Dark Theme */
+    --color-bg-base: #000000;          /* Absolute pure black */
+    --color-bg-card: #0A0A0A;          /* Very dark neutral gray */
+    --color-bg-elevated: #141414;      /* Elevated dark gray */
     
     --color-text-main: #FFFFFF;        /* Pure white */
-    --color-text-muted: rgba(255, 255, 255, 0.4);
+    --color-text-muted: #888888;       /* Neutral gray */
     
-    --color-border: rgba(212, 175, 55, 0.15);
-    --color-border-hover: rgba(212, 175, 55, 0.35);
+    --color-border: #222222;           /* Clean, neutral dark gray border */
+    --color-border-hover: #FFFFFF;     /* Stark white on hover */
     
     --color-gold-bg: rgba(212, 175, 55, 0.15);
 }
@@ -233,5 +209,16 @@ body {
 /* Prevent CSS transitions from ruining the View Transition screenshots */
 .theme-transitioning * {
     transition: none !important;
+}
+
+/* Prevent icons from flipping/rotating in RTL mode */
+[dir="rtl"] svg,
+[dir="rtl"] .lucide {
+    transform: none !important;
+}
+
+[dir="rtl"] [style*="transform"] svg,
+[dir="rtl"] [style*="transform"] {
+    transform: scaleX(1) !important;
 }
 

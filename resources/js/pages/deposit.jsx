@@ -2,11 +2,13 @@ import { Head, useForm, usePage, Link } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
-import { ArrowDownToLine, CheckCircle, ArrowRight, Banknote, Info, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowDownToLine, CheckCircle, ArrowRight, Banknote, Info, Sparkles, Building2, Copy, Check } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 
-const QUICK_AMOUNTS = [500, 1000, 5000, 10000, 25000, 50000];
-const SOURCES = ['Bank Transfer', 'Cash Deposit', 'Wire Transfer', 'Cheque'];
+const QUICK_AMOUNTS = [200, 500, 1000, 2000, 5000, 10000];
+
+const AGENCIES = ['Casablanca - Anfa', 'Casablanca - Maarif', 'Rabat - Agdal', 'Marrakech - Gueliz', 'Tangier - City Center'];
 
 function formatMAD(n) {
     return Number(n).toLocaleString('en-MA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -14,230 +16,296 @@ function formatMAD(n) {
 
 export default function Deposit({ balance, recentDeposits }) {
     const [success, setSuccess] = useState(false);
-    const [successMsg, setSuccessMsg] = useState('');
+    const [showRIB, setShowRIB] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [confirming, setConfirming] = useState(false);
+    const { t, locale } = useTranslation();
+
+    const SOURCES = [
+        { id: 'bank', name: t('deposit.source_bank'), icon: Building2, desc: 'Direct transfer to your OSCORP RIB' },
+        { id: 'cash', name: t('deposit.source_agency'), icon: Banknote, desc: 'Cash deposit at any partner agency' },
+        { id: 'wire', name: t('deposit.source_wire'), icon: Sparkles, desc: 'Swift/Wire from abroad' }
+    ];
 
     const { data, setData, post, processing, errors } = useForm({
         amount: '',
-        source: 'Bank Transfer',
+        source: 'bank',
+        agency: AGENCIES[0],
         note: '',
     });
 
-    const newBalance     = balance + (parseFloat(data.amount) || 0);
-    const isValidAmount  = data.amount !== '' && parseFloat(data.amount) >= 1;
+    const newBalance = useMemo(() => balance + (parseFloat(data.amount) || 0), [balance, data.amount]);
+    const isValidAmount = data.amount !== '' && parseFloat(data.amount) >= 1;
 
-    const inputClass = "w-full py-3 px-4 rounded-xl text-[14px] outline-none transition-all border text-[var(--color-text-main)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-gold)] focus:shadow-[0_0_0_3px_rgba(212,175,55,0.12)] bg-[var(--color-bg-elevated)] border-[var(--color-border)]";
+    const copyRIB = () => {
+        navigator.clipboard.writeText("MA64 0079 9901 1234 5678 9012 34");
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     const submit = (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         post('/deposit', {
             onSuccess: () => {
-                setSuccessMsg('Deposit confirmed successfully.');
                 setSuccess(true);
+                setConfirming(false);
                 setData('amount', '');
-                setData('note', '');
                 setTimeout(() => setSuccess(false), 5000);
             },
         });
     };
 
+    const inputClass = "w-full py-3.5 px-4 rounded-xl text-[14px] outline-none transition-all border text-[var(--color-text-main)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-gold)] focus:shadow-[0_0_0_4px_rgba(212,175,55,0.1)] bg-[var(--color-bg-elevated)] border-[var(--color-border)]";
+
     return (
         <div className="flex h-screen w-full overflow-hidden font-sans antialiased selection:bg-[var(--color-gold)] selection:text-white" style={{ background: 'var(--color-bg-base)' }}>
-            <Head title="OSCORP | Deposit" />
+            <Head title="OSCORP | Deposit Funds" />
             <Sidebar />
 
             <div className="flex-1 flex flex-col overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none opacity-5" style={{ background: 'var(--color-gold)' }} />
-                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full blur-[100px] pointer-events-none" style={{ background: 'rgba(52,211,153,0.04)' }} />
-
                 <Topbar />
 
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                    className="flex-1 overflow-y-auto px-6 py-8">
-                    <div className="max-w-7xl mx-auto space-y-8">
-
-                        {/* Header */}
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div className="flex-1 overflow-y-auto px-6 py-8 custom-scrollbar">
+                    <div className="max-w-5xl mx-auto space-y-8">
+                        
+                        {/* Header Section */}
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                             <div>
-                                <h1 className="text-[32px] font-bold tracking-tight text-[var(--color-text-main)]">Make a Deposit</h1>
-                                <p className="text-[14px] text-[var(--color-text-muted)] mt-1">Add funds to your OSCORP private account instantly.</p>
+                                <h1 className="text-[32px] font-bold tracking-tight text-[var(--color-text-main)]">{t('deposit.title')}</h1>
+                                <p className="text-[14px] text-[var(--color-text-muted)] mt-1">{t('deposit.subtitle')}</p>
                             </div>
-                            <div className="flex items-center gap-2 px-5 py-2.5 rounded-2xl" style={{ background: 'var(--color-gold-bg)', border: '1px solid var(--color-border)' }}>
-                                <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--color-gold)' }} />
-                                <span className="text-[13px] font-bold" style={{ color: 'var(--color-gold)' }}>
-                                    Available: {formatMAD(balance)} MAD
-                                </span>
+                            <div className="flex flex-col items-end gap-1">
+                                <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">{t('deposit.available_balance')}</div>
+                                <div className="text-[24px] font-bold text-[var(--color-gold)]">{formatMAD(balance)} <span className="text-[12px] font-medium opacity-60">MAD</span></div>
                             </div>
                         </div>
 
-                        {/* Success Banner */}
+                        {/* Success Message */}
                         <AnimatePresence>
                             {success && (
-                                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                                    className="flex items-center gap-4 p-5 rounded-2xl"
-                                    style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.25)' }}>
-                                    <CheckCircle className="w-6 h-6 text-emerald-400 shrink-0" />
-                                    <div>
-                                        <div className="text-[15px] font-bold text-emerald-400">Deposit Confirmed!</div>
-                                        <div className="text-[13px] text-[var(--color-text-muted)]">{successMsg}</div>
+                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                                    className="p-6 rounded-2xl flex items-center gap-4 bg-emerald-500/10 border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                                    <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                        <CheckCircle className="w-6 h-6 text-emerald-400" />
                                     </div>
-                                    <Link href="/transactions" className="ml-auto px-4 py-2 rounded-xl text-[12px] font-bold text-emerald-400 hover:bg-emerald-500/10 transition-all">
-                                        View Transactions →
+                                    <div>
+                                        <h3 className="text-[16px] font-bold text-emerald-400">{t('deposit.success_title')}</h3>
+                                        <p className="text-[13px] text-[var(--color-text-muted)]">{t('deposit.success_desc')}</p>
+                                    </div>
+                                    <Link href="/transactions" className="ml-auto px-5 py-2.5 rounded-xl bg-emerald-500 text-black text-[12px] font-bold hover:brightness-110 transition-all">
+                                        {t('deposit.history')}
                                     </Link>
                                 </motion.div>
                             )}
                         </AnimatePresence>
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                            {/* Main Form */}
                             <div className="lg:col-span-2 space-y-6">
-
-                                {/* Quick Amounts */}
-                                <div className="p-6 rounded-[28px] space-y-4" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <Sparkles className="w-4 h-4" style={{ color: 'var(--color-gold)' }} />
-                                        <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">Quick Amounts</span>
-                                    </div>
-                                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-                                        {QUICK_AMOUNTS.map(amt => (
-                                            <motion.button key={amt} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-                                                type="button"
-                                                onClick={() => setData('amount', String(amt))}
-                                                className="py-2.5 rounded-xl text-[13px] font-bold transition-all"
-                                                style={parseFloat(data.amount) === amt
-                                                    ? { background: 'var(--color-gold)', color: '#000', boxShadow: '0 4px 14px rgba(212,175,55,0.3)' }
-                                                    : { background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-main)' }}>
-                                                {amt >= 1000 ? `${amt / 1000}K` : amt}
-                                            </motion.button>
-                                        ))}
-                                    </div>
+                                
+                                {/* Source Selector */}
+                                <div className="p-1 rounded-2xl bg-[var(--color-bg-elevated)] border border-[var(--color-border)] flex">
+                                    {SOURCES.map(s => (
+                                        <button
+                                            key={s.id}
+                                            onClick={() => setData('source', s.id)}
+                                            className={`flex-1 flex flex-col items-center gap-2 py-4 rounded-xl transition-all ${data.source === s.name ? 'bg-[var(--color-bg-card)] shadow-lg border border-[var(--color-border)] scale-[1.02]' : 'opacity-60 hover:opacity-100'}`}
+                                        >
+                                            <s.icon className={`w-5 h-5 ${data.source === s.name ? 'text-[var(--color-gold)]' : ''}`} />
+                                            <span className="text-[11px] font-bold uppercase tracking-wider">{s.name.split(' ')[0]}</span>
+                                        </button>
+                                    ))}
                                 </div>
 
-                                {/* Form */}
-                                <form onSubmit={submit} className="p-6 rounded-[28px] space-y-5 relative overflow-hidden" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-                                    <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--color-gold), transparent)' }} />
-
-                                    {/* Amount */}
-                                    <div>
-                                        <label className="block text-[11px] font-bold uppercase tracking-[0.15em] text-[var(--color-text-muted)] mb-2">Deposit Amount (MAD)</label>
-                                        <div className="relative">
-                                            <Banknote className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
-                                            <input
-                                                type="number" min="1" max="500000"
-                                                placeholder="0.00"
-                                                value={data.amount}
-                                                onChange={e => setData('amount', e.target.value)}
-                                                className={`${inputClass} pl-10 text-[22px] font-bold`}
-                                            />
-                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[13px] font-semibold text-[var(--color-text-muted)]">MAD</span>
-                                        </div>
-                                        {errors.amount && (
-                                            <motion.div animate={{ x: [-4, 4, -4, 0] }} className="mt-2 text-[12px] text-red-400 font-medium">{errors.amount}</motion.div>
-                                        )}
-                                    </div>
-
-                                    {/* Source */}
-                                    <div>
-                                        <label className="block text-[11px] font-bold uppercase tracking-[0.15em] text-[var(--color-text-muted)] mb-2">Deposit Source</label>
-                                        <select value={data.source} onChange={e => setData('source', e.target.value)} className={inputClass}>
-                                            {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
-                                        </select>
-                                    </div>
-
-                                    {/* Note */}
-                                    <div>
-                                        <label className="block text-[11px] font-bold uppercase tracking-[0.15em] text-[var(--color-text-muted)] mb-2">
-                                            Reference Note <span className="normal-case font-normal">(optional)</span>
-                                        </label>
-                                        <textarea rows={2} placeholder="Add a reference or description..."
-                                            value={data.note} onChange={e => setData('note', e.target.value)}
-                                            className={`${inputClass} resize-none`} />
-                                    </div>
-
-                                    {/* Live Preview */}
-                                    {isValidAmount && (
-                                        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                                            className="p-4 rounded-2xl space-y-3"
-                                            style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }}>
-                                            <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">Transaction Preview</div>
+                                {/* Main Interaction Area */}
+                                <div className="p-8 rounded-[32px] space-y-8 relative overflow-hidden" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
+                                    <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent opacity-40" />
+                                    
+                                    {data.source === 'bank' && (
+                                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-[13px] text-[var(--color-text-muted)]">Deposit Amount</span>
-                                                <span className="text-[15px] font-bold text-emerald-400">+{formatMAD(data.amount)} MAD</span>
+                                                <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">{t('deposit.your_rib')}</div>
+                                                <button onClick={copyRIB} className="flex items-center gap-2 text-[10px] font-bold text-[var(--color-gold)] hover:brightness-125 transition-all bg-[var(--color-gold-bg)] px-3 py-1.5 rounded-lg border border-[var(--color-gold)]/20">
+                                                    {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                                    {copied ? t('deposit.copied') : t('deposit.copy_rib')}
+                                                </button>
                                             </div>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-[13px] text-[var(--color-text-muted)]">Source</span>
-                                                <span className="text-[13px] font-semibold text-[var(--color-text-main)]">{data.source}</span>
+                                            <div className="p-5 rounded-2xl font-mono text-[16px] md:text-[18px] tracking-wider text-center bg-black/40 border border-[var(--color-border)] text-[var(--color-gold)]">
+                                                MA64 0079 9901 1234 5678 9012 34
                                             </div>
-                                            <div className="pt-3 border-t flex items-center justify-between" style={{ borderColor: 'var(--color-border)' }}>
-                                                <span className="text-[13px] font-bold text-[var(--color-text-main)]">New Balance</span>
-                                                <span className="text-[18px] font-bold" style={{ color: 'var(--color-gold)' }}>{formatMAD(newBalance)} MAD</span>
+                                            <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                                                <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                                                <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
+                                                     {t('deposit.rib_desc')}
+                                                </p>
                                             </div>
                                         </motion.div>
                                     )}
 
-                                    {/* Info */}
-                                    <div className="flex items-start gap-3 p-3 rounded-xl" style={{ background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.2)' }}>
-                                        <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                                        <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
-                                            Bank Transfer and Wire deposits are processed within minutes. Cash and Cheque deposits may take 1 business day.
-                                        </p>
+                                    {data.source === 'cash' && (
+                                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+                                            <label className="block text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">{t('deposit.deposit_agency_label')}</label>
+                                            <select value={data.agency} onChange={e => setData('agency', e.target.value)} className={inputClass}>
+                                                {AGENCIES.map(a => <option key={a} value={a}>{a}</option>)}
+                                            </select>
+                                            <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                                                <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                                                <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
+                                                     {t('deposit.agency_desc', { agency: data.agency })}
+                                                </p>
+                                            </div>
+                                        </motion.div>
+                                    )}
+
+                                    {/* Amount Selection */}
+                                    <div className="space-y-5">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">{t('deposit.amount_label')}</label>
+                                        </div>
+                                        <div className="relative">
+                                            <Banknote className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-muted)]" />
+                                            <input
+                                                type="number"
+                                                placeholder="0.00"
+                                                value={data.amount}
+                                                onChange={e => setData('amount', e.target.value)}
+                                                className={`${inputClass} pl-14 text-[28px] font-bold h-20`}
+                                            />
+                                            <div className="absolute right-5 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                                                <div className="h-8 w-[1px] bg-[var(--color-border)] mx-2" />
+                                                <span className="text-[16px] font-bold text-[var(--color-text-muted)]">MAD</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                                            {QUICK_AMOUNTS.map(amt => (
+                                                <motion.button
+                                                    key={amt}
+                                                    type="button"
+                                                    whileHover={{ scale: 1.05, y: -2 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => setData('amount', String(amt))}
+                                                    className={`py-3 rounded-xl text-[13px] font-bold transition-all border ${data.amount === String(amt) ? 'bg-[var(--color-gold)] text-black border-[var(--color-gold)] shadow-[0_8px_20px_rgba(212,175,55,0.2)]' : 'bg-[var(--color-bg-elevated)] border-[var(--color-border)] text-[var(--color-text-main)] hover:border-[var(--color-gold)]/40'}`}
+                                                >
+                                                    {amt >= 1000 ? `${amt / 1000}K` : amt}
+                                                </motion.button>
+                                            ))}
+                                        </div>
                                     </div>
 
-                                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                                        type="submit" disabled={processing || !isValidAmount}
-                                        className="w-full py-3.5 rounded-xl text-[14px] font-bold flex items-center justify-center gap-2 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
-                                        style={{ background: 'var(--color-gold)', color: '#000', boxShadow: '0 6px 20px rgba(212,175,55,0.3)' }}>
-                                        {processing ? 'Processing...' : 'Confirm Deposit'}
-                                        {!processing && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => isValidAmount && setConfirming(true)}
+                                        disabled={processing || !isValidAmount}
+                                        className="w-full h-14 rounded-2xl text-[15px] font-bold flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-4 shadow-xl"
+                                        style={{ background: 'linear-gradient(135deg, var(--color-gold), var(--color-gold-dark))', color: '#000' }}
+                                    >
+                                        {t('deposit.continue')}
+                                        <ArrowRight className="w-5 h-5" />
                                     </motion.button>
-                                </form>
+                                </div>
                             </div>
 
-                            {/* Right column */}
+                            {/* Right Panel - Info & History */}
                             <div className="space-y-6">
-                                <div className="p-6 rounded-[28px] space-y-4" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-                                    <div className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">How It Works</div>
-                                    {[
-                                        { step: '1', text: 'Choose a quick amount or type your own' },
-                                        { step: '2', text: 'Select your deposit source method' },
-                                        { step: '3', text: 'Review the preview and confirm' },
-                                    ].map(s => (
-                                        <div key={s.step} className="flex items-start gap-3">
-                                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5"
-                                                style={{ background: 'var(--color-gold-bg)', border: '1px solid var(--color-border)', color: 'var(--color-gold)' }}>
-                                                {s.step}
-                                            </div>
-                                            <span className="text-[13px] text-[var(--color-text-muted)] leading-relaxed">{s.text}</span>
+                                <div className="p-6 rounded-[28px] bg-[var(--color-bg-card)] border border-[var(--color-border)] space-y-5">
+                                    <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">{t('deposit.balance_summary')}</div>
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between text-[13px]">
+                                            <span className="text-[var(--color-text-muted)]">{t('deposit.current_balance')}</span>
+                                            <span className="font-semibold">{formatMAD(balance)} MAD</span>
                                         </div>
-                                    ))}
+                                        <div className="flex justify-between text-[13px]">
+                                            <span className="text-[var(--color-text-muted)]">{t('deposit.expected_deposit')}</span>
+                                            <span className="font-bold text-emerald-400">+{formatMAD(data.amount || 0)} MAD</span>
+                                        </div>
+                                        <div className="pt-3 border-t border-[var(--color-border)] flex justify-between">
+                                            <span className="text-[14px] font-bold">{t('deposit.new_balance')}</span>
+                                            <span className="text-[18px] font-bold text-[var(--color-gold)]">{formatMAD(newBalance)} MAD</span>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div className="p-6 rounded-[28px] space-y-4" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-                                    <div className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">Recent Deposits</div>
-                                    {recentDeposits.length === 0 ? (
-                                        <div className="text-center py-6 text-[13px] text-[var(--color-text-muted)]">No deposits yet.</div>
-                                    ) : (
-                                        recentDeposits.map((d, i) => (
-                                            <div key={i} className="flex items-center justify-between py-3 border-b last:border-0" style={{ borderColor: 'var(--color-border)' }}>
+                                <div className="p-6 rounded-[28px] bg-[var(--color-bg-card)] border border-[var(--color-border)] space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">{t('deposit.recent_deposits')}</div>
+                                        <Link href="/transactions" className="text-[10px] font-bold text-[var(--color-gold)]">{t('deposit.view_all')}</Link>
+                                    </div>
+                                    <div className="space-y-1">
+                                        {recentDeposits.slice(0, 3).map((d, i) => (
+                                            <div key={i} className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-colors">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(52,211,153,0.1)' }}>
-                                                        <ArrowDownToLine className="w-3.5 h-3.5 text-emerald-400" />
+                                                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                                                        <ArrowDownToLine className="w-4 h-4 text-emerald-400" />
                                                     </div>
                                                     <div>
-                                                        <div className="text-[13px] font-semibold text-[var(--color-text-main)]">{d.source || 'Deposit'}</div>
-                                                        <div className="text-[11px] text-[var(--color-text-muted)]">{new Date(d.transacted_at).toLocaleDateString()}</div>
+                                                        <div className="text-[12px] font-bold">{d.source || 'Deposit'}</div>
+                                                        <div className="text-[10px] text-[var(--color-text-muted)]">{new Date(d.transacted_at).toLocaleDateString()}</div>
                                                     </div>
                                                 </div>
-                                                <span className="text-[13px] font-bold text-emerald-400">+{formatMAD(d.amount)}</span>
+                                                <div className="text-[13px] font-bold text-emerald-400">+{formatMAD(d.amount)}</div>
                                             </div>
-                                        ))
-                                    )}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </motion.div>
+                </div>
             </div>
+
+            {/* Confirmation Modal */}
+            <AnimatePresence>
+                {confirming && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
+                            className="w-full max-w-md p-8 rounded-[32px] bg-[var(--color-bg-card)] border border-[var(--color-border)] shadow-2xl relative overflow-hidden"
+                        >
+                            <div className="absolute top-0 inset-x-0 h-[4px] bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent" />
+                            <h2 className="text-[24px] font-bold text-center mb-6">{t('deposit.confirm_title')}</h2>
+                            
+                            <div className="space-y-4 mb-8">
+                                <div className="p-4 rounded-2xl bg-[var(--color-bg-elevated)] space-y-3">
+                                    <div className="flex justify-between text-[14px]">
+                                        <span className="text-[var(--color-text-muted)]">{t('deposit.amount')}</span>
+                                        <span className="font-bold text-[var(--color-text-main)]">{formatMAD(data.amount)} MAD</span>
+                                    </div>
+                                    <div className="flex justify-between text-[14px]">
+                                        <span className="text-[var(--color-text-muted)]">{t('deposit.method')}</span>
+                                        <span className="font-bold text-[var(--color-text-main)]">{SOURCES.find(s => s.id === data.source)?.name}</span>
+                                    </div>
+                                    {data.source === 'cash' && (
+                                        <div className="flex justify-between text-[14px]">
+                                            <span className="text-[var(--color-text-muted)]">{t('deposit.agency_label')}</span>
+                                            <span className="font-bold text-[var(--color-text-main)]">{data.agency}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={submit}
+                                    disabled={processing}
+                                    className="w-full h-14 rounded-2xl bg-[var(--color-gold)] text-black font-bold text-[16px] shadow-lg hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                >
+                                    {processing ? t('common.processing') : t('deposit.confirm_btn')}
+                                </button>
+                                <button
+                                    onClick={() => setConfirming(false)}
+                                    className="w-full h-12 rounded-2xl border border-[var(--color-border)] text-[var(--color-text-muted)] font-bold text-[14px] hover:text-[var(--color-text-main)] hover:bg-white/5 transition-all"
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

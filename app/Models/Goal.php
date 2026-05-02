@@ -19,6 +19,7 @@ class Goal extends Model
         'target_date',
         'status',
         'completed_at',
+        'is_automatic',
     ];
 
     protected $casts = [
@@ -28,6 +29,7 @@ class Goal extends Model
         'start_date' => 'date',
         'target_date' => 'date',
         'completed_at' => 'datetime',
+        'is_automatic' => 'boolean',
     ];
 
     public function user(): BelongsTo

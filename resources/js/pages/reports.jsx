@@ -4,7 +4,7 @@ import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
 import { 
     FileText, TrendingUp, TrendingDown, Download, Calendar, 
-    Filter, BarChart3, PieChart, LineChart, MoreHorizontal,
+    BarChart3, PieChart, LineChart,
     ArrowUpRight, ArrowDownLeft, Wallet, Search,
     Home, ShoppingBag, Car, Coffee, Zap, Plus
 } from 'lucide-react';

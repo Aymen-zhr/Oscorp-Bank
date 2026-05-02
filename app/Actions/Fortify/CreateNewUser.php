@@ -24,10 +24,18 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
+        $baseTag = '@' . \Illuminate\Support\Str::slug($input['name'], '_');
+        $tag = $baseTag;
+        $counter = 1;
+        while (User::where('tag', $tag)->exists()) {
+            $tag = $baseTag . $counter++;
+        }
+
         return User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
+            'tag' => $tag,
         ]);
     }
 }

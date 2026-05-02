@@ -12,7 +12,7 @@ class AccountController extends Controller
 {
     use HasOscorpBalance;
 
-    public function page()
+    public function cards()
     {
         $user = Auth::user();
         $stats = $this->getFinancialStats();
@@ -24,31 +24,34 @@ class AccountController extends Controller
 
         $cardConfig = config('oscorp.card');
         $accountConfig = config('oscorp.account');
+        $ribConfig = config('oscorp.rib');
+        $cardLimit = $cardConfig['limit'];
 
-        return Inertia::render('accounts', [
+        return Inertia::render('cards', [
             'user' => [
                 'name' => $user->name,
                 'email' => $user->email,
+                'tag' => $user->tag,
                 'created_at' => $user->created_at->toIso8601String(),
                 'email_verified' => !!$user->email_verified_at,
             ],
             'card' => [
                 'number' => $cardConfig['last4'],
-                'full_number' => $cardConfig['full_number'],
+                'full_number' => '**** **** **** ' . $cardConfig['last4'],
                 'holder' => strtoupper($user->name),
                 'expiry' => $cardConfig['expiry'],
                 'cvv' => '***',
                 'type' => 'VISA Platinum',
                 'balance' => round($stats['live_balance'], 2),
-                'limit' => 50000,
-                'available' => round(50000 - $stats['total_spending'], 2),
+                'limit' => $cardLimit,
+                'available' => round($cardLimit - $stats['total_spending'], 2),
             ],
             'rib' => [
-                'full' => '181 810 0000000000000000 84',
-                'bank_code' => '181',
-                'branch_code' => '810',
-                'account_number' => '0000000000000000',
-                'rib_key' => '84',
+                'full' => $ribConfig['full'],
+                'bank_code' => $ribConfig['bank_code'],
+                'branch_code' => $ribConfig['branch_code'],
+                'account_number' => $ribConfig['account_number'],
+                'rib_key' => $ribConfig['rib_key'],
             ],
             'account' => [
                 'number' => '0000 1234 5678 9012',
@@ -63,6 +66,34 @@ class AccountController extends Controller
                 'transaction_count' => DB::table('transactions')->count(),
             ],
             'recentTransactions' => $recentTransactions,
+        ]);
+    }
+
+    public function profile()
+    {
+        $user = Auth::user();
+        $stats = $this->getFinancialStats();
+
+        return Inertia::render('account', [
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'tag' => $user->tag,
+                'phone' => $user->phone ?? 'Not provided',
+                'avatar' => $user->avatar,
+                'created_at' => $user->created_at->format('M Y'),
+                'last_login' => now()->format('d M Y, H:i'),
+            ],
+            'security' => [
+                'two_factor_enabled' => !!$user->two_factor_secret,
+                'email_verified' => !!$user->email_verified_at,
+            ],
+            'financial' => [
+                'balance' => round($stats['live_balance'], 2),
+                'total_spending' => round($stats['total_spending'], 2),
+                'total_received' => round($stats['total_credits'], 2),
+            ]
         ]);
     }
 }

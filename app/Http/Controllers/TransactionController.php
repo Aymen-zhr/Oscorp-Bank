@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 use App\Traits\HasOscorpBalance;
+use Illuminate\Support\Facades\Response;
+use Inertia\Inertia;
 
 class TransactionController extends Controller
 {
@@ -41,13 +44,18 @@ class TransactionController extends Controller
             $query->where('merchant', 'like', "%{$search}%");
         }
 
-        $transactions = $query->paginate(20)->withQueryString();
+        $transactions = $query->paginate(config('oscorp.limits.pagination', 20))->withQueryString();
 
         $stats = $this->getFinancialStats();
 
-        $categories = DB::table('transactions')->distinct()->pluck('category')->filter()->values();
+        $categories = DB::table('transactions')
+            ->whereNotNull('category')
+            ->distinct()
+            ->pluck('category')
+            ->values()
+            ->toArray();
 
-        return \Inertia\Inertia::render('transactions', [
+        return Inertia::render('transactions', [
             'transactions' => $transactions,
             'filters' => [
                 'type' => $type ?? 'all',
@@ -63,5 +71,61 @@ class TransactionController extends Controller
                 'total_debits' => round($stats['total_debits'], 2),
             ],
         ]);
+    }
+
+    /**
+     * Export transactions as CSV
+     */
+    public function export(Request $request)
+    {
+        $query = DB::table('transactions')->orderBy('transacted_at', 'desc');
+
+        // Apply same filters as the page
+        if ($request->type && $request->type !== 'all') {
+            $query->where('type', $request->type);
+        }
+        if ($request->category && $request->category !== 'all') {
+            $query->where('category', $request->category);
+        }
+        if ($request->date_from) {
+            $query->where('transacted_at', '>=', Carbon::parse($request->date_from)->startOfDay());
+        }
+        if ($request->date_to) {
+            $query->where('transacted_at', '<=', Carbon::parse($request->date_to)->endOfDay());
+        }
+        if ($request->search) {
+            $query->where('merchant', 'like', "%{$request->search}%");
+        }
+
+        $transactions = $query->get();
+
+        // Build CSV
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="transactions_' . date('Y-m-d') . '.csv"',
+        ];
+
+        $callback = function() use ($transactions) {
+            $file = fopen('php://output', 'w');
+
+            // Header row
+            fputcsv($file, ['Date', 'Merchant', 'Category', 'Type', 'Amount (MAD)', 'Card']);
+
+            // Data rows
+            foreach ($transactions as $tx) {
+                fputcsv($file, [
+                    Carbon::parse($tx->transacted_at)->format('Y-m-d H:i'),
+                    $tx->merchant,
+                    $tx->category ?? '',
+                    ucfirst($tx->type),
+                    $tx->type === 'credit' ? $tx->amount : -$tx->amount,
+                    $tx->card_last4 ?? '',
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return Response::stream($callback, 200, $headers);
     }
 }

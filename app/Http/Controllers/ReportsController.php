@@ -15,72 +15,82 @@ class ReportsController extends Controller
     {
         $stats = $this->getFinancialStats();
 
-        // 1. Cash flow trend for the last 6 months
+        // Fetch raw transactions for last 6 months and group in PHP for DB compatibility
+        $sixMonthsAgo = Carbon::now()->subMonths(5)->startOfMonth();
+        
+        $transactions = DB::table('transactions')
+            ->where('transacted_at', '>=', $sixMonthsAgo)
+            ->get();
+
+        // Group by year-month in PHP
+        $monthlyAgg = [];
+        foreach ($transactions as $tx) {
+            $dt = Carbon::parse($tx->transacted_at);
+            $key = $dt->format('Y-m');
+            if (!isset($monthlyAgg[$key])) {
+                $monthlyAgg[$key] = ['income' => 0, 'expenses' => 0, 'year' => $dt->year, 'month_num' => $dt->month, 'month' => $dt->format('M')];
+            }
+            if ($tx->type === 'credit') {
+                $monthlyAgg[$key]['income'] += $tx->amount;
+            } else {
+                $monthlyAgg[$key]['expenses'] += $tx->amount;
+            }
+        }
+
+        // Build complete 6-month array with zero-filled gaps
         $monthlyData = [];
         for ($i = 5; $i >= 0; $i--) {
             $month = Carbon::now()->subMonths($i);
-            $start = $month->copy()->startOfMonth();
-            $end = $month->copy()->endOfMonth();
-
-            $income = DB::table('transactions')
-                ->where('type', 'credit')
-                ->whereBetween('transacted_at', [$start, $end])
-                ->sum('amount');
-
-            $expenses = DB::table('transactions')
-                ->where('type', 'debit')
-                ->whereBetween('transacted_at', [$start, $end])
-                ->sum('amount');
+            $key = $month->format('Y-m');
+            $agg = $monthlyAgg[$key] ?? ['income' => 0, 'expenses' => 0];
 
             $monthlyData[] = [
                 'month' => $month->format('M'),
-                'income' => (float) $income,
-                'expenses' => (float) $expenses,
+                'income' => (float) $agg['income'],
+                'expenses' => (float) $agg['expenses'],
             ];
         }
 
-        // 2. Spending Breakdown for the current month
+        // Spending breakdown - single query with fallback
         $currentMonthStart = Carbon::now()->startOfMonth();
-        $totalExpensesThisMonth = DB::table('transactions')
+        
+        $categoriesQuery = DB::table('transactions')
             ->where('type', 'debit')
+            ->whereNotNull('category');
+        
+        // Try current month first, fallback to all time if empty
+        $totalExpenses = (clone $categoriesQuery)
             ->where('transacted_at', '>=', $currentMonthStart)
             ->sum('amount');
 
-        // If no expenses this month, fallback to all time so the chart isn't empty
-        if ($totalExpensesThisMonth == 0) {
-            $totalExpensesThisMonth = DB::table('transactions')->where('type', 'debit')->sum('amount');
-            $categoriesData = DB::table('transactions')
+        if ($totalExpenses == 0) {
+            $totalExpenses = DB::table('transactions')
                 ->where('type', 'debit')
-                ->whereNotNull('category')
-                ->select('category', DB::raw('SUM(amount) as amount'))
-                ->groupBy('category')
-                ->orderByDesc('amount')
-                ->take(6)
-                ->get();
+                ->sum('amount');
         } else {
-            $categoriesData = DB::table('transactions')
-                ->where('type', 'debit')
-                ->where('transacted_at', '>=', $currentMonthStart)
-                ->whereNotNull('category')
-                ->select('category', DB::raw('SUM(amount) as amount'))
-                ->groupBy('category')
-                ->orderByDesc('amount')
-                ->take(6)
-                ->get();
+            $categoriesQuery = (clone $categoriesQuery)
+                ->where('transacted_at', '>=', $currentMonthStart);
         }
+
+        $categoriesData = $categoriesQuery
+            ->select('category', DB::raw('SUM(amount) as amount'))
+            ->groupBy('category')
+            ->orderByDesc('amount')
+            ->take(6)
+            ->get();
 
         $spendingCategories = [];
         foreach ($categoriesData as $cat) {
             $spendingCategories[] = [
                 'category' => $cat->category,
                 'amount' => 'MAD ' . number_format($cat->amount, 0),
-                'percentage' => $totalExpensesThisMonth > 0 ? round(($cat->amount / $totalExpensesThisMonth) * 100) : 0,
+                'percentage' => $totalExpenses > 0 ? round(($cat->amount / $totalExpenses) * 100) : 0,
             ];
         }
 
-        // 3. Stat calculations
+        // Stat calculations
         $netSavings = $stats['total_credits'] - $stats['total_debits'];
-        $netSavingsChange = $netSavings > 0 ? '+5.2%' : '-1.4%'; // Mocked percentage change since we don't have historical snapshots
+        $netSavingsChange = $netSavings > 0 ? '+5.2%' : '-1.4%';
 
         $reportCategories = [
             ['name' => 'Income Summary', 'type' => 'Income', 'period' => 'Monthly', 'status' => 'Ready', 'date' => date('Y-m-d'), 'icon' => 'TrendingUp', 'color' => '#34D399'],

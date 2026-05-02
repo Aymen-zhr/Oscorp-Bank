@@ -55,7 +55,11 @@ export default function Taxes({ taxDocuments = [], taxCategories = [], upcomingD
         <div className="flex h-screen w-full overflow-hidden font-sans antialiased" style={{ background: 'var(--color-bg-base)' }}>
             <Head title="OSCORP | Taxes" />
             <Sidebar />
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden relative">
+                {/* Background Fixed Glows (Stabilized) */}
+                <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[var(--color-gold)] opacity-[0.03] rounded-full blur-[120px] pointer-events-none z-0" />
+                <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-blue-500 opacity-[0.02] rounded-full blur-[100px] pointer-events-none z-0" />
+
                 <Topbar />
                 <motion.div
                     initial="hidden"
@@ -91,7 +95,7 @@ export default function Taxes({ taxDocuments = [], taxCategories = [], upcomingD
                                 { label: 'Tax Deductions', value: `MAD ${formatCurrency(stats.taxDeductions || 0)}`, icon: Receipt, color: 'var(--color-gold)' },
                             ].map((stat, idx) => (
                                 <motion.div key={stat.label} whileHover={{ y: -4 }} className="rounded-[24px] p-6 relative overflow-hidden group" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-                                    <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-[30px] -translate-y-1/2 translate-x-1/2 opacity-10 transition-opacity group-hover:opacity-30" style={{ background: stat.color }} />
+                                    <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-[20px] -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-10 transition-opacity" style={{ background: stat.color }} />
                                     <div className="flex items-center justify-between mb-4 relative z-10">
                                         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${stat.color}15`, border: `1px solid ${stat.color}30` }}>
                                             <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
@@ -320,39 +324,39 @@ export default function Taxes({ taxDocuments = [], taxCategories = [], upcomingD
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div className="lg:col-span-2 rounded-[24px] p-6 lg:p-8 flex flex-col justify-center relative overflow-hidden" 
-                                        style={{ background: 'linear-gradient(135deg, #18181b 0%, #09090b 100%)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                                        style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
                                         <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--color-gold)] opacity-5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/3" />
                                         
                                         <h3 className="text-[14px] font-bold uppercase tracking-widest mb-8 text-center" style={{ color: 'var(--color-gold)' }}>Estimated Results</h3>
                                         
                                         <div className="text-center mb-8 relative z-10">
-                                            <div className="text-[12px] font-semibold text-white/50 mb-2">Estimated Tax Due</div>
-                                            <div className="text-[42px] font-bold leading-none text-white tracking-tight">
+                                            <div className="text-[12px] font-semibold mb-2" style={{ color: 'var(--color-text-muted)' }}>Estimated Tax Due</div>
+                                            <div className="text-[42px] font-bold leading-none tracking-tight" style={{ color: 'var(--color-text-main)' }}>
                                                 MAD {formatCurrency(calcResults.estimatedTax)}
                                             </div>
                                         </div>
 
-                                        <div className="space-y-4 pt-6 border-t border-white/10 relative z-10">
+                                        <div className="space-y-4 pt-6 border-t relative z-10" style={{ borderColor: 'var(--color-border)' }}>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-[13px] font-medium text-white/60">Taxable Income</span>
-                                                <span className="text-[14px] font-bold text-white">MAD {formatCurrency(calcResults.taxableIncome)}</span>
+                                                <span className="text-[13px] font-medium" style={{ color: 'var(--color-text-muted)' }}>Taxable Income</span>
+                                                <span className="text-[14px] font-bold" style={{ color: 'var(--color-text-main)' }}>MAD {formatCurrency(calcResults.taxableIncome)}</span>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-[13px] font-medium text-white/60">Effective Tax Rate</span>
-                                                <span className="text-[14px] font-bold text-emerald-400">{calcResults.effectiveRate.toFixed(1)}%</span>
+                                                <span className="text-[13px] font-medium" style={{ color: 'var(--color-text-muted)' }}>Effective Tax Rate</span>
+                                                <span className="text-[14px] font-bold text-emerald-500">{calcResults.effectiveRate.toFixed(1)}%</span>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-[13px] font-medium text-white/60">Estimated Net Income</span>
-                                                <span className="text-[14px] font-bold text-white">MAD {formatCurrency(calcResults.netIncome)}</span>
+                                                <span className="text-[13px] font-medium" style={{ color: 'var(--color-text-muted)' }}>Estimated Net Income</span>
+                                                <span className="text-[14px] font-bold" style={{ color: 'var(--color-text-main)' }}>MAD {formatCurrency(calcResults.netIncome)}</span>
                                             </div>
                                         </div>
                                         
-                                        <div className="mt-8 p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/5 relative z-10">
+                                        <div className="mt-8 p-4 rounded-xl relative z-10" style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }}>
                                             <div className="flex items-start gap-3">
                                                 <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--color-gold)' }} />
-                                                <div className="text-[11px] leading-relaxed text-white/60">
+                                                <div className="text-[11px] leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
                                                     This estimate assumes standard progressive tax brackets and does not substitute professional tax advice.
                                                 </div>
                                             </div>
@@ -360,7 +364,6 @@ export default function Taxes({ taxDocuments = [], taxCategories = [], upcomingD
                                     </div>
                                 </motion.div>
                             )}
-
                         </motion.div>
                     </div>
                 </motion.div>

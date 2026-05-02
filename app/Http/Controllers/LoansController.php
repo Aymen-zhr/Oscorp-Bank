@@ -4,12 +4,35 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use App\Traits\HasOscorpBalance;
 
 class LoansController extends Controller
 {
+    use HasOscorpBalance;
+
     public function page()
     {
-        // Logical "fake" data for George
+        $stats = $this->getFinancialStats();
+
+        // Calculate payments made this year from transactions
+        $paidOffThisYear = DB::table('transactions')
+            ->where('type', 'debit')
+            ->where('transacted_at', '>=', Carbon::now()->startOfYear())
+            ->where(function($q) {
+                $q->where('merchant', 'like', '%Loan%')
+                  ->orWhere('merchant', 'like', '%Mortgage%')
+                  ->orWhere('category', 'Loan Payment')
+                  ->orWhere('category', 'Mortgage');
+            })
+            ->sum('amount');
+
+        if ($paidOffThisYear == 0) {
+            // Estimate based on total debits
+            $paidOffThisYear = round($stats['total_debits'] * 0.15);
+        }
+
+        // Active loans (pre-populated for demo)
         $activeLoans = [
             [
                 'id' => 'LN-001',
@@ -39,27 +62,61 @@ class LoansController extends Controller
             ]
         ];
 
+        // Generate amortization schedule for the first loan
+        $amortizationSchedule = $this->generateAmortization(
+            $activeLoans[0]['balance'],
+            $activeLoans[0]['rate'],
+            $activeLoans[0]['monthlyPayment']
+        );
+
+        // Pre-approved loan offers based on user's financial profile
+        $preApprovedLimit = round($stats['live_balance'] * 3);
         $loanOffers = [
-            ['type' => 'Personal Loan', 'maxAmount' => 500000, 'rate' => 5.5, 'term' => '1-5 years', 'featured' => false, 'icon' => 'User'],
-            ['type' => 'Business Loan', 'maxAmount' => 2000000, 'rate' => 4.8, 'term' => '1-10 years', 'featured' => true, 'icon' => 'Briefcase'],
-            ['type' => 'Education Loan', 'maxAmount' => 300000, 'rate' => 3.2, 'term' => '1-7 years', 'featured' => false, 'icon' => 'GraduationCap'],
+            ['type' => 'Personal Loan', 'maxAmount' => min(500000, $preApprovedLimit), 'rate' => 5.5, 'term' => '1-5 years', 'featured' => false, 'icon' => 'User', 'preApproved' => true],
+            ['type' => 'Business Loan', 'maxAmount' => 2000000, 'rate' => 4.8, 'term' => '1-10 years', 'featured' => true, 'icon' => 'Briefcase', 'preApproved' => false],
+            ['type' => 'Education Loan', 'maxAmount' => 300000, 'rate' => 3.2, 'term' => '1-7 years', 'featured' => false, 'icon' => 'GraduationCap', 'preApproved' => true],
         ];
 
-        // Derived stats
         $totalOutstanding = collect($activeLoans)->sum('balance');
         $monthlyPayments = collect($activeLoans)->sum('monthlyPayment');
         $averageRate = collect($activeLoans)->avg('rate');
-        $paidOffThisYear = 87300; // Mocked logical value based on payments over a year
 
         return Inertia::render('loans', [
             'activeLoans' => $activeLoans,
             'loanOffers' => $loanOffers,
+            'amortizationSchedule' => $amortizationSchedule,
             'stats' => [
-                'totalOutstanding' => $totalOutstanding,
-                'monthlyPayments' => $monthlyPayments,
+                'totalOutstanding' => round($totalOutstanding, 2),
+                'monthlyPayments' => round($monthlyPayments, 2),
                 'averageRate' => round($averageRate, 1),
-                'paidOffThisYear' => $paidOffThisYear,
+                'paidOffThisYear' => round($paidOffThisYear, 2),
             ]
         ]);
+    }
+
+    /**
+     * Generate amortization schedule for a loan
+     */
+    private function generateAmortization($balance, $annualRate, $monthlyPayment, $months = 12)
+    {
+        $schedule = [];
+        $remainingBalance = $balance;
+        $monthlyRate = $annualRate / 100 / 12;
+
+        for ($i = 1; $i <= $months && $remainingBalance > 0; $i++) {
+            $interestPayment = $remainingBalance * $monthlyRate;
+            $principalPayment = min($monthlyPayment - $interestPayment, $remainingBalance);
+            $remainingBalance -= $principalPayment;
+
+            $schedule[] = [
+                'month' => Carbon::now()->addMonths($i)->format('M Y'),
+                'payment' => round($monthlyPayment, 2),
+                'principal' => round($principalPayment, 2),
+                'interest' => round($interestPayment, 2),
+                'balance' => round(max(0, $remainingBalance), 2),
+            ];
+        }
+
+        return $schedule;
     }
 }

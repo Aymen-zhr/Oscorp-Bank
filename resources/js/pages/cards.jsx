@@ -8,10 +8,12 @@ import {
     Eye, EyeOff, Download, ChevronRight, History
 } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 
-export default function Accounts({ user, card, rib, account, stats, recentTransactions }) {
+export default function Cards({ user, card, rib, account, stats, recentTransactions = [] }) {
     const [showFullCard, setShowFullCard] = useState(false);
     const [copied, setCopied] = useState(null);
+    const { t, locale } = useTranslation();
 
     const copyToClipboard = (text, key) => {
         navigator.clipboard.writeText(text);
@@ -25,13 +27,13 @@ export default function Accounts({ user, card, rib, account, stats, recentTransa
 
     return (
         <div className="flex h-screen w-full overflow-hidden font-sans antialiased selection:bg-[var(--color-gold)] selection:text-white" style={{ background: 'var(--color-bg-base)' }}>
-            <Head title="OSCORP | My Accounts" />
+            <Head title="Card Information" />
             <Sidebar />
             
             <div className="flex-1 flex flex-col overflow-hidden relative">
-                {/* Background Ambient Glows */}
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[var(--color-gold)]/5 rounded-full blur-[120px] pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
+                {/* Background Ambient Glows (Stabilized) */}
+                <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[var(--color-gold)] opacity-[0.03] rounded-full blur-[120px] pointer-events-none z-0" />
+                <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-blue-500 opacity-[0.02] rounded-full blur-[100px] pointer-events-none z-0" />
                 
                 <Topbar />
 
@@ -44,15 +46,15 @@ export default function Accounts({ user, card, rib, account, stats, recentTransa
                         {/* Header */}
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                             <div>
-                                <h1 className="text-[32px] font-bold tracking-tight text-[var(--color-text-main)]">Private Accounts</h1>
-                                <p className="text-[14px] text-[var(--color-text-muted)] mt-1">Detailed overview of your assets and bank identifiers.</p>
+                                <h1 className="text-[32px] font-bold tracking-tight text-[var(--color-text-main)]">{t('cards.title')}</h1>
+                                 <p className="text-[14px] text-[var(--color-text-muted)] mt-1">{t('cards.subtitle')}</p>
                             </div>
                             <div className="flex items-center gap-3">
                                 <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--color-bg-elevated)] border border-[var(--color-border)] text-[13px] font-bold text-[var(--color-text-main)] transition-all hover:bg-[var(--color-bg-card)]">
-                                    <Download className="w-4 h-4" /> Statements
+                                    <Download className="w-4 h-4" /> {t('cards.statements')}
                                 </button>
                                 <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--color-gold)] text-black text-[13px] font-bold transition-all hover:brightness-110 shadow-lg shadow-[var(--color-gold)]/20">
-                                    <Zap className="w-4 h-4" /> Transfer Funds
+                                    <Zap className="w-4 h-4" /> {t('cards.transfer_funds')}
                                 </button>
                             </div>
                         </div>
@@ -62,7 +64,7 @@ export default function Accounts({ user, card, rib, account, stats, recentTransa
                             
                             {/* Card Section */}
                             <div className="lg:col-span-5 space-y-6">
-                                <h3 className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)] px-1">Active Card</h3>
+                                <h3 className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)] px-1">{t('cards.active_card')}</h3>
                                 <motion.div 
                                     whileHover={{ y: -5 }}
                                     className="relative h-[280px] w-full rounded-[28px] overflow-hidden shadow-2xl group cursor-pointer"
@@ -128,11 +130,11 @@ export default function Accounts({ user, card, rib, account, stats, recentTransa
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="p-4 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)]">
-                                        <div className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase mb-2">Spending Limit</div>
+                                        <div className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase mb-2">{t('cards.spending_limit')}</div>
                                         <div className="text-[18px] font-bold text-[var(--color-text-main)]">{formatCurrency(card.limit)}</div>
                                     </div>
                                     <div className="p-4 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)]">
-                                        <div className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase mb-2">Available Credit</div>
+                                        <div className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase mb-2">{t('cards.available_credit')}</div>
                                         <div className="text-[18px] font-bold text-emerald-400">{formatCurrency(card.available)}</div>
                                     </div>
                                 </div>
@@ -140,7 +142,7 @@ export default function Accounts({ user, card, rib, account, stats, recentTransa
 
                             {/* Account Details / RIB Section */}
                             <div className="lg:col-span-7 space-y-6">
-                                <h3 className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)] px-1">Account Identifiers</h3>
+                                <h3 className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)] px-1">{t('cards.account_identifiers')}</h3>
                                 
                                 <div className="p-8 rounded-[28px] bg-[var(--color-bg-card)] border border-[var(--color-border)] relative overflow-hidden">
                                     <div className="absolute top-0 right-0 w-48 h-48 bg-[var(--color-gold)] opacity-[0.03] rounded-full blur-[40px] -translate-y-1/2 translate-x-1/2" />
@@ -166,7 +168,7 @@ export default function Accounts({ user, card, rib, account, stats, recentTransa
                                             <div className="space-y-4">
                                                 <div className="group">
                                                     <div className="flex items-center justify-between mb-1.5">
-                                                        <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">RIB (Full)</span>
+                                                        <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">{t('cards.rib_full')}</span>
                                                         <button 
                                                             onClick={() => copyToClipboard(rib.full, 'full')}
                                                             className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-white/5"
@@ -181,11 +183,11 @@ export default function Accounts({ user, card, rib, account, stats, recentTransa
                                                 
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] mb-1">Bank Code</div>
+                                                        <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] mb-1">{t('cards.bank_code')}</div>
                                                         <div className="text-[14px] font-mono font-bold text-[var(--color-text-main)]">{rib.bank_code}</div>
                                                     </div>
                                                     <div>
-                                                        <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] mb-1">Branch Code</div>
+                                                        <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] mb-1">{t('cards.branch_code')}</div>
                                                         <div className="text-[14px] font-mono font-bold text-[var(--color-text-main)]">{rib.branch_code}</div>
                                                     </div>
                                                 </div>
@@ -194,7 +196,7 @@ export default function Accounts({ user, card, rib, account, stats, recentTransa
                                             <div className="space-y-4">
                                                 <div className="group">
                                                     <div className="flex items-center justify-between mb-1.5">
-                                                        <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">Account Number</span>
+                                                        <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">{t('cards.account_number')}</span>
                                                         <button 
                                                             onClick={() => copyToClipboard(rib.account_number, 'acc')}
                                                             className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-white/5"
@@ -209,11 +211,11 @@ export default function Accounts({ user, card, rib, account, stats, recentTransa
                                                 
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] mb-1">RIB Key</div>
+                                                        <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] mb-1">{t('cards.rib_key')}</div>
                                                         <div className="text-[14px] font-mono font-bold text-[var(--color-text-main)]">{rib.rib_key}</div>
                                                     </div>
                                                     <div>
-                                                        <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] mb-1">Opened On</div>
+                                                        <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] mb-1">{t('cards.opened_on')}</div>
                                                         <div className="text-[14px] font-bold text-[var(--color-text-main)]">{account.opened}</div>
                                                     </div>
                                                 </div>
@@ -224,10 +226,9 @@ export default function Accounts({ user, card, rib, account, stats, recentTransa
                                             <div className="p-2 rounded-lg bg-blue-500/10 shrink-0">
                                                 <Info className="w-4 h-4 text-blue-400" />
                                             </div>
-                                            <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
-                                                The Relevé d'Identité Bancaire (RIB) is your unique identifier for domestic and international transfers. 
-                                                Ensure accuracy when sharing these details with third parties.
-                                            </p>
+                                             <p className="text-[12px] text-[var(--color-text-muted)] leading-relaxed">
+                                                 {t('cards.rib_description')}
+                                             </p>
                                         </div>
                                     </div>
                                 </div>
@@ -239,14 +240,14 @@ export default function Accounts({ user, card, rib, account, stats, recentTransa
                             
                             {/* Activity Stats */}
                             <div className="lg:col-span-4 space-y-6">
-                                <h3 className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)] px-1">Engagement Metrics</h3>
+                                <h3 className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)] px-1">{t('cards.engagement_metrics')}</h3>
                                 <div className="p-6 rounded-[28px] bg-[var(--color-bg-card)] border border-[var(--color-border)] space-y-6">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2 rounded-xl bg-emerald-500/10">
                                                 <ArrowDownRight className="w-4 h-4 text-emerald-400" />
                                             </div>
-                                            <span className="text-[13px] font-bold text-[var(--color-text-main)]">Total Inflow</span>
+                                            <span className="text-[13px] font-bold text-[var(--color-text-main)]">{t('cards.total_inflow')}</span>
                                         </div>
                                         <span className="text-[14px] font-bold text-emerald-400">+{formatCurrency(stats.total_credits)}</span>
                                     </div>
@@ -255,7 +256,7 @@ export default function Accounts({ user, card, rib, account, stats, recentTransa
                                             <div className="p-2 rounded-xl bg-red-500/10">
                                                 <ArrowUpRight className="w-4 h-4 text-red-400" />
                                             </div>
-                                            <span className="text-[13px] font-bold text-[var(--color-text-main)]">Total Outflow</span>
+                                            <span className="text-[13px] font-bold text-[var(--color-text-main)]">{t('cards.total_outflow')}</span>
                                         </div>
                                         <span className="text-[14px] font-bold text-red-400">-{formatCurrency(stats.total_debits)}</span>
                                     </div>
@@ -264,7 +265,7 @@ export default function Accounts({ user, card, rib, account, stats, recentTransa
                                             <div className="p-2 rounded-xl bg-blue-500/10">
                                                 <History className="w-4 h-4 text-blue-400" />
                                             </div>
-                                            <span className="text-[13px] font-bold text-[var(--color-text-main)]">Monthly Volume</span>
+                                            <span className="text-[13px] font-bold text-[var(--color-text-main)]">{t('cards.monthly_volume')}</span>
                                         </div>
                                         <span className="text-[14px] font-bold text-[var(--color-text-main)]">{stats.transaction_count} Tx</span>
                                     </div>
@@ -272,9 +273,9 @@ export default function Accounts({ user, card, rib, account, stats, recentTransa
                                     <div className="mt-4 p-4 rounded-2xl bg-gradient-to-br from-[var(--color-gold-bg)] to-transparent border border-[var(--color-gold)]/10">
                                         <div className="flex items-center gap-3 mb-2">
                                             <ShieldCheck className="w-4 h-4 text-[var(--color-gold)]" />
-                                            <span className="text-[12px] font-bold text-[var(--color-gold)]">Security Status</span>
+                                            <span className="text-[12px] font-bold text-[var(--color-gold)]">{t('cards.security_status')}</span>
                                         </div>
-                                        <p className="text-[11px] text-[var(--color-text-muted)]">Your account is protected by multi-factor authentication and real-time monitoring.</p>
+                                        <p className="text-[11px] text-[var(--color-text-muted)]">{t('cards.security_desc')}</p>
                                     </div>
                                 </div>
                             </div>
@@ -282,9 +283,9 @@ export default function Accounts({ user, card, rib, account, stats, recentTransa
                             {/* Recent Transactions Mini List */}
                             <div className="lg:col-span-8 space-y-6">
                                 <div className="flex items-center justify-between px-1">
-                                    <h3 className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">Recent Activity</h3>
+                                    <h3 className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">{t('cards.recent_activity')}</h3>
                                     <button className="text-[12px] font-bold text-[var(--color-gold)] flex items-center gap-1 hover:underline">
-                                        View All <ChevronRight className="w-3 h-3" />
+                                        {t('cards.view_all')} <ChevronRight className="w-3 h-3" />
                                     </button>
                                 </div>
                                 <div className="rounded-[28px] bg-[var(--color-bg-card)] border border-[var(--color-border)] overflow-hidden">
@@ -310,7 +311,7 @@ export default function Accounts({ user, card, rib, account, stats, recentTransa
                                         ))}
                                         {recentTransactions.length === 0 && (
                                             <div className="p-10 text-center text-[14px] text-[var(--color-text-muted)]">
-                                                No recent transactions found.
+                                                {t('cards.no_recent')}
                                             </div>
                                         )}
                                     </div>

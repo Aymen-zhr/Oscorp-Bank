@@ -255,15 +255,32 @@ PROMPT . json_encode($fullContext);
 
     private function getSpendingBreakdown($period, $transactions)
     {
-        $categories = ['Food', 'Transport', 'Entertainment', 'Bills', 'Shopping', 'Health'];
-        $colors = ['#D4AF37', '#10B981', '#6366F1', '#F59E0B', '#EC4899', '#8B5CF6'];
-        $data = [];
-        foreach ($categories as $i => $cat) {
-            $data[] = ['name' => $cat, 'value' => rand(500, 3000), 'color' => $colors[$i]];
+        $categoryTotals = collect($transactions)
+            ->where('type', 'debit')
+            ->groupBy('category')
+            ->map(function($group) {
+                return $group->sum('amount');
+            })
+            ->sortDesc();
+
+        if ($categoryTotals->isEmpty()) {
+            return [
+                'labels' => ['No Data'],
+                'datasets' => [['name' => 'Spending', 'data' => [0], 'colors' => ['#64748B']]]
+            ];
         }
+
+        $colors = ['#D4AF37', '#10B981', '#6366F1', '#F59E0B', '#EC4899', '#8B5CF6', '#06B6D4', '#EF4444', '#3B82F6', '#84CC16'];
+        $labels = $categoryTotals->keys()->toArray();
+        $values = $categoryTotals->values()->map(fn($v) => round($v, 2))->toArray();
+        $assignedColors = [];
+        foreach ($labels as $i => $label) {
+            $assignedColors[] = $colors[$i % count($colors)];
+        }
+
         return [
-            'labels' => $categories,
-            'datasets' => [['name' => 'Spending', 'data' => array_column($data, 'value'), 'colors' => $colors]]
+            'labels' => $labels,
+            'datasets' => [['name' => 'Spending', 'data' => $values, 'colors' => $assignedColors]]
         ];
     }
 
@@ -272,11 +289,24 @@ PROMPT . json_encode($fullContext);
         $monthNames = [];
         $income = [];
         $expenses = [];
+        $txCollection = collect($transactions);
+
         for ($i = $months - 1; $i >= 0; $i--) {
-            $monthNames[] = Carbon::now()->subMonths($i)->format('M');
-            $income[] = rand(8000, 15000);
-            $expenses[] = rand(5000, 10000);
+            $date = Carbon::now()->subMonths($i);
+            $monthNames[] = $date->format('M');
+
+            $monthIncome = $txCollection->filter(function($tx) use ($date) {
+                return $tx->type === 'credit' && Carbon::parse($tx->transacted_at)->format('Y-m') === $date->format('Y-m');
+            })->sum('amount');
+
+            $monthExpenses = $txCollection->filter(function($tx) use ($date) {
+                return $tx->type === 'debit' && Carbon::parse($tx->transacted_at)->format('Y-m') === $date->format('Y-m');
+            })->sum('amount');
+
+            $income[] = round($monthIncome, 2);
+            $expenses[] = round($monthExpenses, 2);
         }
+
         return [
             'labels' => $monthNames,
             'datasets' => [

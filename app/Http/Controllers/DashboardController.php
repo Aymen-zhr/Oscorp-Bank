@@ -22,13 +22,27 @@ class DashboardController extends Controller
             
         $stats = $this->getFinancialStats();
         
-        $earningsPercentage = min(99, max(5, round(($stats['live_balance'] / $baseBalance) * 58)));
+        // Fetch the user's most relevant active goal
+        $activeGoal = \App\Models\Goal::where('user_id', \Illuminate\Support\Facades\Auth::id())
+            ->where('status', 'active')
+            ->orderBy('target_date', 'asc')
+            ->first();
+
+        $goalData = null;
+        if ($activeGoal) {
+            $goalData = [
+                'name' => $activeGoal->name,
+                'current_savings' => (float) $activeGoal->current_savings,
+                'target_amount' => (float) $activeGoal->target_amount,
+                'progress' => $activeGoal->progress,
+            ];
+        }
             
         return Inertia::render('dashboard', [
             'balance'            => round($stats['live_balance'], 2),
             'totalSpending'      => round($stats['total_spending'], 2),
             'transactions'       => $transactions,
-            'earningsPercentage' => $earningsPercentage,
+            'activeGoal'         => $goalData,
         ]);
     }
 }

@@ -30,6 +30,7 @@ class GoalsController extends Controller
                     'progress' => $goal->progress,
                     'remaining_amount' => $goal->remaining_amount,
                     'is_completed' => $goal->is_completed,
+                    'is_automatic' => (bool) $goal->is_automatic,
                 ];
             });
 
@@ -45,6 +46,7 @@ class GoalsController extends Controller
             'icon' => 'nullable|string|max:50',
             'target_amount' => 'required|numeric|min:1',
             'target_months' => 'required|integer|min:1|max:120',
+            'is_automatic' => 'boolean',
         ]);
 
         $monthlySavings = round($validated['target_amount'] / $validated['target_months'], 2);
@@ -62,6 +64,7 @@ class GoalsController extends Controller
             'start_date' => $startDate,
             'target_date' => $targetDate,
             'status' => 'active',
+            'is_automatic' => $request->boolean('is_automatic'),
         ]);
 
         return redirect()->route('goals');

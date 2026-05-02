@@ -49,7 +49,11 @@ export default function Loans({ activeLoans = [], loanOffers = [], stats = {} })
         <div className="flex h-screen w-full overflow-hidden font-sans antialiased" style={{ background: 'var(--color-bg-base)' }}>
             <Head title="OSCORP | Loans" />
             <Sidebar />
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden relative">
+                {/* Background Fixed Glows (Stabilized) */}
+                <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[var(--color-gold)] opacity-[0.03] rounded-full blur-[120px] pointer-events-none z-0" />
+                <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-blue-500 opacity-[0.02] rounded-full blur-[100px] pointer-events-none z-0" />
+                
                 <Topbar />
                 <motion.div
                     initial="hidden"
@@ -80,7 +84,7 @@ export default function Loans({ activeLoans = [], loanOffers = [], stats = {} })
                                 { label: 'Paid Off This Year', value: `MAD ${formatCurrency(stats.paidOffThisYear || 0)}`, icon: ArrowDownRight, color: '#10B981' },
                             ].map((stat, idx) => (
                                 <motion.div key={stat.label} whileHover={{ y: -4 }} className="rounded-[24px] p-6 relative overflow-hidden group" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-                                    <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-[30px] -translate-y-1/2 translate-x-1/2 opacity-10 transition-opacity group-hover:opacity-30" style={{ background: stat.color }} />
+                                    <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-[20px] -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-10 transition-opacity" style={{ background: stat.color }} />
                                     <div className="flex items-center justify-between mb-4 relative z-10">
                                         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${stat.color}15`, border: `1px solid ${stat.color}30` }}>
                                             <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
@@ -100,7 +104,7 @@ export default function Loans({ activeLoans = [], loanOffers = [], stats = {} })
                                 {[
                                     { id: 'active', label: 'Active Loans' },
                                     { id: 'offers', label: 'Loan Offers' },
-                                    { id: 'calculator', label: 'Loan Calculator' }
+                                    { id: 'calculator', label: 'Payment Calculator' },
                                 ].map((tab) => (
                                     <button
                                         key={tab.id}
@@ -115,88 +119,61 @@ export default function Loans({ activeLoans = [], loanOffers = [], stats = {} })
 
                             {/* ── Active Loans Content ── */}
                             {activeTab === 'active' && (
-                                <div className="space-y-5">
-                                    {activeLoans.map((loan, idx) => {
-                                        const Icon = ICON_MAP[loan.icon] || Landmark;
-                                        return (
-                                            <motion.div 
-                                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }}
-                                                key={loan.id} 
-                                                className="rounded-[24px] p-6 relative overflow-hidden" 
-                                                style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
-                                            >
-                                                <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--color-gold)] opacity-5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/2" />
-                                                <div className="relative z-10">
-                                                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[var(--color-bg-elevated)] border border-[var(--color-border)]">
-                                                                <Icon className="w-6 h-6 text-[var(--color-gold)]" />
-                                                            </div>
-                                                            <div>
-                                                                <div className="flex items-center gap-3 mb-1">
-                                                                    <h3 className="text-[18px] font-bold" style={{ color: 'var(--color-text-main)' }}>{loan.type}</h3>
-                                                                    <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500">{loan.status}</span>
-                                                                </div>
-                                                                <div className="text-[13px] font-medium" style={{ color: 'var(--color-text-muted)' }}>ID: {loan.id} • Term: {loan.term}</div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="md:text-right">
-                                                            <div className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Remaining Balance</div>
-                                                            <div className="text-[24px] font-bold" style={{ color: 'var(--color-text-main)' }}>MAD {formatCurrency(loan.balance)}</div>
-                                                        </div>
+                                <div className="grid grid-cols-1 gap-4">
+                                    {activeLoans.length === 0 ? (
+                                        <div className="text-center py-16 rounded-[24px]" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
+                                            <div className="w-16 h-16 rounded-2xl bg-[var(--color-bg-elevated)] flex items-center justify-center mx-auto mb-4">
+                                                <Landmark className="w-8 h-8 text-[var(--color-text-muted)] opacity-50" />
+                                            </div>
+                                            <h3 className="font-bold mb-1" style={{ color: 'var(--color-text-main)' }}>No Active Loans</h3>
+                                            <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>You don't have any outstanding credit facilities.</p>
+                                        </div>
+                                    ) : (
+                                        activeLoans.map((loan) => (
+                                            <motion.div key={loan.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="rounded-[24px] p-6 flex flex-col md:flex-row md:items-center justify-between gap-6" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'var(--color-gold-bg)' }}>
+                                                        <Clock className="w-6 h-6" style={{ color: 'var(--color-gold)' }} />
                                                     </div>
-                                                    
-                                                    <div className="mb-6">
-                                                        <div className="flex items-center justify-between text-[13px] font-semibold mb-2">
-                                                            <span style={{ color: 'var(--color-text-muted)' }}>Repayment Progress</span>
-                                                            <span style={{ color: 'var(--color-gold)' }}>{loan.progress}%</span>
-                                                        </div>
-                                                        <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'var(--color-bg-base)' }}>
-                                                            <motion.div 
-                                                                initial={{ width: 0 }} animate={{ width: `${loan.progress}%` }} transition={{ duration: 1, delay: 0.2 }}
-                                                                className="h-full rounded-full relative" 
-                                                                style={{ background: 'linear-gradient(90deg, #d4af37, #f3e5ab)' }} 
-                                                            >
-                                                                <div className="absolute inset-0 bg-white/20" style={{ backgroundImage: 'linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent)', backgroundSize: '1rem 1rem' }} />
-                                                            </motion.div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-5 border-t" style={{ borderColor: 'var(--color-border)' }}>
-                                                        <div>
-                                                            <div className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Interest Rate</div>
-                                                            <div className="text-[16px] font-semibold" style={{ color: 'var(--color-text-main)' }}>{loan.rate}%</div>
-                                                        </div>
-                                                        <div>
-                                                            <div className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Monthly Payment</div>
-                                                            <div className="text-[16px] font-semibold" style={{ color: 'var(--color-text-main)' }}>MAD {formatCurrency(loan.monthlyPayment)}</div>
-                                                        </div>
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(212,175,55,0.1)' }}>
-                                                                <Clock className="w-4 h-4" style={{ color: 'var(--color-gold)' }} />
-                                                            </div>
-                                                            <div>
-                                                                <div className="text-[11px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Next Payment</div>
-                                                                <div className="text-[14px] font-semibold" style={{ color: 'var(--color-text-main)' }}>{new Date(loan.nextPayment).toLocaleDateString('en-MA', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-                                                            </div>
-                                                        </div>
+                                                    <div>
+                                                        <h4 className="font-bold text-[16px]" style={{ color: 'var(--color-text-main)' }}>{loan.type}</h4>
+                                                        <div className="text-[12px]" style={{ color: 'var(--color-text-muted)' }}>{loan.bank_name} • Account ending in {loan.account_suffix}</div>
                                                     </div>
                                                 </div>
+                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 flex-1 md:px-8">
+                                                    <div>
+                                                        <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Outstanding</div>
+                                                        <div className="text-[15px] font-bold" style={{ color: 'var(--color-text-main)' }}>MAD {formatCurrency(loan.remaining)}</div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Monthly</div>
+                                                        <div className="text-[15px] font-bold" style={{ color: 'var(--color-text-main)' }}>MAD {formatCurrency(loan.monthly_payment)}</div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Interest</div>
+                                                        <div className="text-[15px] font-bold text-emerald-400">{loan.rate}%</div>
+                                                    </div>
+                                                    <div className="hidden lg:block">
+                                                        <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>Next Due</div>
+                                                        <div className="text-[15px] font-bold" style={{ color: 'var(--color-text-main)' }}>{loan.next_payment}</div>
+                                                    </div>
+                                                </div>
+                                                <button className="px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all hover:bg-[var(--color-bg-elevated)]" style={{ background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-text-main)' }}>
+                                                    Details
+                                                </button>
                                             </motion.div>
-                                        );
-                                    })}
+                                        ))
+                                    )}
                                 </div>
                             )}
 
                             {/* ── Loan Offers Content ── */}
                             {activeTab === 'offers' && (
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                    {loanOffers.map((offer, idx) => {
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {loanOffers.map((offer) => {
                                         const Icon = ICON_MAP[offer.icon] || Landmark;
                                         return (
-                                            <motion.div 
-                                                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: idx * 0.1 }}
-                                                key={offer.type} 
+                                            <motion.div key={offer.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                                                 className="rounded-[24px] p-6 relative overflow-hidden group flex flex-col transition-all hover:-translate-y-1" 
                                                 style={{ 
                                                     background: 'var(--color-bg-card)', 
@@ -292,39 +269,39 @@ export default function Loans({ activeLoans = [], loanOffers = [], stats = {} })
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div className="lg:col-span-2 rounded-[24px] p-6 lg:p-8 flex flex-col justify-center relative overflow-hidden" 
-                                        style={{ background: 'linear-gradient(135deg, #18181b 0%, #09090b 100%)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                                        style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
                                         <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--color-gold)] opacity-5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/3" />
                                         
                                         <h3 className="text-[14px] font-bold uppercase tracking-widest mb-8 text-center" style={{ color: 'var(--color-gold)' }}>Estimated Results</h3>
                                         
-                                        <div className="text-center mb-8">
-                                            <div className="text-[12px] font-semibold text-white/50 mb-2">Estimated Monthly Payment</div>
-                                            <div className="text-[42px] font-bold leading-none text-white tracking-tight">
+                                        <div className="text-center mb-8 relative z-10">
+                                            <div className="text-[12px] font-semibold mb-2" style={{ color: 'var(--color-text-muted)' }}>Estimated Monthly Payment</div>
+                                            <div className="text-[42px] font-bold leading-none tracking-tight" style={{ color: 'var(--color-text-main)' }}>
                                                 MAD {formatCurrency(calcResults.payment)}
                                             </div>
                                         </div>
 
-                                        <div className="space-y-4 pt-6 border-t border-white/10">
+                                        <div className="space-y-4 pt-6 border-t relative z-10" style={{ borderColor: 'var(--color-border)' }}>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-[13px] font-medium text-white/60">Principal Amount</span>
-                                                <span className="text-[14px] font-bold text-white">MAD {formatCurrency(calcAmount)}</span>
+                                                <span className="text-[13px] font-medium" style={{ color: 'var(--color-text-muted)' }}>Principal Amount</span>
+                                                <span className="text-[14px] font-bold" style={{ color: 'var(--color-text-main)' }}>MAD {formatCurrency(calcAmount)}</span>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-[13px] font-medium text-white/60">Total Interest</span>
+                                                <span className="text-[13px] font-medium" style={{ color: 'var(--color-text-muted)' }}>Total Interest</span>
                                                 <span className="text-[14px] font-bold text-emerald-400">MAD {formatCurrency(calcResults.totalInterest)}</span>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-[13px] font-medium text-white/60">Total Cost of Loan</span>
-                                                <span className="text-[14px] font-bold text-white">MAD {formatCurrency(calcResults.totalPayment)}</span>
+                                                <span className="text-[13px] font-medium" style={{ color: 'var(--color-text-muted)' }}>Total Cost of Loan</span>
+                                                <span className="text-[14px] font-bold" style={{ color: 'var(--color-text-main)' }}>MAD {formatCurrency(calcResults.totalPayment)}</span>
                                             </div>
                                         </div>
                                         
-                                        <div className="mt-8 p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/5">
+                                        <div className="mt-8 p-4 rounded-xl relative z-10" style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }}>
                                             <div className="flex items-start gap-3">
                                                 <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--color-gold)' }} />
-                                                <div className="text-[11px] leading-relaxed text-white/60">
+                                                <div className="text-[11px] leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
                                                     This calculator is for illustrative purposes only. Actual rates and payments may vary based on your credit score and financial profile.
                                                 </div>
                                             </div>

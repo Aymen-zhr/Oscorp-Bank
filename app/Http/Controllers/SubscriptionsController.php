@@ -4,116 +4,107 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use App\Traits\HasOscorpBalance;
 
 class SubscriptionsController extends Controller
 {
+    use HasOscorpBalance;
+
     public function page()
     {
-        $activeSubscriptions = [
-            [
-                'id' => 'SUB-001',
-                'name' => 'Netflix Premium',
-                'domain' => 'netflix.com',
-                'plan' => 'Ultra HD 4K',
-                'price' => 19.99,
-                'status' => 'Active',
-                'billingCycle' => 'Monthly',
-                'nextBilling' => Carbon::now()->addDays(12)->format('Y-m-d'),
-                'startedAt' => Carbon::now()->subMonths(18)->format('Y-m-d'),
-            ],
-            [
-                'id' => 'SUB-002',
-                'name' => 'Spotify Premium',
-                'domain' => 'spotify.com',
-                'plan' => 'Duo',
-                'price' => 14.99,
-                'status' => 'Active',
-                'billingCycle' => 'Monthly',
-                'nextBilling' => Carbon::now()->addDays(5)->format('Y-m-d'),
-                'startedAt' => Carbon::now()->subMonths(24)->format('Y-m-d'),
-            ],
-            [
-                'id' => 'SUB-003',
-                'name' => 'Amazon Prime',
-                'domain' => 'amazon.com',
-                'plan' => 'Annual Membership',
-                'price' => 139.00,
-                'status' => 'Active',
-                'billingCycle' => 'Yearly',
-                'nextBilling' => Carbon::now()->addMonths(4)->format('Y-m-d'),
-                'startedAt' => Carbon::now()->subMonths(32)->format('Y-m-d'),
-            ],
-            [
-                'id' => 'SUB-004',
-                'name' => 'Adobe Creative Cloud',
-                'domain' => 'adobe.com',
-                'plan' => 'All Apps',
-                'price' => 54.99,
-                'status' => 'Active',
-                'billingCycle' => 'Monthly',
-                'nextBilling' => Carbon::now()->addDays(20)->format('Y-m-d'),
-                'startedAt' => Carbon::now()->subMonths(8)->format('Y-m-d'),
-            ],
-            [
-                'id' => 'SUB-005',
-                'name' => 'GitHub Copilot',
-                'domain' => 'github.com',
-                'plan' => 'Individual',
-                'price' => 10.00,
-                'status' => 'Active',
-                'billingCycle' => 'Monthly',
-                'nextBilling' => Carbon::now()->addDays(2)->format('Y-m-d'),
-                'startedAt' => Carbon::now()->subMonths(12)->format('Y-m-d'),
-            ],
-            [
-                'id' => 'SUB-006',
-                'name' => 'ChatGPT Plus',
-                'domain' => 'openai.com',
-                'plan' => 'Plus',
-                'price' => 20.00,
-                'status' => 'Paused',
-                'billingCycle' => 'Monthly',
-                'nextBilling' => '-',
-                'startedAt' => Carbon::now()->subMonths(6)->format('Y-m-d'),
-            ]
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $stats = $this->getFinancialStats();
+
+        // Find recurring subscription transactions from the database
+        $recurringMerchants = DB::table('transactions')
+            ->select('merchant', DB::raw('AVG(amount) as avg_amount'), DB::raw('COUNT(*) as count'), 'category')
+            ->where('type', 'debit')
+            ->groupBy('merchant', 'category')
+            ->having('count', '>=', 2)
+            ->orderBy('avg_amount', 'desc')
+            ->get();
+
+        $domainMap = [
+            'Netflix' => 'netflix.com', 'Spotify' => 'spotify.com', 'Amazon' => 'amazon.com',
+            'Adobe' => 'adobe.com', 'GitHub' => 'github.com', 'ChatGPT' => 'openai.com',
+            'Apple' => 'apple.com', 'Google' => 'google.com', 'YouTube' => 'youtube.com',
+            'Zoom' => 'zoom.us', 'Slack' => 'slack.com', 'Steam' => 'steampowered.com',
+            'Airbnb' => 'airbnb.com', 'Uber' => 'uber.com', 'Inwi' => 'inwi.ma',
+            'Orange' => 'orange.ma', 'Maroc Telecom' => 'iam.ma',
         ];
 
-        // Generate some billing history
-        $billingHistory = [];
-        $providers = [
-            ['name' => 'Netflix', 'domain' => 'netflix.com', 'amount' => 19.99],
-            ['name' => 'Spotify', 'domain' => 'spotify.com', 'amount' => 14.99],
-            ['name' => 'Adobe', 'domain' => 'adobe.com', 'amount' => 54.99],
-            ['name' => 'GitHub', 'domain' => 'github.com', 'amount' => 10.00],
+        $activeSubscriptions = [];
+        $subId = 1;
+
+        // Use known subscriptions for showcase, but calculate prices from real transactions if available
+        $knownSubs = [
+            ['name' => 'Netflix Premium', 'plan' => 'Ultra HD 4K', 'price' => 120, 'billingCycle' => 'Monthly', 'domain' => 'netflix.com', 'daysOffset' => 12, 'monthsAgo' => 18],
+            ['name' => 'Spotify Premium', 'plan' => 'Duo', 'price' => 85, 'billingCycle' => 'Monthly', 'domain' => 'spotify.com', 'daysOffset' => 5, 'monthsAgo' => 24],
+            ['name' => 'Amazon Prime', 'plan' => 'Annual Membership', 'price' => 1400, 'billingCycle' => 'Yearly', 'domain' => 'amazon.com', 'daysOffset' => null, 'monthsAgo' => 32, 'monthsAhead' => 4],
+            ['name' => 'Adobe Creative Cloud', 'plan' => 'All Apps', 'price' => 550, 'billingCycle' => 'Monthly', 'domain' => 'adobe.com', 'daysOffset' => 20, 'monthsAgo' => 8],
+            ['name' => 'GitHub Copilot', 'plan' => 'Individual', 'price' => 100, 'billingCycle' => 'Monthly', 'domain' => 'github.com', 'daysOffset' => 2, 'monthsAgo' => 12],
+            ['name' => 'Inwi Mobile', 'plan' => 'Postpaid Plan', 'price' => 200, 'billingCycle' => 'Monthly', 'domain' => 'inwi.ma', 'daysOffset' => 25, 'monthsAgo' => 36],
         ];
 
-        for ($i = 0; $i < 10; $i++) {
-            $provider = $providers[array_rand($providers)];
-            $billingHistory[] = [
-                'id' => 'INV-' . rand(10000, 99999),
-                'description' => $provider['name'] . ' Subscription',
-                'domain' => $provider['domain'],
-                'amount' => $provider['amount'],
-                'status' => 'Paid',
-                'date' => Carbon::now()->subDays(rand(1, 60))->format('Y-m-d'),
+        foreach ($knownSubs as $idx => $sub) {
+            // Check if we have real transaction data for this merchant
+            $realTx = $recurringMerchants->first(function($tx) use ($sub) {
+                return stripos($tx->merchant, explode(' ', $sub['name'])[0]) !== false;
+            });
+
+            $price = $realTx ? round($realTx->avg_amount, 2) : $sub['price'];
+
+            $activeSubscriptions[] = [
+                'id' => 'SUB-' . str_pad($subId++, 3, '0', STR_PAD_LEFT),
+                'name' => $sub['name'],
+                'domain' => $sub['domain'],
+                'plan' => $sub['plan'],
+                'price' => $price,
+                'status' => $idx === 5 ? 'Paused' : 'Active',
+                'billingCycle' => $sub['billingCycle'],
+                'nextBilling' => isset($sub['monthsAhead'])
+                    ? Carbon::now()->addMonths($sub['monthsAhead'])->format('Y-m-d')
+                    : Carbon::now()->addDays($sub['daysOffset'])->format('Y-m-d'),
+                'startedAt' => Carbon::now()->subMonths($sub['monthsAgo'])->format('Y-m-d'),
             ];
         }
 
-        usort($billingHistory, function($a, $b) {
-            return strtotime($b['date']) - strtotime($a['date']);
-        });
+        // Generate billing history from real transactions
+        $billingHistory = DB::table('transactions')
+            ->where('type', 'debit')
+            ->where('transacted_at', '>=', Carbon::now()->subMonths(3))
+            ->orderBy('transacted_at', 'desc')
+            ->limit(15)
+            ->get()
+            ->map(function($tx) use ($domainMap) {
+                $domain = null;
+                foreach ($domainMap as $name => $d) {
+                    if (stripos($tx->merchant, $name) !== false) {
+                        $domain = $d;
+                        break;
+                    }
+                }
+                return [
+                    'id' => 'INV-' . str_pad($tx->id ?? rand(10000, 99999), 5, '0', STR_PAD_LEFT),
+                    'description' => $tx->merchant,
+                    'domain' => $domain,
+                    'amount' => round($tx->amount, 2),
+                    'status' => 'Paid',
+                    'date' => Carbon::parse($tx->transacted_at)->format('Y-m-d'),
+                ];
+            })->toArray();
 
         // Calculate stats
         $activeCount = count(array_filter($activeSubscriptions, fn($s) => $s['status'] === 'Active'));
         $monthlyTotal = collect($activeSubscriptions)
             ->filter(fn($s) => $s['status'] === 'Active' && $s['billingCycle'] === 'Monthly')
             ->sum('price');
-            
+
         $yearlyTotal = collect($activeSubscriptions)
             ->filter(fn($s) => $s['status'] === 'Active' && $s['billingCycle'] === 'Yearly')
             ->sum('price');
-            
-        // approximate total monthly cost
+
         $estimatedMonthly = $monthlyTotal + ($yearlyTotal / 12);
 
         return Inertia::render('subscriptions', [

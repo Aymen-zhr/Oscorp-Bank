@@ -93,11 +93,15 @@ export default function AIChat({ auth }) {
         ));
 
         try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content 
+                || document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=')[1];
+            
             const response = await fetch('/ai/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    'Accept': 'application/json',
+                    'X-XSRF-TOKEN': csrfToken ? decodeURIComponent(csrfToken) : ''
                 },
                 body: JSON.stringify({ messages: updatedMessages })
             });
@@ -135,7 +139,6 @@ export default function AIChat({ auth }) {
                 chat.id === activeChatId ? { ...chat, messages: finalMessages } : chat
             ));
         } catch (error) {
-            console.error('AI Chat Error:', error);
             setMessages(prev => [...prev, { 
                 id: Date.now(), 
                 role: 'ai', 
@@ -317,8 +320,8 @@ export default function AIChat({ auth }) {
 
             <div className="flex-1 flex min-w-0">
                 {/* Chat History Sidebar */}
-                <div className={`${showHistory ? 'w-64' : 'w-0'} transition-all duration-300 bg-[#0A0A0B] border-r border-white/5 flex flex-col overflow-hidden`}>
-                    <div className="p-4 border-b border-white/5">
+                <div className={`${showHistory ? 'w-64' : 'w-0'} transition-all duration-300 bg-[var(--color-bg-card)] border-r border-[var(--color-border)] flex flex-col overflow-hidden`}>
+                    <div className="p-4 border-b border-[var(--color-border)]">
                         <motion.button 
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
@@ -331,11 +334,11 @@ export default function AIChat({ auth }) {
                     </div>
                     <div className="flex-1 overflow-y-auto p-2 space-y-1">
                         {chatHistory.map(chat => (
-                            <div key={chat.id} onClick={() => selectChat(chat)} className={`group flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition-colors ${activeChatId === chat.id ? 'bg-[#D4AF37]/10 border border-[#D4AF37]/20' : 'hover:bg-white/5 border border-transparent'}`}>
-                                <MessageSquare className={`w-4 h-4 shrink-0 ${activeChatId === chat.id ? 'text-[#D4AF37]' : 'text-[#64748B]'}`} />
-                                <span className="text-[12px] text-[#CBD5E1] truncate flex-1">{chat.title}</span>
-                                <button onClick={(e) => deleteChat(e, chat.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded transition-all">
-                                    <Trash2 className="w-3 h-3 text-[#64748B]" />
+                            <div key={chat.id} onClick={() => selectChat(chat)} className={`group flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition-colors ${activeChatId === chat.id ? 'bg-[var(--color-gold-bg)] border border-[var(--color-gold)]/20' : 'hover:bg-[var(--color-bg-elevated)] border border-transparent'}`}>
+                                <MessageSquare className={`w-4 h-4 shrink-0 ${activeChatId === chat.id ? 'text-[var(--color-gold)]' : 'text-[var(--color-text-muted)]'}`} />
+                                <span className="text-[12px] text-[var(--color-text-main)] truncate flex-1">{chat.title}</span>
+                                <button onClick={(e) => deleteChat(e, chat.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[var(--color-bg-base)] rounded transition-all">
+                                    <Trash2 className="w-3 h-3 text-[var(--color-text-muted)]" />
                                 </button>
                             </div>
                         ))}
@@ -343,22 +346,25 @@ export default function AIChat({ auth }) {
                 </div>
 
                 {/* Main Chat Area */}
-                <div className="flex-1 flex flex-col min-w-0" style={{ background: 'radial-gradient(ellipse at top right, var(--color-gold-bg), transparent 50%)' }}>
+                <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden bg-[var(--color-bg-base)]">
+                    {/* Background Ambient Glows (Stabilized) */}
+                    <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[var(--color-gold)] opacity-[0.03] rounded-full blur-[120px] pointer-events-none z-0" />
+                    <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-blue-500 opacity-[0.02] rounded-full blur-[100px] pointer-events-none z-0" />
                     {/* Header */}
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-[#0A0A0B]/50 backdrop-blur-sm">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg-card)]/50 backdrop-blur-sm">
                         <div className="flex items-center gap-3">
-                            <button onClick={() => setShowHistory(!showHistory)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                                <Menu className="w-5 h-5 text-[#64748B]" />
+                            <button onClick={() => setShowHistory(!showHistory)} className="p-2 hover:bg-[var(--color-bg-elevated)] rounded-lg transition-colors">
+                                <Menu className="w-5 h-5 text-[var(--color-text-muted)]" />
                             </button>
                             <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-lg p-[1px] shadow-[0_0_10px_rgba(212,175,55,0.2)]" style={{ background: 'linear-gradient(to bottom right, var(--color-gold), transparent)' }}>
-                                    <div className="w-full h-full bg-[#0A0A0B] rounded-md flex items-center justify-center">
+                                <div className="w-8 h-8 rounded-lg p-[1px] shadow-[0_0_10px_var(--color-glow-primary)]" style={{ background: 'linear-gradient(to bottom right, var(--color-gold), transparent)' }}>
+                                    <div className="w-full h-full bg-[var(--color-bg-card)] rounded-md flex items-center justify-center">
                                         <BrainCircuit className="w-4 h-4" style={{ color: 'var(--color-gold)' }} />
                                     </div>
                                 </div>
                                 <div>
-                                    <div className="text-[14px] font-semibold text-[#F8FAFC]">Oscar</div>
-                                    <div className="text-[10px] text-[#64748B]">Financial Intelligence</div>
+                                    <div className="text-[14px] font-semibold text-[var(--color-text-main)]">Oscar</div>
+                                    <div className="text-[10px] text-[var(--color-text-muted)]">Financial Intelligence</div>
                                 </div>
                             </div>
                         </div>
@@ -371,32 +377,32 @@ export default function AIChat({ auth }) {
                                 {messages.map((msg) => (
                                     <motion.div key={msg.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                                         {msg.role === 'ai' && (
-                                            <div className="w-8 h-8 rounded-lg p-[1px] shrink-0 mt-1 shadow-[0_0_10px_rgba(212,175,55,0.15)]" style={{ background: 'linear-gradient(to bottom right, var(--color-gold), transparent)' }}>
-                                                <div className="w-full h-full bg-[#0A0A0B] rounded-md flex items-center justify-center">
+                                            <div className="w-8 h-8 rounded-lg p-[1px] shrink-0 mt-1 shadow-[0_0_10px_var(--color-glow-primary)]" style={{ background: 'linear-gradient(to bottom right, var(--color-gold), transparent)' }}>
+                                                <div className="w-full h-full bg-[var(--color-bg-card)] rounded-md flex items-center justify-center">
                                                     <BrainCircuit className="w-4 h-4" style={{ color: 'var(--color-gold)' }} />
                                                 </div>
                                             </div>
                                         )}
                                         <div className={`max-w-[75%] ${msg.role === 'user' ? 'text-right' : ''}`}>
-                                            <div className={`px-4 py-3 rounded-2xl text-[13px] leading-relaxed ${msg.role === 'user' ? 'bg-[#18181B] text-[#F8FAFC] rounded-tr-sm' : 'bg-[#11100C] text-[#CBD5E1] rounded-tl-sm border border-[#D4AF37]/10'}`}>
-                                                <div dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong class="text-[#D4AF37]">$1</strong>').replace(/\n/g, '<br/>') }} />
+                                            <div className={`px-4 py-3 rounded-2xl text-[13px] leading-relaxed ${msg.role === 'user' ? 'bg-[var(--color-bg-elevated)] text-[var(--color-text-main)] rounded-tr-sm border border-[var(--color-border)]' : 'bg-[var(--color-bg-card)] text-[var(--color-text-main)] rounded-tl-sm border border-[var(--color-gold)]/10'}`}>
+                                                <div dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong class="text-[var(--color-gold)]">$1</strong>').replace(/\n/g, '<br/>') }} />
                                                 
                                                 {msg.hasChart && msg.chartData && (
-                                                    <div className="mt-4 pt-4 border-t border-white/5">
+                                                    <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
                                                         <div className="flex items-center gap-2 mb-3">
-                                                            <BarChart3 className="w-4 h-4 text-[#D4AF37]" />
-                                                            <span className="text-[12px] font-semibold text-[#D4AF37]">{msg.chartTitle}</span>
+                                                            <BarChart3 className="w-4 h-4 text-[var(--color-gold)]" />
+                                                            <span className="text-[12px] font-semibold text-[var(--color-gold)]">{msg.chartTitle}</span>
                                                         </div>
                                                         {renderChart(msg.chartType, msg.chartData)}
                                                     </div>
                                                 )}
                                                 {msg.hasPlan && msg.planData && renderPlan(msg.planData)}
                                             </div>
-                                            <div className="text-[10px] text-[#475569] mt-1 px-1">{formatTime(msg.timestamp)}</div>
+                                            <div className="text-[10px] text-[var(--color-text-muted)] mt-1 px-1">{formatTime(msg.timestamp)}</div>
                                         </div>
                                         {msg.role === 'user' && (
-                                            <div className="w-8 h-8 rounded-full overflow-hidden border border-[#D4AF37]/30 shrink-0">
-                                                <img src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${userName}&backgroundColor=111827`} alt="User" />
+                                            <div className="w-8 h-8 rounded-full overflow-hidden border border-[var(--color-gold)]/30 shrink-0">
+                                                <img src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${userName}&backgroundColor=${document.documentElement.classList.contains('dark') ? '111827' : 'F3F4F6'}`} alt="User" />
                                             </div>
                                         )}
                                     </motion.div>
@@ -405,8 +411,8 @@ export default function AIChat({ auth }) {
 
                             {isLoading && (
                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
-                                    <div className="w-8 h-8 rounded-lg p-[1px] shrink-0 shadow-[0_0_10px_rgba(212,175,55,0.15)]" style={{ background: 'linear-gradient(to bottom right, var(--color-gold), transparent)' }}>
-                                        <div className="w-full h-full bg-[#0A0A0B] rounded-md flex items-center justify-center">
+                                    <div className="w-8 h-8 rounded-lg p-[1px] shrink-0 shadow-[0_0_10px_var(--color-glow-primary)]" style={{ background: 'linear-gradient(to bottom right, var(--color-gold), transparent)' }}>
+                                        <div className="w-full h-full bg-[var(--color-bg-card)] rounded-md flex items-center justify-center">
                                             <BrainCircuit className="w-4 h-4 animate-pulse" style={{ color: 'var(--color-gold)' }} />
                                         </div>
                                     </div>
@@ -435,7 +441,7 @@ export default function AIChat({ auth }) {
                                         whileTap={{ scale: 0.95 }}
                                         onClick={() => handleQuickAction(action)} 
                                         disabled={isLoading} 
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-[11px] text-[#94A3B8] whitespace-nowrap disabled:opacity-50 hover:bg-white/10 hover:border-white/10"
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-[11px] text-[var(--color-text-muted)] whitespace-nowrap disabled:opacity-50 hover:bg-[var(--color-bg-base)] hover:border-[var(--color-gold)]/30"
                                         style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }}
                                     >
                                         <action.icon className="w-3.5 h-3.5" style={{ color: action.color }} />
@@ -450,14 +456,14 @@ export default function AIChat({ auth }) {
                     <div className="px-4 pb-4">
                         <div className="max-w-3xl mx-auto relative group">
                             <div className="absolute -inset-0.5 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-500" style={{ background: 'linear-gradient(to right, transparent, var(--color-gold-bg), transparent)' }} />
-                            <div className="relative flex items-center bg-[#0A0A0B] border rounded-2xl px-4 py-3 transition-all focus-within:border-[var(--color-gold)]" style={{ borderColor: 'var(--color-border)' }}>
-                                <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Ask anything about your finances..." className="flex-1 bg-transparent text-[14px] text-[#F8FAFC] placeholder-[#475569] outline-none" disabled={isLoading} />
+                            <div className="relative flex items-center bg-[var(--color-bg-card)] border rounded-2xl px-4 py-3 transition-all focus-within:border-[var(--color-gold)] shadow-xl" style={{ borderColor: 'var(--color-border)' }}>
+                                <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Ask anything about your finances..." className="flex-1 bg-transparent text-[14px] text-[var(--color-text-main)] placeholder-[var(--color-text-muted)] outline-none" disabled={isLoading} />
                                 <motion.button 
                                     whileHover={!input.trim() || isLoading ? {} : { scale: 1.1 }}
                                     whileTap={!input.trim() || isLoading ? {} : { scale: 0.9 }}
                                     onClick={() => handleSend(input)} 
                                     disabled={!input.trim() || isLoading} 
-                                    className="p-2 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-110 shadow-[0_0_10px_rgba(212,175,55,0.15)]" 
+                                    className="p-2 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-110 shadow-[0_0_10px_var(--color-glow-primary)]" 
                                     style={{ background: 'var(--color-gold)', color: '#0A0A0B' }}
                                 >
                                     <Send className="w-4 h-4" />

@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { motion } from 'framer-motion';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
@@ -9,45 +10,58 @@ import TransactionsCard from '@/components/dashboard/TransactionsCard';
 import SpendingCard from '@/components/dashboard/SpendingCard';
 import OISPanel from '@/components/dashboard/OISPanel';
 
-export default function Dashboard({ balance, totalSpending, transactions, earningsPercentage }) {
+const cardVariants = {
+    hidden: { opacity: 0, y: 12 },
+    visible: (i) => ({
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.5, delay: i * 0.08, ease: 'easeOut' }
+    })
+};
+
+export default function Dashboard({ balance, totalSpending, transactions, activeGoal }) {
+    const { t, locale } = useTranslation();
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-[var(--color-bg-base)] text-[var(--color-text-main)] font-sans antialiased selection:bg-[var(--color-gold)] selection:text-white transition-colors duration-0">
-            <Head title="OSCORP Dashboard" />
-            
+        <div className="flex h-screen w-full overflow-hidden bg-[var(--color-bg-base)] text-[var(--color-text-main)] font-sans antialiased selection:bg-[var(--color-gold)] selection:text-white">
+            <Head title={t('dashboard.title')} />
+
             <Sidebar />
 
-            <div className="flex-1 flex flex-col overflow-hidden relative">
+            <div className="flex-1 flex flex-col overflow-hidden min-w-0">
                 <Topbar />
 
-                <motion.div 
-                    initial="hidden"
-                    animate="visible"
-                    variants={{
-                        hidden: { opacity: 0 },
-                        visible: {
-                            opacity: 1,
-                            transition: { staggerChildren: 0.1 }
-                        }
-                    }}
-                    className="flex-1 grid grid-cols-3 grid-rows-2 gap-3.5 p-4 overflow-y-auto"
-                >
-                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} whileHover={{ scale: 1.01, y: -2 }} whileTap={{ scale: 0.99 }}>
-                        <AIInsightsCard />
+                {/* Main content — fixed height, no scroll */}
+                <div className="flex-1 overflow-hidden p-3 lg:p-4 min-h-0">
+                    <motion.div
+                        initial="hidden"
+                        animate="visible"
+                        className="h-full grid grid-rows-2 grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4"
+                        style={{ gridTemplateRows: '1fr 1fr' }}
+                    >
+                        {/* Row 1 — 3 top cards */}
+                        <motion.div custom={0} variants={cardVariants}>
+                            <AIInsightsCard />
+                        </motion.div>
+
+                        <motion.div custom={1} variants={cardVariants}>
+                            <BalanceCard balance={balance} />
+                        </motion.div>
+
+                        <motion.div custom={2} variants={cardVariants}>
+                            <EarningsCard goal={activeGoal} />
+                        </motion.div>
+
+                        {/* Row 2 — Transactions (2/3) + Spending (1/3) */}
+                        <motion.div custom={3} variants={cardVariants} className="lg:col-span-2">
+                            <TransactionsCard transactions={transactions} />
+                        </motion.div>
+
+                        <motion.div custom={4} variants={cardVariants}>
+                            <SpendingCard total={totalSpending} />
+                        </motion.div>
                     </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} whileHover={{ scale: 1.01, y: -2 }} whileTap={{ scale: 0.99 }}>
-                        <BalanceCard balance={balance} />
-                    </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} whileHover={{ scale: 1.01, y: -2 }} whileTap={{ scale: 0.99 }}>
-                        <EarningsCard percentage={earningsPercentage} />
-                    </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="col-span-2" whileHover={{ scale: 1.01, y: -2 }} whileTap={{ scale: 0.99 }}>
-                        <TransactionsCard transactions={transactions} />
-                    </motion.div>
-                    <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} whileHover={{ scale: 1.01, y: -2 }} whileTap={{ scale: 0.99 }}>
-                        <SpendingCard total={totalSpending} />
-                    </motion.div>
-                </motion.div>
-                
+                </div>
+
                 <OISPanel />
             </div>
         </div>

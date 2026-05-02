@@ -1,102 +1,215 @@
 import { Link } from '@inertiajs/react';
-import { motion } from 'framer-motion';
-import { Lock, ArrowRightLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Shield, Lock, ArrowRightLeft } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+
+const particles = Array.from({ length: 40 }, (_, i) => ({
+    id: i,
+    size: Math.random() * 4 + 1,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    duration: Math.random() * 15 + 10,
+    delay: Math.random() * -20,
+    opacity: Math.random() * 0.4 + 0.1,
+}));
+
+function MagneticLogo({ children }) {
+    const [position, setPosition] = useState({ x: 0, y: 0 });
+    const ref = useRef(null);
+
+    const handleMouseMove = (e) => {
+        const { clientX, clientY } = e;
+        const { left, top, width, height } = ref.current.getBoundingClientRect();
+        const centerX = left + width / 2;
+        const centerY = top + height / 2;
+        const distanceX = clientX - centerX;
+        const distanceY = clientY - centerY;
+        
+        // Only attract if within range
+        if (Math.abs(distanceX) < 150 && Math.abs(distanceY) < 150) {
+            setPosition({ x: distanceX * 0.25, y: distanceY * 0.25 });
+        } else {
+            setPosition({ x: 0, y: 0 });
+        }
+    };
+
+    const handleMouseLeave = () => setPosition({ x: 0, y: 0 });
+
+    return (
+        <motion.div
+            ref={ref}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            animate={{ x: position.x, y: position.y }}
+            transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+            className="cursor-pointer"
+        >
+            {children}
+        </motion.div>
+    );
+}
 
 export default function AuthLayout({ activeTab, children, title, subtitle }) {
     const isLogin = activeTab === 'login';
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const leftContainerRef = useRef(null);
+
+    useEffect(() => {
+        const handleMouseMove = (e) => {
+            if (leftContainerRef.current) {
+                const rect = leftContainerRef.current.getBoundingClientRect();
+                if (e.clientX <= rect.width) {
+                    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+                }
+            }
+        };
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
 
     return (
-        <div className="min-h-screen w-full bg-[#0A0908] text-white font-sans flex items-center justify-center relative overflow-hidden selection:bg-[var(--color-gold)] selection:text-white">
-            {/* Background Effects */}
-            <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[radial-gradient(circle,rgba(212,175,55,0.08),transparent_70%)] rounded-full pointer-events-none blur-3xl" />
-            <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-[radial-gradient(circle,rgba(212,175,55,0.04),transparent_70%)] rounded-full pointer-events-none blur-3xl" />
-            <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{
-                backgroundImage: 'linear-gradient(var(--color-gold) 1px, transparent 1px), linear-gradient(90deg, var(--color-gold) 1px, transparent 1px)',
-                backgroundSize: '80px 80px'
-            }} />
-
-            {/* Centered Panel */}
-            <div className="w-full flex flex-col items-center justify-center relative z-10 px-6 py-12">
+        <div className="min-h-screen w-full flex relative overflow-hidden selection:bg-[var(--color-gold)] selection:text-white" style={{ background: 'var(--color-bg-base)', color: 'var(--color-text-main)' }}>
+            
+            {/* Left Column: Atmospheric Branding */}
+            <div ref={leftContainerRef} className="hidden lg:flex lg:w-1/2 relative items-center justify-center overflow-hidden bg-[#0A0908] border-r border-white/5">
                 
-                {/* Logo */}
-                <div className="flex items-center justify-center mb-8">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(135deg, var(--color-gold), var(--color-gold-dark))', boxShadow: '0 4px 20px rgba(212,175,55,0.4)' }}>
-                            <svg width="24" height="24" viewBox="0 0 16 16" fill="none">
-                                <rect x="1" y="1" width="6" height="6" rx="1.5" fill="white" fillOpacity="0.95" />
-                                <rect x="9" y="1" width="6" height="6" rx="1.5" fill="white" fillOpacity="0.95" />
-                                <rect x="1" y="9" width="6" height="6" rx="1.5" fill="white" fillOpacity="0.95" />
-                                <rect x="9" y="9" width="6" height="6" rx="1.5" fill="white" fillOpacity="0.5" />
+                {/* Dynamic Mouse Glow */}
+                <motion.div
+                    className="absolute w-[800px] h-[800px] rounded-full pointer-events-none z-0 opacity-40"
+                    style={{
+                        background: 'radial-gradient(circle, rgba(212,175,55,0.12), transparent 70%)',
+                        left: mousePos.x - 400,
+                        top: mousePos.y - 400,
+                    }}
+                />
+
+                {/* Particles */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+                    {particles.map((p) => (
+                        <motion.div
+                            key={p.id}
+                            className="absolute rounded-full"
+                            style={{
+                                width: p.size,
+                                height: p.size,
+                                left: `${p.x}%`,
+                                top: `${p.y}%`,
+                                backgroundColor: `rgba(212, 175, 55, ${p.opacity})`,
+                            }}
+                            animate={{
+                                y: [0, -100, 0],
+                                opacity: [p.opacity, p.opacity * 0.2, p.opacity],
+                            }}
+                            transition={{
+                                duration: p.duration,
+                                repeat: Infinity,
+                                ease: 'linear',
+                                delay: p.delay,
+                            }}
+                        />
+                    ))}
+                </div>
+
+                {/* Branding Content */}
+                <div className="relative z-10 flex flex-col items-center">
+                    <MagneticLogo>
+                        <motion.div
+                            className="w-24 h-24 rounded-3xl flex items-center justify-center mb-8 relative group"
+                            style={{ 
+                                background: 'linear-gradient(135deg, var(--color-gold), var(--color-gold-dark))', 
+                                boxShadow: '0 20px 50px rgba(212,175,55,0.3)' 
+                            }}
+                        >
+                            <div className="absolute inset-0 rounded-3xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
+                            <svg width="48" height="48" viewBox="0 0 16 16" fill="none" className="relative z-10">
+                                <rect x="1" y="1" width="6" height="6" rx="2" fill="white" />
+                                <rect x="9" y="1" width="6" height="6" rx="2" fill="white" />
+                                <rect x="1" y="9" width="6" height="6" rx="2" fill="white" />
+                                <rect x="9" y="9" width="6" height="6" rx="2" fill="white" fillOpacity="0.4" />
                             </svg>
-                        </div>
-                        <div>
-                            <span className="font-bold text-[18px] tracking-wide">OSCORP</span>
-                            <div className="text-[10px] text-[var(--color-gold)] uppercase tracking-[0.2em] font-semibold">Private Bank</div>
-                        </div>
+                        </motion.div>
+                    </MagneticLogo>
+
+                    <div className="text-center">
+                        <motion.h1 
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-6xl font-black tracking-tighter text-white mb-2"
+                        >
+                            OSCORP
+                        </motion.h1>
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-[14px] text-[var(--color-gold)] uppercase tracking-[0.5em] font-bold"
+                        >
+                            Private Banking
+                        </motion.div>
                     </div>
+                </div>
+            </div>
+
+            {/* Right Column: Form */}
+            <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 lg:p-12 relative z-10">
+                
+                {/* Mobile Header */}
+                <div className="flex lg:hidden items-center gap-4 mb-12">
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--color-gold), var(--color-gold-dark))' }}>
+                        <Shield className="text-white w-6 h-6" />
+                    </div>
+                    <span className="text-3xl font-black tracking-tighter">OSCORP</span>
                 </div>
 
                 {/* Tab Switcher */}
-                <div className="w-full max-w-[420px] mb-8">
-                    <div className="w-full p-1.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.1)' }}>
-                        <div className="relative flex">
-                            <motion.div
-                                layoutId="authTabPill"
-                                className="absolute top-0 h-full rounded-lg"
-                                style={{ background: 'var(--color-gold)', width: 'calc(50% - 3px)', left: isLogin ? '3px' : 'calc(50%)' }}
-                                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                            />
-                            <Link href="/login" className="relative z-10 flex-1 text-center py-2.5 rounded-lg text-[13px] font-semibold transition-colors" style={{ color: isLogin ? '#000' : 'var(--color-text-muted)' }}>
-                                Sign In
-                            </Link>
-                            <Link href="/register" className="relative z-10 flex-1 text-center py-2.5 rounded-lg text-[13px] font-semibold transition-colors" style={{ color: !isLogin ? '#000' : 'var(--color-text-muted)' }}>
-                                Create Account
-                            </Link>
-                        </div>
+                <div className="w-full max-w-[460px] mb-10 p-1.5 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)] shadow-2xl relative">
+                    <div className="flex relative">
+                        <motion.div
+                            layoutId="auth-pill"
+                            className="absolute top-0 bottom-0 rounded-xl shadow-lg"
+                            style={{ 
+                                left: isLogin ? '0%' : '50%', 
+                                width: '50%',
+                                background: 'linear-gradient(to right, var(--color-gold), var(--color-gold-dark))' 
+                            }}
+                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        />
+                        <Link href="/login" className={`relative z-10 w-1/2 py-3.5 text-center text-[13px] font-black uppercase tracking-widest transition-colors duration-300 ${isLogin ? 'text-black' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'}`}>
+                            Log In
+                        </Link>
+                        <Link href="/register" className={`relative z-10 w-1/2 py-3.5 text-center text-[13px] font-black uppercase tracking-widest transition-colors duration-300 ${!isLogin ? 'text-black' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'}`}>
+                            Sign Up
+                        </Link>
                     </div>
                 </div>
 
-                {/* Form Area with Sliding Animation */}
-                <div className="w-full max-w-[420px] rounded-3xl p-8" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
-                    <motion.div
-                        key={activeTab}
-                        initial={{ opacity: 0, x: isLogin ? -30 : 30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: isLogin ? 30 : -30 }}
-                        transition={{ duration: 0.35, ease: 'easeOut' }}
-                    >
-                        <div className="mb-8 text-center">
-                            <motion.h1
-                                initial={{ opacity: 0, y: -5 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3, delay: 0.1 }}
-                                className="text-[26px] font-bold tracking-tight mb-2 text-[var(--color-text-main)]"
-                            >
-                                {title}
-                            </motion.h1>
-                            <motion.p
-                                initial={{ opacity: 0, y: -5 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3, delay: 0.15 }}
-                                className="text-[13px] text-[var(--color-text-muted)] uppercase tracking-[1.5px]"
-                            >
-                                {subtitle}
-                            </motion.p>
-                        </div>
-
-                        {children}
-                    </motion.div>
+                <div className="w-full max-w-[460px] relative">
+                    <AnimatePresence mode="wait" initial={false}>
+                        <motion.div
+                            key={activeTab}
+                            initial={{ opacity: 0, x: isLogin ? -20 : 20, filter: 'blur(10px)' }}
+                            animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                            exit={{ opacity: 0, x: isLogin ? 20 : -20, filter: 'blur(10px)' }}
+                            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                        >
+                            <div className="mb-10 text-center lg:text-left">
+                                <motion.h2 
+                                    layoutId="auth-title"
+                                    className="text-4xl lg:text-5xl font-black tracking-tight text-[var(--color-text-main)] mb-3"
+                                >
+                                    {title}
+                                </motion.h2>
+                                <motion.p 
+                                    layoutId="auth-subtitle"
+                                    className="text-[16px] text-[var(--color-text-muted)] font-medium leading-relaxed"
+                                >
+                                    {subtitle}
+                                </motion.p>
+                            </div>
+                            {children}
+                        </motion.div>
+                    </AnimatePresence>
                 </div>
-
-                <Link href="/" className="mt-8 flex items-center gap-1.5 text-[12px] text-[var(--color-text-muted)] hover:text-[var(--color-gold)] transition-colors">
-                    <ArrowRightLeft className="w-3.5 h-3.5 rotate-180" /> Back to Home
-                </Link>
-
-                {/* Bottom badge */}
-                <div className="mt-8 flex items-center justify-center gap-2 text-[10px] text-[var(--color-text-muted)] uppercase tracking-[2px] opacity-40">
-                    <Lock className="w-3 h-3" /> O.S.C.O.R.P. Security Infrastructure v4.2
-                </div>
-
             </div>
         </div>
     );

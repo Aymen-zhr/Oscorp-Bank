@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Search, SlidersHorizontal, ChevronLeft, ChevronRight,
@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
+import { useTranslation } from '@/hooks/useTranslation';
 
 /* ── Category colours ──────────────────────────────────────── */
 const CAT_COLOR = {
@@ -51,7 +52,7 @@ function getDomain(merchant) {
 }
 
 /* ── Merchant Logo component ───────────────────────────────── */
-function MerchantLogo({ merchant, logoColor, size = 46 }) {
+const MerchantLogo = function MerchantLogo({ merchant, logoColor, size = 46 }) {
     const [failed, setFailed] = useState(false);
     const domain = getDomain(merchant);
     const color  = logoColor || '#64748B';
@@ -85,10 +86,11 @@ function MerchantLogo({ merchant, logoColor, size = 46 }) {
             {letter}
         </div>
     );
-}
+};
+const MemoizedMerchantLogo = function(props) { return <MerchantLogo {...props} />; };
 
 /* ── Amount ────────────────────────────────────────────────── */
-function Amount({ tx }) {
+const Amount = function Amount({ tx }) {
     const ok = tx.type === 'credit';
     return (
         <div className={`flex flex-col items-end ${ok ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -99,14 +101,21 @@ function Amount({ tx }) {
             <span className="text-[10px] font-medium mt-0.5" style={{ color: 'var(--color-text-muted)' }}>MAD</span>
         </div>
     );
-}
+};
+const MemoizedAmount = function(props) { return <Amount {...props} />; };
 
 /* ── Helpers ───────────────────────────────────────────────── */
-const fmtTime = (d) => new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-const fmtDay  = (d) => new Date(d).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+const fmtTime = (d) => {
+    const date = new Date(d);
+    return isNaN(date.getTime()) ? '–' : date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+};
+const fmtDay  = (d) => {
+    const date = new Date(d);
+    return isNaN(date.getTime()) ? 'Unknown Date' : date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+};
 
 /* ── Quick chip ────────────────────────────────────────────── */
-function Chip({ label, active, onClick, color }) {
+const Chip = function Chip({ label, active, onClick, color }) {
     const c = color || 'var(--color-gold)';
     return (
         <button onClick={onClick} className="px-3 py-1.5 rounded-full text-[12px] font-semibold transition-all whitespace-nowrap"
@@ -117,7 +126,7 @@ function Chip({ label, active, onClick, color }) {
             {label}
         </button>
     );
-}
+};
 
 /* ══════════════════════════════════════════════════════════════
    Main page
@@ -125,29 +134,45 @@ function Chip({ label, active, onClick, color }) {
 export default function Transactions({ transactions, filters, categories, stats }) {
     const [search, setSearch]           = useState(filters.search || '');
     const [showAdvanced, setShowAdvanced] = useState(false);
+    const { t, locale } = useTranslation();
 
     const go = useCallback((patch) => {
         router.get('/transactions', { ...filters, ...patch }, { preserveState: true, replace: true });
     }, [filters]);
 
-    const clearAll = () => { setSearch(''); router.get('/transactions'); };
+    const clearAll = useCallback(() => { setSearch(''); router.get('/transactions'); }, []);
 
     const hasFilters = filters.type !== 'all' || filters.category !== 'all'
         || filters.date_from || filters.date_to || filters.search;
 
-    // Group transactions by calendar date
-    const groups = transactions.data.reduce((acc, tx) => {
-        const key = new Date(tx.transacted_at).toDateString();
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(tx);
-        return acc;
-    }, {});
+    const groups = useMemo(() => {
+        if (!transactions || !transactions.data) return {};
+        return transactions.data.reduce((acc, tx) => {
+            const date = tx.transacted_at ? new Date(tx.transacted_at) : new Date();
+            const key = date.toDateString();
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(tx);
+            return acc;
+        }, {});
+    }, [transactions]);
+
+    const statsCards = useMemo(() => [
+    { label: t('transactions.net_balance'), value: Number(stats.balance || 0).toLocaleString('en-MA'), color: 'var(--color-gold)', Icon: Wallet },
+    { label: t('transactions.money_in'),    value: '+' + Number(stats.total_credits || 0).toLocaleString('en-MA'), color: '#34D399', Icon: ArrowDownLeft },
+    { label: t('transactions.money_out'),   value: '-' + Math.abs(Number(stats.total_debits  || 0)).toLocaleString('en-MA'), color: '#F87171', Icon: ArrowUpRight },
+    ], [stats.balance, stats.total_credits, stats.total_debits]);
+
+    const exportUrl = `/transactions/export?type=${filters.type}&category=${filters.category}&search=${encodeURIComponent(filters.search || '')}&date_from=${filters.date_from || ''}&date_to=${filters.date_to || ''}`;
 
     return (
         <div className="flex h-screen w-full overflow-hidden" style={{ background: 'var(--color-bg-base)' }}>
             <Head title="OSCORP | Transactions" />
             <Sidebar />
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden relative">
+                {/* Background Fixed Glows (Stabilized) */}
+                <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[var(--color-gold)] opacity-[0.03] rounded-full blur-[120px] pointer-events-none z-0" />
+                <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-blue-500 opacity-[0.02] rounded-full blur-[100px] pointer-events-none z-0" />
+                
                 <Topbar />
 
                 <div className="flex-1 overflow-y-auto">
@@ -158,25 +183,21 @@ export default function Transactions({ transactions, filters, categories, stats 
                             className="flex items-start justify-between gap-4">
                             <div>
                                 <h1 className="text-[26px] font-bold tracking-tight" style={{ color: 'var(--color-text-main)' }}>
-                                    Transaction Ledger
+                                    {t('transactions.title')}
                                 </h1>
                                 <p className="text-[13px] mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                                    {transactions.total.toLocaleString()} records &nbsp;·&nbsp; page {transactions.current_page}/{transactions.last_page}
+                                    {t('transactions.records_info', { count: (transactions?.total || 0).toLocaleString(), current: transactions?.current_page || 1, total: transactions?.last_page || 1 })}
                                 </p>
                             </div>
-                            <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-medium shrink-0"
+                            <a href={exportUrl} className="flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-medium shrink-0 transition-all hover:opacity-80"
                                 style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
-                                <Download className="w-4 h-4" /> Export
-                            </button>
+                                    <Download className="w-4 h-4" /> {t('transactions.export')}
+                            </a>
                         </motion.div>
 
                         {/* ── Stats ── */}
                         <div className="grid grid-cols-3 gap-3">
-                            {[
-                                { label: 'Net Balance', value: Number(stats.balance || 0).toLocaleString(), color: 'var(--color-gold)', Icon: Wallet },
-                                { label: 'Money In',    value: '+' + Number(stats.total_credits || 0).toLocaleString(), color: '#34D399', Icon: ArrowDownLeft },
-                                { label: 'Money Out',   value: '-' + Math.abs(Number(stats.total_debits  || 0)).toLocaleString(), color: '#F87171', Icon: ArrowUpRight },
-                            ].map(({ label, value, color, Icon }, i) => (
+                            {statsCards.map(({ label, value, color, Icon }, i) => (
                                 <motion.div key={label}
                                     initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 * (i + 1) }}
                                     className="p-4 rounded-2xl flex items-center gap-4"
@@ -205,7 +226,7 @@ export default function Transactions({ transactions, filters, categories, stats 
                                         onChange={e => setSearch(e.target.value)}
                                         onKeyDown={e => e.key === 'Enter' && go({ search })}
                                         onBlur={() => search !== (filters.search || '') && go({ search })}
-                                        placeholder="Search by merchant…"
+                                        placeholder={t('transactions.search_placeholder')}
                                         className="flex-1 bg-transparent text-[14px] outline-none"
                                         style={{ color: 'var(--color-text-main)' }} />
                                     {search && (
@@ -220,7 +241,7 @@ export default function Transactions({ transactions, filters, categories, stats 
                                         ? { background: 'var(--color-gold-bg)', border: '1px solid var(--color-gold)', color: 'var(--color-gold)' }
                                         : { background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }
                                     }>
-                                    <SlidersHorizontal className="w-4 h-4" /> Filters
+                                    <SlidersHorizontal className="w-4 h-4" /> {t('transactions.filters')}
                                     {hasFilters && (
                                         <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full" style={{ background: 'var(--color-gold)' }} />
                                     )}
@@ -235,9 +256,9 @@ export default function Transactions({ transactions, filters, categories, stats 
 
                             {/* Quick type + category chips */}
                             <div className="flex items-center gap-2 flex-wrap">
-                                <Chip label="All"       active={filters.type === 'all'}    onClick={() => go({ type: 'all' })} />
-                                <Chip label="↑ Income"  active={filters.type === 'credit'} onClick={() => go({ type: 'credit' })} color="#34D399" />
-                                <Chip label="↓ Expenses" active={filters.type === 'debit'} onClick={() => go({ type: 'debit' })} color="#F87171" />
+                                <Chip label={t('transactions.all')}       active={filters.type === 'all'}    onClick={() => go({ type: 'all' })} />
+                                <Chip label={t('transactions.income')}  active={filters.type === 'credit'} onClick={() => go({ type: 'credit' })} color="#34D399" />
+                                <Chip label={t('transactions.expenses')} active={filters.type === 'debit'} onClick={() => go({ type: 'debit' })} color="#F87171" />
                                 <div className="w-px h-4 mx-1" style={{ background: 'var(--color-border)' }} />
                                 {categories.slice(0, 7).map(cat => (
                                     <Chip key={cat} label={cat}
@@ -256,17 +277,17 @@ export default function Transactions({ transactions, filters, categories, stats 
                                     <div className="p-5 rounded-2xl grid grid-cols-2 sm:grid-cols-4 gap-4"
                                         style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
                                         <div>
-                                            <label className="text-[10px] uppercase tracking-wider font-semibold mb-2 block" style={{ color: 'var(--color-text-muted)' }}>Category</label>
+                                            <label className="text-[10px] uppercase tracking-wider font-semibold mb-2 block" style={{ color: 'var(--color-text-muted)' }}>{t('transactions.category')}</label>
                                             <select value={filters.category} onChange={e => go({ category: e.target.value })}
                                                 className="w-full rounded-xl px-3 py-2 text-[13px] outline-none"
                                                 style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-main)' }}>
-                                                <option value="all">All</option>
+                                                 <option value="all">{t('transactions.all')}</option>
                                                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
                                             </select>
                                         </div>
                                         <div>
                                             <label className="text-[10px] uppercase tracking-wider font-semibold mb-2 flex items-center gap-1" style={{ color: 'var(--color-text-muted)' }}>
-                                                <Calendar className="w-3 h-3" /> From
+                                                 <Calendar className="w-3 h-3" /> {t('transactions.from')}
                                             </label>
                                             <input type="date" value={filters.date_from} onChange={e => go({ date_from: e.target.value })}
                                                 className="w-full rounded-xl px-3 py-2 text-[13px] outline-none"
@@ -274,7 +295,7 @@ export default function Transactions({ transactions, filters, categories, stats 
                                         </div>
                                         <div>
                                             <label className="text-[10px] uppercase tracking-wider font-semibold mb-2 flex items-center gap-1" style={{ color: 'var(--color-text-muted)' }}>
-                                                <Calendar className="w-3 h-3" /> To
+                                                 <Calendar className="w-3 h-3" /> {t('transactions.to')}
                                             </label>
                                             <input type="date" value={filters.date_to} onChange={e => go({ date_to: e.target.value })}
                                                 className="w-full rounded-xl px-3 py-2 text-[13px] outline-none"
@@ -283,7 +304,7 @@ export default function Transactions({ transactions, filters, categories, stats 
                                         <div className="flex items-end">
                                             <button onClick={clearAll} className="w-full py-2 rounded-xl text-[13px] font-medium"
                                                 style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
-                                                Reset All
+                                                {t('transactions.reset_all')}
                                             </button>
                                         </div>
                                     </div>
@@ -297,10 +318,10 @@ export default function Transactions({ transactions, filters, categories, stats 
                                 <div className="rounded-2xl py-20 flex flex-col items-center gap-3"
                                     style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
                                     <Sparkles className="w-10 h-10" style={{ color: 'var(--color-text-muted)' }} />
-                                    <p className="text-[16px] font-semibold" style={{ color: 'var(--color-text-main)' }}>No transactions found</p>
-                                    <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>Try a different filter or search term</p>
+                                    <p className="text-[16px] font-semibold" style={{ color: 'var(--color-text-main)' }}>{t('transactions.no_transactions')}</p>
+                                    <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>{t('transactions.try_different_search')}</p>
                                     <button onClick={clearAll} className="mt-2 px-5 py-2 rounded-xl text-[13px] font-semibold"
-                                        style={{ background: 'var(--color-gold)', color: '#000' }}>Clear All Filters</button>
+                                        style={{ background: 'var(--color-gold)', color: '#000' }}>{t('transactions.clear_all_filters')}</button>
                                 </div>
                             ) : (
                                 <div className="space-y-5">
@@ -315,7 +336,7 @@ export default function Transactions({ transactions, filters, categories, stats 
                                                 <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
                                                 <span className="text-[10px] px-2 py-0.5 rounded-full"
                                                     style={{ background: 'var(--color-bg-elevated)', color: 'var(--color-text-muted)' }}>
-                                                    {txs.length} txn{txs.length !== 1 ? 's' : ''}
+                                                     {t('transactions.txn_count', { count: txs.length })}
                                                 </span>
                                             </div>
 
@@ -332,7 +353,7 @@ export default function Transactions({ transactions, filters, categories, stats 
                                                         onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-elevated)'}
                                                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                                     >
-                                                        <MerchantLogo merchant={tx.merchant} logoColor={tx.logo_color} />
+                                                        <MemoizedMerchantLogo merchant={tx.merchant} logoColor={tx.logo_color} />
 
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-center gap-2 flex-wrap">
@@ -363,7 +384,7 @@ export default function Transactions({ transactions, filters, categories, stats 
                                                             </div>
                                                         </div>
 
-                                                        <Amount tx={tx} />
+                                                        <MemoizedAmount tx={tx} />
                                                     </motion.div>
                                                 ))}
                                             </div>
@@ -374,13 +395,13 @@ export default function Transactions({ transactions, filters, categories, stats 
                         </motion.div>
 
                         {/* ── Pagination ── */}
-                        {transactions.last_page > 1 && (
+                        {(transactions?.last_page || 0) > 1 && (
                             <div className="flex items-center justify-between pb-6">
                                 <span className="text-[12px]" style={{ color: 'var(--color-text-muted)' }}>
-                                    {transactions.from}–{transactions.to} of {transactions.total}
+                                    {transactions?.from}–{transactions?.to} of {transactions?.total}
                                 </span>
                                 <div className="flex items-center gap-1.5">
-                                    {transactions.prev_page_url ? (
+                                    {transactions?.prev_page_url ? (
                                         <a href={transactions.prev_page_url} className="p-2 rounded-xl transition-all hover:opacity-80"
                                             style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
                                             <ChevronLeft className="w-4 h-4" />
@@ -392,8 +413,8 @@ export default function Transactions({ transactions, filters, categories, stats 
                                         </span>
                                     )}
 
-                                    {Array.from({ length: transactions.last_page }, (_, i) => i + 1)
-                                        .filter(p => p === 1 || p === transactions.last_page || Math.abs(p - transactions.current_page) <= 1)
+                                    {Array.from({ length: transactions?.last_page || 0 }, (_, i) => i + 1)
+                                        .filter(p => p === 1 || p === transactions?.last_page || Math.abs(p - (transactions?.current_page || 0)) <= 1)
                                         .reduce((acc, p, idx, arr) => {
                                             if (idx > 0 && p - arr[idx - 1] > 1) acc.push('…');
                                             acc.push(p);
@@ -405,13 +426,13 @@ export default function Transactions({ transactions, filters, categories, stats 
                                             <a key={p}
                                                 href={`/transactions?page=${p}&type=${filters.type}&category=${filters.category}&search=${encodeURIComponent(filters.search || '')}&date_from=${filters.date_from || ''}&date_to=${filters.date_to || ''}`}
                                                 className="w-9 h-9 flex items-center justify-center rounded-xl text-[13px] font-medium transition-all"
-                                                style={p === transactions.current_page
+                                                style={p === transactions?.current_page
                                                     ? { background: 'var(--color-gold)', color: '#000' }
                                                     : { background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }
                                                 }>{p}</a>
                                         ))}
 
-                                    {transactions.next_page_url ? (
+                                    {transactions?.next_page_url ? (
                                         <a href={transactions.next_page_url} className="p-2 rounded-xl transition-all hover:opacity-80"
                                             style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
                                             <ChevronRight className="w-4 h-4" />

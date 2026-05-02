@@ -6,7 +6,6 @@ import FeaturesSection from '@/components/home/FeaturesSection';
 import AboutSection from '@/components/home/AboutSection';
 import StatsSection from '@/components/home/StatsSection';
 import ContactSection from '@/components/home/ContactSection';
-import HomeFooter from '@/components/home/HomeFooter';
 
 export default function Home({ canRegister }) {
     return (
@@ -23,8 +22,6 @@ export default function Home({ canRegister }) {
                 <StatsSection />
                 <ContactSection />
             </main>
-
-            <HomeFooter />
         </div>
     );
 }

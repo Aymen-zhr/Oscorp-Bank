@@ -1,144 +1,184 @@
 import { motion } from 'framer-motion';
 import { Link } from '@inertiajs/react';
-import { ArrowRight, Sparkles, Shield, Wallet } from 'lucide-react';
+import { ArrowRight, Shield, Wallet, BarChart3, ArrowUpRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 function FloatingCard() {
+    const [isHovered, setIsHovered] = useState(false);
+
     return (
         <motion.div
-            animate={{ y: [0, -14, 0] }}
-            transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut' }}
-            className="relative w-full max-w-sm mx-auto"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            animate={{ y: [0, -10, 0] }}
+            transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut' }}
+            className="relative w-full max-w-md mx-auto"
         >
-            {/* Glow behind card */}
-            <div className="absolute inset-0 rounded-[28px] blur-3xl opacity-20 pointer-events-none"
-                style={{ background: 'radial-gradient(circle, var(--color-gold), transparent 70%)' }} />
-
-            {/* Main balance card */}
-            <div className="rounded-[28px] p-6 relative overflow-hidden"
-                style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', backdropFilter: 'blur(20px)' }}>
-                <div className="absolute top-0 left-0 right-0 h-[2px]"
-                    style={{ background: 'linear-gradient(90deg, transparent, var(--color-gold), transparent)' }} />
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'var(--color-gold-bg)' }}>
-                            <Wallet className="w-4 h-4" style={{ color: 'var(--color-gold)' }} />
+            {/* Minimalist Glass Card */}
+            <div className="rounded-3xl p-8 relative overflow-hidden transition-all duration-500"
+                style={{ 
+                    background: 'var(--color-bg-card)', 
+                    border: '1px solid var(--color-border)', 
+                    backdropFilter: 'blur(20px)',
+                    boxShadow: isHovered ? '0 30px 60px -15px rgba(0,0,0,0.5)' : '0 20px 40px -10px rgba(0,0,0,0.3)'
+                }}>
+                
+                {/* Subtle top edge highlight */}
+                <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[var(--color-gold)]/30 to-transparent opacity-50" />
+                
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[var(--color-bg-elevated)] flex items-center justify-center border border-[var(--color-border)]">
+                            <Wallet className="w-4 h-4 text-[var(--color-text-main)]" />
                         </div>
-                        <div className="text-[12px] font-semibold text-[var(--color-text-muted)]">Total Balance</div>
+                        <div>
+                            <div className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-[0.2em]">Global Portfolio</div>
+                            <div className="text-[13px] font-semibold text-[var(--color-text-main)]">Private Wealth</div>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold"
-                        style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)', color: '#34D399' }}>
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
-                        Live
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-base)]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        <span className="text-[10px] font-bold text-[var(--color-text-main)] uppercase tracking-wider">Active</span>
                     </div>
                 </div>
-                <div className="mb-6">
-                    <div className="text-[38px] font-bold tracking-tight text-[var(--color-text-main)]">$2,847,392</div>
-                    <div className="text-[13px] text-emerald-400 font-medium mt-1">+$34,291 this month</div>
+
+                <div className="mb-8">
+                    <div className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">Total Deployed</div>
+                    <div className="flex items-baseline gap-2">
+                        <AnimatedCounter value={2847392} />
+                        <span className="text-[16px] font-medium text-[var(--color-text-muted)]">MAD</span>
+                    </div>
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+
+                {/* Ledger-style mini breakdown */}
+                <div className="space-y-3 pt-6 border-t border-[var(--color-border)]">
                     {[
-                        { label: 'Income',   value: '$48.2K', color: '#34D399' },
-                        { label: 'Expenses', value: '$12.1K', color: '#EF4444' },
-                        { label: 'Savings',  value: '$36.1K', color: 'var(--color-gold)' },
-                    ].map(s => (
-                        <div key={s.label} className="px-3 py-2.5 rounded-xl text-center"
-                            style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }}>
-                            <div className="text-[9px] text-[var(--color-text-muted)] mb-1">{s.label}</div>
-                            <div className="text-[13px] font-bold" style={{ color: s.color }}>{s.value}</div>
+                        { label: 'Equities', value: '1,420,000', percent: '49.8%', color: 'var(--color-gold)' },
+                        { label: 'Real Estate', value: '850,000', percent: '29.8%', color: '#E5E4E2' },
+                        { label: 'Liquid Cash', value: '577,392', percent: '20.4%', color: 'var(--color-text-muted)' },
+                    ].map((item, i) => (
+                        <div key={i} className="flex justify-between items-center group cursor-default">
+                            <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                                <span className="text-[13px] font-medium text-[var(--color-text-main)] group-hover:text-[var(--color-gold)] transition-colors">{item.label}</span>
+                            </div>
+                            <div className="flex items-center gap-4 text-right">
+                                <span className="text-[12px] font-bold text-[var(--color-text-main)]">{item.value}</span>
+                                <span className="text-[11px] text-[var(--color-text-muted)] w-8">{item.percent}</span>
+                            </div>
                         </div>
                     ))}
                 </div>
             </div>
-
-            {/* AI floating badge */}
-            <motion.div
-                animate={{ y: [0, -6, 0] }}
-                transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut', delay: 0.5 }}
-                className="absolute -top-4 -right-4 px-3 py-2 rounded-2xl flex items-center gap-2 shadow-xl"
-                style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-                <Sparkles className="w-3.5 h-3.5" style={{ color: 'var(--color-gold)' }} />
-                <span className="text-[11px] font-bold text-[var(--color-text-main)]">Oscar AI</span>
-                <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--color-gold)' }} />
-            </motion.div>
-
-            {/* Security badge */}
-            <motion.div
-                animate={{ y: [0, 6, 0] }}
-                transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut', delay: 1 }}
-                className="absolute -bottom-4 -left-4 px-3 py-2 rounded-2xl flex items-center gap-2 shadow-xl"
-                style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-                <Shield className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-[11px] font-bold text-[var(--color-text-main)]">256-bit Secure</span>
-            </motion.div>
         </motion.div>
     );
 }
 
+function AnimatedCounter({ value }) {
+    const [display, setDisplay] = useState(0);
+
+    useEffect(() => {
+        let start = 0;
+        const end = value;
+        const duration = 2000;
+        const step = end / (duration / 16);
+        const timer = setInterval(() => {
+            start += step;
+            if (start >= end) {
+                setDisplay(end);
+                clearInterval(timer);
+            } else {
+                setDisplay(Math.floor(start));
+            }
+        }, 16);
+        return () => clearInterval(timer);
+    }, [value]);
+
+    return (
+        <div className="text-[48px] font-bold tracking-tighter text-[var(--color-text-main)] leading-none">
+            {display.toLocaleString()}
+        </div>
+    );
+}
+
 export default function HeroSection({ canRegister }) {
+    const [hoveredBadge, setHoveredBadge] = useState(null);
+
+    const badges = ['Regulated Framework', 'Military-Grade Encryption', 'Institutional Liquidity', 'AI Cognitive Engine'];
+
     return (
         <section id="home" className="min-h-screen flex items-center pt-24 pb-16 px-6 relative overflow-hidden">
-            {/* Background glows */}
-            <div className="absolute top-0 left-0 w-[600px] h-[600px] rounded-full pointer-events-none opacity-10"
-                style={{ background: 'radial-gradient(circle, var(--color-gold), transparent 70%)', filter: 'blur(80px)' }} />
-            <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full pointer-events-none opacity-5"
-                style={{ background: 'radial-gradient(circle, var(--color-gold), transparent 70%)', filter: 'blur(60px)' }} />
-            {/* Subtle grid */}
-            <div className="absolute inset-0 opacity-[0.025] pointer-events-none"
-                style={{ backgroundImage: 'linear-gradient(var(--color-gold) 1px, transparent 1px), linear-gradient(90deg, var(--color-gold) 1px, transparent 1px)', backgroundSize: '80px 80px' }} />
+            {/* Extremely subtle background texture */}
+            <div className="absolute inset-0 opacity-[0.015] pointer-events-none"
+                style={{ backgroundImage: 'linear-gradient(var(--color-text-muted) 1px, transparent 1px), linear-gradient(90deg, var(--color-text-muted) 1px, transparent 1px)', backgroundSize: '64px 64px' }} />
 
-            <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
-                {/* Left: Copy */}
-                <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-6 text-[11px] font-bold uppercase tracking-wider"
-                        style={{ background: 'var(--color-gold-bg)', border: '1px solid var(--color-border)', color: 'var(--color-gold)' }}>
-                        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--color-gold)' }} />
-                        Private Banking · Est. 2024
+            <div className="max-w-[1400px] mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center relative z-10">
+                
+                {/* Left Content */}
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} className="max-w-2xl">
+                    
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.8 }}
+                        className="inline-flex items-center gap-3 px-4 py-2 rounded-full mb-8 text-[10px] font-bold uppercase tracking-[0.2em] border border-[var(--color-border)] bg-[var(--color-bg-card)]">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-gold)]" />
+                        <span className="text-[var(--color-text-main)]">Oscorp Financial Systems</span>
                     </motion.div>
 
-                    <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                        className="text-[52px] lg:text-[64px] font-bold leading-[1.05] tracking-tight mb-6 text-[var(--color-text-main)]">
-                        Banking Built<br />for the{' '}
-                        <span className="bg-clip-text text-transparent"
-                            style={{ backgroundImage: 'linear-gradient(135deg, var(--color-gold), var(--color-gold-dark))' }}>
-                            Elite.
-                        </span>
+                    <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.8 }}
+                        className="text-[56px] lg:text-[80px] font-semibold leading-[1.05] tracking-tight mb-8 text-[var(--color-text-main)]">
+                        Capital,<br />
+                        <span className="text-[var(--color-text-muted)] italic font-light">Architected.</span>
                     </motion.h1>
 
-                    <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-                        className="text-[17px] text-[var(--color-text-muted)] leading-relaxed mb-10 max-w-[480px]">
-                        OSCORP Private Bank delivers AI-powered wealth intelligence, seamless global transfers, and platinum-tier service — all in one secure platform.
+                    <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.8 }}
+                        className="text-[16px] lg:text-[18px] text-[var(--color-text-muted)] leading-relaxed mb-12 max-w-[500px] font-medium">
+                        Oscorp Private Bank delivers zero-latency wealth intelligence, bespoke asset allocation, and absolute financial sovereignty.
                     </motion.p>
 
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-                        className="flex flex-wrap gap-4 mb-10">
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.8 }}
+                        className="flex flex-col sm:flex-row gap-5 mb-16">
                         {canRegister && (
                             <Link href="/register"
-                                className="flex items-center gap-2 px-7 py-3.5 rounded-2xl text-[14px] font-bold transition-all hover:brightness-110 group"
-                                style={{ background: 'var(--color-gold)', color: '#000', boxShadow: '0 8px 30px rgba(212,175,55,0.35)' }}>
-                                Open Account
+                                className="flex items-center justify-center gap-3 px-8 py-4 rounded-xl text-[13px] font-bold transition-all bg-[var(--color-text-main)] text-[var(--color-bg-base)] hover:bg-[var(--color-gold)] hover:text-black group">
+                                Initialize Account
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                             </Link>
                         )}
-                        <button onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-                            className="px-7 py-3.5 rounded-2xl text-[14px] font-semibold transition-all hover:bg-[var(--color-bg-elevated)]"
-                            style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-main)' }}>
-                            Explore Features
+                        <button
+                            onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                            className="flex items-center justify-center gap-3 px-8 py-4 rounded-xl text-[13px] font-bold transition-all border border-[var(--color-border)] text-[var(--color-text-main)] hover:bg-[var(--color-bg-elevated)]"
+                        >
+                            <BarChart3 className="w-4 h-4" />
+                            View Specifications
                         </button>
                     </motion.div>
 
-                    {/* Trust badges */}
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
-                        className="flex flex-wrap gap-4">
-                        {['✔ Fully Regulated', '✔ 256-bit AES', '✔ FDIC Insured', '✔ AI-Powered'].map(b => (
-                            <span key={b} className="text-[12px] font-semibold" style={{ color: 'var(--color-text-muted)' }}>{b}</span>
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6, duration: 1 }}
+                        className="flex flex-wrap gap-x-8 gap-y-4">
+                        {badges.map((b, i) => (
+                            <div key={b} className="flex items-center gap-2">
+                                <Shield className="w-3.5 h-3.5 text-[var(--color-gold)]" />
+                                <span className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">{b}</span>
+                            </div>
                         ))}
                     </motion.div>
                 </motion.div>
 
-                {/* Right: Card */}
-                <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
-                    className="flex justify-center">
+                {/* Right Content - Visual */}
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+                    className="relative flex justify-center lg:justify-end">
+                    
+                    {/* Architectural Grid Lines behind card */}
+                    <div className="absolute inset-0 pointer-events-none opacity-20 hidden lg:block"
+                        style={{ 
+                            backgroundImage: `
+                                linear-gradient(to right, var(--color-border) 1px, transparent 1px),
+                                linear-gradient(to bottom, var(--color-border) 1px, transparent 1px)
+                            `,
+                            backgroundSize: '100px 100px',
+                            maskImage: 'radial-gradient(circle at center, black, transparent 70%)'
+                        }} 
+                    />
+
                     <FloatingCard />
                 </motion.div>
             </div>

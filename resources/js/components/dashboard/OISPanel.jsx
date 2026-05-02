@@ -2,15 +2,20 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, X, Terminal, BrainCircuit } from 'lucide-react';
 import { usePage, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export default function OISPanel() {
     const { props } = usePage();
+    const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
         {
             id: 'welcome',
             role: 'ai',
-            text: 'Executive Channel established. I am **O.I.S.** — Clearance Level: **UNRESTRICTED**.\n\nFull account dossier loaded. Identity confirmed: <strong style="color:#D4AF37">' + (props.auth?.user?.name || 'Account Holder') + '</strong>.\n\nLiquid Assets: <strong style="color:#D4AF37">' + Number(props.balance || 0).toLocaleString() + ' MAD</strong>. All systems authorized. Issue your directive.'
+            text: t('dashboard.ois_welcome', {
+                name: props.auth?.user?.name || t('dashboard.ois_default_account_holder'),
+                balance: Number(props.balance || 0).toLocaleString()
+            })
         }
     ]);
     const [input, setInput] = useState('');
@@ -51,7 +56,7 @@ export default function OISPanel() {
             const aiMsgId = (Date.now() + 1).toString();
             
             if (data.error) {
-                setMessages(prev => [...prev, { id: aiMsgId, role: 'ai', text: `⚠ System Error: ${data.error}` }]);
+                setMessages(prev => [...prev, { id: aiMsgId, role: 'ai', text: t('dashboard.ois_system_error', { error: data.error }) }]);
             } else {
                 setMessages(prev => [...prev, { id: aiMsgId, role: 'ai', text: data.reply }]);
                 
@@ -60,7 +65,7 @@ export default function OISPanel() {
                 }
             }
         } catch (error) {
-            setMessages(prev => [...prev, { id: Date.now().toString(), role: 'ai', text: '⚠ Network failure. Elite Core unreachable.' }]);
+            setMessages(prev => [...prev, { id: Date.now().toString(), role: 'ai', text: t('dashboard.ois_network_error') }]);
         } finally {
             setIsLoading(false);
         }
@@ -91,7 +96,7 @@ export default function OISPanel() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="fixed bottom-7 right-7 w-[56px] h-[56px] rounded-full bg-gradient-to-br from-[#D4AF37] to-[#B8860B] border border-[rgba(212,175,55,0.5)] cursor-pointer z-[900] shadow-[0_0_24px_rgba(212,175,55,0.3)] flex items-center justify-center overflow-hidden group"
-                title="Access Executive AI"
+                title={t('dashboard.ois_access_tooltip')}
             >
                 <motion.div 
                     animate={{ rotate: 360 }}
@@ -116,12 +121,11 @@ export default function OISPanel() {
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: '100%', opacity: 0, transition: { type: 'spring', bounce: 0, duration: 0.4 } }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed top-0 right-0 h-screen w-[420px] max-w-full z-[1000] flex flex-col"
+                        className="fixed top-0 right-0 h-screen w-[420px] max-w-full z-[1000] flex flex-col shadow-2xl"
                         style={{ 
-                            background: 'rgba(10,9,8,0.98)', 
-                            borderLeft: '1px solid rgba(212,175,55,0.15)',
+                            background: 'var(--color-bg-card)', 
+                            borderLeft: '1px solid var(--color-border)',
                             backdropFilter: 'blur(30px)',
-                            boxShadow: '-10px 0 50px rgba(0,0,0,0.8)'
                         }}
                     >
                         <div className="flex items-center justify-between p-5 border-b border-[var(--color-border)] relative overflow-hidden shrink-0 bg-[var(--color-bg-base)]">
@@ -136,10 +140,10 @@ export default function OISPanel() {
                                     <BrainCircuit className="w-4 h-4 text-white" />
                                 </div>
                                 <div>
-                                    <div className="text-[15px] font-bold text-[var(--color-gold)] tracking-wide">O.I.S. — Elite Core</div>
+                                    <div className="text-[15px] font-bold text-[var(--color-gold)] tracking-wide">{t('dashboard.ois_panel_title')}</div>
                                     <div className="text-[11px] text-[var(--color-text-muted)] flex items-center gap-1.5 mt-0.5 uppercase tracking-widest">
                                         <span className="w-1.5 h-1.5 rounded-full bg-[#34d399] shadow-[0_0_5px_#34d399] animate-pulse"></span>
-                                        Clearance: Unrestricted
+                                        {t('dashboard.ois_clearance_unrestricted')}
                                     </div>
                                 </div>
                             </div>
@@ -158,13 +162,13 @@ export default function OISPanel() {
                                 <div key={msg.id} className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`max-w-[85%] rounded-2xl p-4 text-[13.5px] leading-[1.6] ${
                                         msg.role === 'user' 
-                                            ? 'bg-gradient-to-br from-[var(--color-gold)] to-[var(--color-gold-dark)] text-white rounded-tr-sm shadow-[0_4px_15px_var(--color-glow-primary)] font-medium'
+                                            ? 'bg-gradient-to-br from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#0A0908] rounded-tr-sm shadow-[0_4px_15px_var(--color-glow-primary)] font-bold'
                                             : 'bg-[var(--color-bg-card)] text-[var(--color-text-main)] rounded-tl-sm border border-[var(--color-border)]'
                                     }`}>
                                         {msg.role === 'ai' && msg.id !== 'welcome' && (
                                             <div className="flex items-center gap-1.5 mb-2 pb-2 border-b border-[var(--color-border)]">
                                                 <Terminal className="w-3.5 h-3.5 text-[var(--color-bronze)]" />
-                                                <span className="text-[10px] font-mono text-[var(--color-text-muted)] uppercase tracking-widest">Analysis Result</span>
+                                                <span className="text-[10px] font-mono text-[var(--color-text-muted)] uppercase tracking-widest">{t('dashboard.ois_analysis_result')}</span>
                                             </div>
                                         )}
                                         {renderText(msg.text)}
@@ -178,9 +182,9 @@ export default function OISPanel() {
                                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                                     className="flex w-full justify-start"
                                 >
-                                    <div className="bg-[rgba(22,20,18,0.8)] border border-[rgba(212,175,55,0.2)] rounded-2xl rounded-tl-sm p-4 flex items-center gap-3">
-                                        <div className="w-4 h-4 rounded-full border-2 border-[rgba(212,175,55,0.2)] border-t-[#D4AF37] animate-spin" />
-                                        <span className="text-[12px] font-mono text-[#D4AF37] tracking-widest uppercase">Processing Directive...</span>
+                                    <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-gold)]/20 rounded-2xl rounded-tl-sm p-4 flex items-center gap-3">
+                                        <div className="w-4 h-4 rounded-full border-2 border-[var(--color-gold)]/20 border-t-[var(--color-gold)] animate-spin" />
+                                        <span className="text-[12px] font-mono text-[var(--color-gold)] tracking-widest uppercase">{t('dashboard.ois_processing')}</span>
                                     </div>
                                 </motion.div>
                             )}
@@ -202,7 +206,7 @@ export default function OISPanel() {
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyDown={handleKeyDown}
-                                    placeholder="Enter financial directive..."
+                                    placeholder={t('dashboard.ois_input_placeholder')}
                                     className="w-full bg-[var(--color-bg-base)] border border-[var(--color-border)] rounded-xl py-3.5 pl-4 pr-12 text-[13.5px] text-[var(--color-text-main)] placeholder-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-gold)] focus:ring-1 focus:ring-[var(--color-gold)]/50 resize-none overflow-hidden transition-all shadow-inner"
                                     rows="1"
                                     disabled={isLoading}
@@ -217,7 +221,7 @@ export default function OISPanel() {
                                 </button>
                             </div>
                             <div className="text-center mt-2 text-[10px] text-[var(--color-text-muted)] tracking-wide">
-                                Press Enter to execute. Shift + Enter for newline.
+                                {t('dashboard.ois_input_hint')}
                             </div>
                         </div>
                     </motion.div>

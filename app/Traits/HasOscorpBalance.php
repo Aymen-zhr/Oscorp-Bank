@@ -2,6 +2,8 @@
 
 namespace App\Traits;
 
+use Illuminate\Support\Facades\DB;
+
 trait HasOscorpBalance
 {
     protected function getBaseBalance(): float
@@ -11,34 +13,37 @@ trait HasOscorpBalance
 
     protected function getLiveBalance(): float
     {
-        $baseBalance = $this->getBaseBalance();
-        $totalCredits = \Illuminate\Support\Facades\DB::table('transactions')
-            ->where('type', 'credit')
-            ->sum('amount');
-        $totalDebits = \Illuminate\Support\Facades\DB::table('transactions')
-            ->where('type', 'debit')
-            ->sum('amount');
-
-        return $baseBalance + $totalCredits - $totalDebits;
+        $stats = $this->getTransactionSummary();
+        return $this->getBaseBalance() + $stats['credits'] - $stats['debits'];
     }
 
     protected function getFinancialStats(): array
     {
         $baseBalance = $this->getBaseBalance();
-        $totalCredits = \Illuminate\Support\Facades\DB::table('transactions')
-            ->where('type', 'credit')
-            ->sum('amount');
-        $totalDebits = \Illuminate\Support\Facades\DB::table('transactions')
-            ->where('type', 'debit')
-            ->sum('amount');
-        $liveBalance = $baseBalance + $totalCredits - $totalDebits;
+        $summary = $this->getTransactionSummary();
+        $liveBalance = $baseBalance + $summary['credits'] - $summary['debits'];
 
         return [
             'base_balance' => $baseBalance,
-            'total_credits' => $totalCredits,
-            'total_debits' => $totalDebits,
+            'total_credits' => $summary['credits'],
+            'total_debits' => $summary['debits'],
             'live_balance' => $liveBalance,
-            'total_spending' => $totalDebits,
+            'total_spending' => $summary['debits'],
+        ];
+    }
+
+    protected function getTransactionSummary(): array
+    {
+        $result = DB::table('transactions')
+            ->selectRaw('
+                SUM(CASE WHEN type = "credit" THEN amount ELSE 0 END) as credits,
+                SUM(CASE WHEN type = "debit" THEN amount ELSE 0 END) as debits
+            ')
+            ->first();
+
+        return [
+            'credits' => (float) ($result->credits ?? 0),
+            'debits' => (float) ($result->debits ?? 0),
         ];
     }
 }

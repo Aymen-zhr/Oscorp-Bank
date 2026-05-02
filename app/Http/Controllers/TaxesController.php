@@ -13,51 +13,170 @@ class TaxesController extends Controller
 
     public function page()
     {
-        // Calculate estimated annual tax based on a simple percentage of total credits this year
+        $stats = $this->getFinancialStats();
         $startOfYear = Carbon::now()->startOfYear();
+
+        // Calculate total income this year from real transactions
         $totalIncomeThisYear = DB::table('transactions')
             ->where('type', 'credit')
             ->where('transacted_at', '>=', $startOfYear)
             ->sum('amount');
-            
+
         if ($totalIncomeThisYear == 0) {
-            $totalIncomeThisYear = 500000; // fallback mock
+            $totalIncomeThisYear = $stats['total_credits'] > 0 ? $stats['total_credits'] : 500000;
         }
-        
-        $estimatedAnnualTax = $totalIncomeThisYear * 0.25; // 25% tax bracket assumption
-        
+
+        // Moroccan progressive tax calculation
+        $estimatedAnnualTax = $this->calculateMoroccanTax($totalIncomeThisYear);
+
+        // Calculate tax paid from specific tax-related transactions
+        $taxPaidThisYear = DB::table('transactions')
+            ->where('type', 'debit')
+            ->where('transacted_at', '>=', $startOfYear)
+            ->where(function($q) {
+                $q->where('category', 'like', '%Tax%')
+                  ->orWhere('category', 'like', '%tax%')
+                  ->orWhere('merchant', 'like', '%Tax%')
+                  ->orWhere('merchant', 'like', '%Impot%');
+            })
+            ->sum('amount');
+
+        // Calculate deductions from charitable/education/health categories
+        $taxDeductions = DB::table('transactions')
+            ->where('type', 'debit')
+            ->where('transacted_at', '>=', $startOfYear)
+            ->whereIn('category', ['Health', 'Education', 'Philanthropy', 'Donations'])
+            ->sum('amount');
+
+        // Build tax documents from real data
         $taxDocuments = [
-            ['id' => 'TAX-Q1', 'name' => 'Q1 Tax Summary', 'type' => 'Quarterly', 'status' => 'Filed', 'date' => Carbon::now()->subDays(15)->format('Y-m-d'), 'amount' => 12450, 'icon' => 'CheckCircle'],
-            ['id' => 'TAX-ANNUAL', 'name' => 'Annual Tax Return', 'type' => 'Annual', 'status' => 'Filed', 'date' => Carbon::now()->subDays(30)->format('Y-m-d'), 'amount' => 48200, 'icon' => 'CheckCircle'],
-            ['id' => 'TAX-Q2', 'name' => 'Q2 Tax Summary', 'type' => 'Quarterly', 'status' => 'Pending', 'date' => Carbon::now()->addDays(78)->format('Y-m-d'), 'amount' => 14800, 'icon' => 'Clock'],
-            ['id' => 'TAX-Q4', 'name' => 'Q4 Tax Summary', 'type' => 'Quarterly', 'status' => 'Filed', 'date' => Carbon::now()->subDays(105)->format('Y-m-d'), 'amount' => 11200, 'icon' => 'CheckCircle'],
-            ['id' => 'TAX-Q3', 'name' => 'Q3 Tax Summary', 'type' => 'Quarterly', 'status' => 'Filed', 'date' => Carbon::now()->subDays(190)->format('Y-m-d'), 'amount' => 10800, 'icon' => 'CheckCircle'],
+            [
+                'id' => 'TAX-ANNUAL-' . Carbon::now()->year,
+                'name' => 'Annual Tax Return ' . Carbon::now()->year,
+                'type' => 'Annual',
+                'status' => Carbon::now()->month > 3 ? 'Filed' : 'Pending',
+                'date' => Carbon::now()->subDays(30)->format('Y-m-d'),
+                'amount' => round($estimatedAnnualTax),
+                'icon' => Carbon::now()->month > 3 ? 'CheckCircle' : 'Clock',
+            ],
+            [
+                'id' => 'TAX-Q1-' . Carbon::now()->year,
+                'name' => 'Q1 Tax Summary',
+                'type' => 'Quarterly',
+                'status' => Carbon::now()->month > 4 ? 'Filed' : 'Pending',
+                'date' => Carbon::now()->subDays(60)->format('Y-m-d'),
+                'amount' => round($estimatedAnnualTax / 4),
+                'icon' => Carbon::now()->month > 4 ? 'CheckCircle' : 'Clock',
+            ],
         ];
 
-        $taxCategories = [
-            ['category' => 'Income Tax', 'amount' => 42500, 'percentage' => 52, 'color' => 'var(--color-gold)'],
-            ['category' => 'Corporate Tax', 'amount' => 18200, 'percentage' => 22, 'color' => '#6366F1'],
-            ['category' => 'VAT', 'amount' => 12400, 'percentage' => 15, 'color' => '#10B981'],
-            ['category' => 'Property Tax', 'amount' => 6800, 'percentage' => 8, 'color' => '#F59E0B'],
-            ['category' => 'Other Taxes', 'amount' => 2550, 'percentage' => 3, 'color' => '#8B5CF6'],
-        ];
+        // If we have real tax transactions, add them as documents
+        $taxTransactions = DB::table('transactions')
+            ->where('type', 'debit')
+            ->where('transacted_at', '>=', Carbon::now()->subMonths(6))
+            ->where(function($q) {
+                $q->where('category', 'like', '%Tax%')
+                  ->orWhere('category', 'like', '%tax%');
+            })
+            ->orderByDesc('transacted_at')
+            ->get();
 
-        $upcomingDeadlines = [
-            ['deadline' => Carbon::now()->addDays(78)->format('Y-m-d'), 'description' => 'Q2 Quarterly Tax Payment', 'daysLeft' => 78],
-            ['deadline' => Carbon::now()->addDays(169)->format('Y-m-d'), 'description' => 'Q3 Quarterly Tax Payment', 'daysLeft' => 169],
-            ['deadline' => Carbon::now()->addDays(336)->format('Y-m-d'), 'description' => 'Annual Tax Return', 'daysLeft' => 336],
-        ];
+        foreach ($taxTransactions as $tx) {
+            $taxDocuments[] = [
+                'id' => 'TAX-TXN-' . $tx->id,
+                'name' => $tx->merchant . ' Payment',
+                'type' => 'Payment',
+                'status' => 'Filed',
+                'date' => Carbon::parse($tx->transacted_at)->format('Y-m-d'),
+                'amount' => round($tx->amount),
+                'icon' => 'CheckCircle',
+            ];
+        }
+
+        // Build tax categories from actual spending breakdown
+        $categoryTotals = DB::table('transactions')
+            ->where('type', 'debit')
+            ->where('transacted_at', '>=', $startOfYear)
+            ->whereNotNull('category')
+            ->select('category', DB::raw('SUM(amount) as total'))
+            ->groupBy('category')
+            ->orderByDesc('total')
+            ->take(5)
+            ->get();
+
+        $totalCategorized = $categoryTotals->sum('total');
+        $taxColors = ['var(--color-gold)', '#6366F1', '#10B981', '#F59E0B', '#8B5CF6'];
+
+        $taxCategories = [];
+        foreach ($categoryTotals as $i => $cat) {
+            $taxCategories[] = [
+                'category' => $cat->category,
+                'amount' => round($cat->total, 2),
+                'percentage' => $totalCategorized > 0 ? round(($cat->total / $totalCategorized) * 100) : 0,
+                'color' => $taxColors[$i % count($taxColors)],
+            ];
+        }
+
+        // Upcoming deadlines based on Moroccan tax calendar
+        $currentMonth = Carbon::now()->month;
+        $currentYear = Carbon::now()->year;
+        $upcomingDeadlines = [];
+
+        if ($currentMonth <= 3) {
+            $upcomingDeadlines[] = ['deadline' => "$currentYear-03-31", 'description' => 'Annual Tax Filing Deadline', 'daysLeft' => Carbon::parse("$currentYear-03-31")->diffInDays(Carbon::now())];
+        }
+        if ($currentMonth <= 4) {
+            $upcomingDeadlines[] = ['deadline' => "$currentYear-04-30", 'description' => 'Q1 Quarterly Tax Payment', 'daysLeft' => Carbon::parse("$currentYear-04-30")->diffInDays(Carbon::now())];
+        }
+        if ($currentMonth <= 7) {
+            $upcomingDeadlines[] = ['deadline' => "$currentYear-07-31", 'description' => 'Q2 Quarterly Tax Payment', 'daysLeft' => Carbon::parse("$currentYear-07-31")->diffInDays(Carbon::now())];
+        }
+        if ($currentMonth <= 10) {
+            $upcomingDeadlines[] = ['deadline' => "$currentYear-10-31", 'description' => 'Q3 Quarterly Tax Payment', 'daysLeft' => Carbon::parse("$currentYear-10-31")->diffInDays(Carbon::now())];
+        }
+
+        // Ensure at least 2 deadlines
+        if (count($upcomingDeadlines) < 2) {
+            $upcomingDeadlines[] = ['deadline' => ($currentYear + 1) . '-03-31', 'description' => 'Next Annual Tax Filing', 'daysLeft' => Carbon::parse(($currentYear + 1) . '-03-31')->diffInDays(Carbon::now())];
+        }
+
+        $pendingPayment = max(0, round($estimatedAnnualTax - $taxPaidThisYear));
 
         return Inertia::render('taxes', [
             'taxDocuments' => $taxDocuments,
             'taxCategories' => $taxCategories,
             'upcomingDeadlines' => $upcomingDeadlines,
             'stats' => [
-                'totalPaidThisYear' => 12450,
-                'pendingPayment' => 14800,
-                'estimatedAnnual' => round($estimatedAnnualTax),
-                'taxDeductions' => 8500,
+                'totalPaidThisYear' => round($taxPaidThisYear, 2),
+                'pendingPayment' => $pendingPayment,
+                'estimatedAnnual' => round($estimatedAnnualTax, 2),
+                'taxDeductions' => round($taxDeductions, 2),
             ]
         ]);
+    }
+
+    /**
+     * Calculate Moroccan progressive income tax
+     * Based on Moroccan IR (Impôt sur le Revenu) brackets
+     */
+    private function calculateMoroccanTax($annualIncome)
+    {
+        $tax = 0;
+
+        if ($annualIncome <= 30000) {
+            $tax = 0;
+        } elseif ($annualIncome <= 50000) {
+            $tax = ($annualIncome - 30000) * 0.10;
+        } elseif ($annualIncome <= 60000) {
+            $tax = 2000 + ($annualIncome - 50000) * 0.20;
+        } elseif ($annualIncome <= 80000) {
+            $tax = 4000 + ($annualIncome - 60000) * 0.30;
+        } elseif ($annualIncome <= 180000) {
+            $tax = 10000 + ($annualIncome - 80000) * 0.34;
+        } else {
+            $tax = 44000 + ($annualIncome - 180000) * 0.38;
+        }
+
+        return $tax;
     }
 }

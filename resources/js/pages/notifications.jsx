@@ -50,7 +50,7 @@ export default function Notifications({ notifications }) {
                                 <Link href="/dashboard" className="p-2 rounded-xl hover:bg-[var(--color-bg-elevated)] transition-colors text-[var(--color-text-muted)] hover:text-white">
                                     <ArrowLeft className="w-5 h-5" />
                                 </Link>
-                                <h1 className="text-2xl font-bold text-white tracking-wide">Communication Array</h1>
+                                <h1 className="text-2xl font-bold tracking-wide" style={{ color: 'var(--color-text-main)' }}>Communication Array</h1>
                             </div>
                             <p className="text-[13px] text-[var(--color-text-muted)] ml-12">
                                 Encrypted log of all system and account events.
@@ -73,7 +73,7 @@ export default function Notifications({ notifications }) {
                                 <div className="w-16 h-16 rounded-full bg-[var(--color-bg-elevated)] flex items-center justify-center mx-auto mb-4">
                                     <Bell className="w-8 h-8 text-[var(--color-text-muted)] opacity-50" />
                                 </div>
-                                <h3 className="text-white font-semibold mb-2">Log is empty</h3>
+                                <h3 className="font-semibold mb-2" style={{ color: 'var(--color-text-main)' }}>Log is empty</h3>
                                 <p className="text-[13px] text-[var(--color-text-muted)]">No recent events detected by the system.</p>
                             </div>
                         ) : (
@@ -99,14 +99,14 @@ export default function Notifications({ notifications }) {
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-3 mb-1">
-                                                <h3 className={`font-semibold ${!notification.read_at ? 'text-white' : 'text-[var(--color-text-main)]'}`}>
+                                                <h3 className="font-semibold" style={{ color: 'var(--color-text-main)' }}>
                                                     {notification.data.title}
                                                 </h3>
                                                 {!notification.read_at && (
                                                     <span className="px-2 py-0.5 rounded bg-[var(--color-gold)] text-black text-[9px] font-bold uppercase tracking-wider">New</span>
                                                 )}
                                             </div>
-                                            <p className="text-[13px] text-[var(--color-text-muted)] mb-2">
+                                            <p className="text-[13px] text-[var(--color-text-muted)] mb-2 break-words">
                                                 {notification.data.message}
                                             </p>
                                             <div className="text-[11px] font-mono text-[var(--color-text-muted)] opacity-60">
