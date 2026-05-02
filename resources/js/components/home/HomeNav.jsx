@@ -46,17 +46,32 @@ export default function HomeNav({ canRegister }) {
                     onClick={() => scrollTo('home')}
                     className="flex items-center gap-3 group"
                 >
-                    <div className="w-8 h-8 flex items-center justify-center bg-[var(--color-text-main)] transition-transform duration-500 group-hover:rotate-180">
-                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                            <rect x="1" y="1" width="6" height="6" fill="var(--color-bg-base)" />
-                            <rect x="9" y="1" width="6" height="6" fill="var(--color-bg-base)" />
-                            <rect x="1" y="9" width="6" height="6" fill="var(--color-bg-base)" />
-                            <rect x="9" y="9" width="6" height="6" fill="var(--color-bg-base)" fillOpacity="0.5" />
+                    <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="flex h-10 w-10 items-center justify-center rounded-xl shadow-lg cursor-pointer relative group overflow-hidden"
+                        style={{
+                            background: 'var(--color-bg-elevated)',
+                            border: '1px solid var(--color-border)',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                        }}
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-gold)]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M50 10L15 32V68L50 90L85 68V32L50 10Z" stroke="url(#goldGradNav)" strokeWidth="6" strokeLinejoin="round"/>
+                            <path d="M50 30L35 39V61L50 70L65 61V39L50 30Z" fill="url(#goldGradNav)" fillOpacity="0.2" stroke="url(#goldGradNav)" strokeWidth="2"/>
+                            <defs>
+                                <linearGradient id="goldGradNav" x1="15" y1="10" x2="85" y2="90" gradientUnits="userSpaceOnUse">
+                                    <stop stopColor="#D4AF37"/>
+                                    <stop offset="0.5" stopColor="#FFD700"/>
+                                    <stop offset="1" stopColor="#B8860B"/>
+                                </linearGradient>
+                            </defs>
                         </svg>
-                    </div>
+                    </motion.div>
                     <div className="text-left">
-                        <div className="font-bold text-[15px] tracking-widest text-[var(--color-text-main)] uppercase">Oscorp</div>
-                        <div className="text-[8px] uppercase tracking-[0.25em] font-semibold text-[var(--color-text-muted)] group-hover:text-[var(--color-gold)] transition-colors duration-500">Private Bank</div>
+                        <div className="font-bold text-[18px] tracking-wide text-[var(--color-text-main)]">OSCORP</div>
+                        <div className="text-[9px] uppercase tracking-[0.2em] font-semibold text-[var(--color-gold)]">Private Bank</div>
                     </div>
                 </button>
 

@@ -114,18 +114,24 @@ export default function AuthLayout({ activeTab, children, title, subtitle }) {
                 <div className="relative z-10 flex flex-col items-center">
                     <MagneticLogo>
                         <motion.div
-                            className="w-24 h-24 rounded-3xl flex items-center justify-center mb-8 relative group"
+                            className="w-24 h-24 rounded-3xl flex items-center justify-center mb-8 relative group overflow-hidden"
                             style={{ 
-                                background: 'linear-gradient(135deg, var(--color-gold), var(--color-gold-dark))', 
-                                boxShadow: '0 20px 50px rgba(212,175,55,0.3)' 
+                                background: 'var(--color-bg-elevated)', 
+                                border: '1px solid var(--color-border)',
+                                boxShadow: '0 20px 50px rgba(0,0,0,0.3)' 
                             }}
                         >
-                            <div className="absolute inset-0 rounded-3xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
-                            <svg width="48" height="48" viewBox="0 0 16 16" fill="none" className="relative z-10">
-                                <rect x="1" y="1" width="6" height="6" rx="2" fill="white" />
-                                <rect x="9" y="1" width="6" height="6" rx="2" fill="white" />
-                                <rect x="1" y="9" width="6" height="6" rx="2" fill="white" />
-                                <rect x="9" y="9" width="6" height="6" rx="2" fill="white" fillOpacity="0.4" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-gold)]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <svg width="56" height="56" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                                <path d="M50 10L15 32V68L50 90L85 68V32L50 10Z" stroke="url(#goldGradAuth)" strokeWidth="6" strokeLinejoin="round"/>
+                                <path d="M50 30L35 39V61L50 70L65 61V39L50 30Z" fill="url(#goldGradAuth)" fillOpacity="0.2" stroke="url(#goldGradAuth)" strokeWidth="2"/>
+                                <defs>
+                                    <linearGradient id="goldGradAuth" x1="15" y1="10" x2="85" y2="90" gradientUnits="userSpaceOnUse">
+                                        <stop stopColor="#D4AF37"/>
+                                        <stop offset="0.5" stopColor="#FFD700"/>
+                                        <stop offset="1" stopColor="#B8860B"/>
+                                    </linearGradient>
+                                </defs>
                             </svg>
                         </motion.div>
                     </MagneticLogo>
