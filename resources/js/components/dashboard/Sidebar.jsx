@@ -5,7 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import {
     LayoutDashboard, Sparkles, CreditCard, ArrowRightLeft,
     FileText, Landmark, Receipt, Moon, Sun,
-    Bell, Settings, LogOut, HelpCircle, User, Cog, Package, X
+    Bell, Settings, LogOut, HelpCircle, User, Cog, Package, X, Target
 } from 'lucide-react';
 
 const now = new Date();
@@ -20,6 +20,7 @@ const navItems = [
     { icon: ArrowRightLeft, label: 'Transactions', href: '/transactions' },
     { icon: FileText, label: 'Reports', href: '/reports' },
     { icon: Landmark, label: 'Loans', href: '/loans' },
+    { icon: Target, label: 'Goals', href: '/goals' },
     { icon: Receipt, label: 'Taxes', href: '/taxes' },
     { icon: Package, label: 'Subscriptions', href: '/subscriptions' },
 ];

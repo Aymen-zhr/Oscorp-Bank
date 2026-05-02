@@ -14,7 +14,9 @@ export default function Topbar() {
     
     const [searchFocused, setSearchFocused] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
     const menuRef = useRef(null);
+    const notifRef = useRef(null);
     const user = props.auth?.user;
 
     const now = new Date();
@@ -27,6 +29,9 @@ export default function Topbar() {
         const handleClickOutside = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target)) {
                 setShowUserMenu(false);
+            }
+            if (notifRef.current && !notifRef.current.contains(e.target)) {
+                setShowNotifications(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -108,10 +113,80 @@ export default function Topbar() {
                     />
                 </motion.div>
 
-                <button className="relative p-2 rounded-xl text-[var(--color-text-muted)] hover:text-[var(--color-gold)] hover:bg-[var(--color-gold-bg)] transition-all">
-                    <Bell className="w-5 h-5" />
-                    <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: 'var(--color-gold)', boxShadow: '0 0 8px var(--color-gold)' }} />
-                </button>
+                {/* Notifications */}
+                <div className="relative" ref={notifRef}>
+                    <button 
+                        onClick={() => setShowNotifications(!showNotifications)}
+                        className={`relative p-2 rounded-xl transition-all ${showNotifications ? 'bg-[var(--color-gold-bg)] text-[var(--color-gold)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-gold)] hover:bg-[var(--color-gold-bg)]'}`}
+                    >
+                        <Bell className="w-5 h-5" />
+                        {user?.unreadNotificationsCount > 0 && (
+                            <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: 'var(--color-gold)', boxShadow: '0 0 8px var(--color-gold)' }} />
+                        )}
+                    </button>
+
+                    <AnimatePresence>
+                        {showNotifications && (
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                className="absolute right-0 top-full mt-2 w-80 rounded-2xl shadow-xl overflow-hidden z-50"
+                                style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
+                            >
+                                <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--color-border)' }}>
+                                    <span className="text-[14px] font-bold text-[var(--color-text-main)]">Notifications</span>
+                                    {user?.unreadNotificationsCount > 0 && (
+                                        <button 
+                                            onClick={() => router.post('/notifications/mark-all-read')}
+                                            className="text-[11px] text-[var(--color-gold)] hover:underline"
+                                        >
+                                            Mark all read
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                                    {!user?.recentNotifications || user.recentNotifications.length === 0 ? (
+                                        <div className="p-6 text-center text-[var(--color-text-muted)] text-[13px]">
+                                            No recent notifications.
+                                        </div>
+                                    ) : (
+                                        user.recentNotifications.map(n => {
+                                            const type = n.data?.type || 'info';
+                                            let color = 'text-[var(--color-gold)]';
+                                            let bg = 'bg-[var(--color-gold-bg)]';
+                                            
+                                            if (type === 'alert') { color = 'text-red-400'; bg = 'bg-red-500/10'; }
+                                            if (type === 'success') { color = 'text-emerald-400'; bg = 'bg-emerald-500/10'; }
+                                            
+                                            return (
+                                                <div key={n.id} onClick={() => router.post(`/notifications/${n.id}/mark-read`)} className="p-4 border-b last:border-0 hover:bg-[var(--color-bg-elevated)] transition-colors cursor-pointer" style={{ borderColor: 'var(--color-border)' }}>
+                                                    <div className="flex gap-3">
+                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${bg}`}>
+                                                            <Bell className={`w-4 h-4 ${color}`} />
+                                                        </div>
+                                                        <div>
+                                                            <div className="flex items-center justify-between mb-1">
+                                                                <span className="text-[13px] font-bold text-[var(--color-text-main)]">{n.data?.title || 'Notification'}</span>
+                                                                <span className="text-[10px] text-[var(--color-text-muted)]">
+                                                                    {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-[12px] text-[var(--color-text-muted)] leading-tight">{n.data?.message || 'No details provided.'}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                                <div className="p-2 border-t text-center" style={{ borderColor: 'var(--color-border)' }}>
+                                    <Link href="/notifications" className="text-[12px] font-bold text-[var(--color-gold)] hover:underline" onClick={() => setShowNotifications(false)}>View all activity</Link>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
 
                 {/* User Menu */}
                 <div className="relative" ref={menuRef}>
