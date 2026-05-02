@@ -9,6 +9,7 @@ import {
 import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useCurrency } from '@/hooks/useCurrency';
 
 /* ── Category colours ──────────────────────────────────────── */
 const CAT_COLOR = {
@@ -90,19 +91,21 @@ const MerchantLogo = function MerchantLogo({ merchant, logoColor, size = 46 }) {
 const MemoizedMerchantLogo = function(props) { return <MerchantLogo {...props} />; };
 
 /* ── Amount ────────────────────────────────────────────────── */
-const Amount = function Amount({ tx }) {
+const Amount = function Amount({ tx, format, code }) {
     const ok = tx.type === 'credit';
     return (
         <div className={`flex flex-col items-end ${ok ? 'text-emerald-400' : 'text-red-400'}`}>
             <div className="flex items-center gap-1 text-[16px] font-bold leading-none">
                 {ok ? <ArrowDownLeft className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
-                {ok ? '+' : '-'}{Math.abs(Number(tx.amount)).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                {ok ? '+' : '-'}{format(tx.amount)}
             </div>
-            <span className="text-[10px] font-medium mt-0.5" style={{ color: 'var(--color-text-muted)' }}>MAD</span>
+            <span className="text-[10px] font-medium mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{code}</span>
         </div>
     );
 };
 const MemoizedAmount = function(props) { return <Amount {...props} />; };
+
+// Wrapper to pass format and code to Amount
 
 /* ── Helpers ───────────────────────────────────────────────── */
 const fmtTime = (d) => {
@@ -135,6 +138,7 @@ export default function Transactions({ transactions, filters, categories, stats 
     const [search, setSearch]           = useState(filters.search || '');
     const [showAdvanced, setShowAdvanced] = useState(false);
     const { t, locale } = useTranslation();
+    const { format, code } = useCurrency();
 
     const go = useCallback((patch) => {
         router.get('/transactions', { ...filters, ...patch }, { preserveState: true, replace: true });
@@ -157,10 +161,10 @@ export default function Transactions({ transactions, filters, categories, stats 
     }, [transactions]);
 
     const statsCards = useMemo(() => [
-    { label: t('transactions.net_balance'), value: Number(stats.balance || 0).toLocaleString('en-MA'), color: 'var(--color-gold)', Icon: Wallet },
-    { label: t('transactions.money_in'),    value: '+' + Number(stats.total_credits || 0).toLocaleString('en-MA'), color: '#34D399', Icon: ArrowDownLeft },
-    { label: t('transactions.money_out'),   value: '-' + Math.abs(Number(stats.total_debits  || 0)).toLocaleString('en-MA'), color: '#F87171', Icon: ArrowUpRight },
-    ], [stats.balance, stats.total_credits, stats.total_debits]);
+    { label: t('transactions.net_balance'), value: format(stats.balance || 0), color: 'var(--color-gold)', Icon: Wallet },
+    { label: t('transactions.money_in'),    value: '+' + format(stats.total_credits || 0), color: '#34D399', Icon: ArrowDownLeft },
+    { label: t('transactions.money_out'),   value: '-' + format(Math.abs(stats.total_debits  || 0)), color: '#F87171', Icon: ArrowUpRight },
+    ], [stats.balance, stats.total_credits, stats.total_debits, format]);
 
     const exportUrl = `/transactions/export?type=${filters.type}&category=${filters.category}&search=${encodeURIComponent(filters.search || '')}&date_from=${filters.date_from || ''}&date_to=${filters.date_to || ''}`;
 
@@ -209,7 +213,7 @@ export default function Transactions({ transactions, filters, categories, stats 
                                     <div>
                                         <div className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-muted)' }}>{label}</div>
                                         <div className="text-[20px] font-bold leading-none" style={{ color }}>
-                                            {value} <span className="text-[11px] font-normal opacity-60">MAD</span>
+                                            {value} <span className="text-[11px] font-normal opacity-60">{code}</span>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -384,7 +388,7 @@ export default function Transactions({ transactions, filters, categories, stats 
                                                             </div>
                                                         </div>
 
-                                                        <MemoizedAmount tx={tx} />
+                                                        <MemoizedAmount tx={tx} format={format} code={code} />
                                                     </motion.div>
                                                 ))}
                                             </div>

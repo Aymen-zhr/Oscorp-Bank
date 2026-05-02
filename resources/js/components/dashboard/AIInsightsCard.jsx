@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePage } from '@inertiajs/react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useCurrency } from '../../hooks/useCurrency';
 
 export default function AIInsightsCard() {
     const { t } = useTranslation();
+    const { format, code } = useCurrency();
     const { props } = usePage();
     const balance = Number(props.balance ?? 74652);
     const spending = Number(props.totalSpending ?? 84433);
@@ -16,8 +18,8 @@ export default function AIInsightsCard() {
     const [isPaused, setIsPaused] = useState(false);
 
     const slides = [
-        { icon: Activity, label: 'dashboard.burn_rate', value: `${Number((spending / 30).toFixed(0)).toLocaleString()} MAD/day`, trend: 'neutral', insight: 'dashboard.daily_expenditure' },
-        { icon: TrendingUp, label: 'dashboard.liquid_threshold', value: `${balance.toLocaleString()} MAD`, trend: 'up', insight: 'dashboard.capital_reserves' },
+        { icon: Activity, label: 'dashboard.burn_rate', value: `${format(spending / 30)}/day`, trend: 'neutral', insight: 'dashboard.daily_expenditure' },
+        { icon: TrendingUp, label: 'dashboard.liquid_threshold', value: `${format(balance)}`, trend: 'up', insight: 'dashboard.capital_reserves' },
         { icon: Zap, label: 'dashboard.transaction_velocity', value: `${txCount} entries`, trend: 'up', insight: 'dashboard.activity_volume' },
         { icon: TrendingDown, label: 'dashboard.capital_burn', value: `${Number((spending / balance * 100).toFixed(1))}% ratio`, trend: 'neutral', insight: 'dashboard.spending_ratio' },
     ];

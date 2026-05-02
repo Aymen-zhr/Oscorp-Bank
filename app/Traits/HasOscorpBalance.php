@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 trait HasOscorpBalance
 {
@@ -34,7 +35,10 @@ trait HasOscorpBalance
 
     protected function getTransactionSummary(): array
     {
+        $userId = Auth::id();
+
         $result = DB::table('transactions')
+            ->where('user_id', $userId)
             ->selectRaw('
                 SUM(CASE WHEN type = "credit" THEN amount ELSE 0 END) as credits,
                 SUM(CASE WHEN type = "debit" THEN amount ELSE 0 END) as debits

@@ -103,6 +103,9 @@
         "title_label": "العنوان",
         "title_placeholder": "مثال: Netflix عائلي",
         "total_amount": "المبلغ الإجمالي (MAD)",
+        "amount_placeholder": "0.00",
+        "name_placeholder": "الاسم",
+        "amount_mad_placeholder": "MAD",
         "description": "الوصف (اختياري)",
         "description_placeholder": "اشتراك شهري",
         "due_date_label": "تاريخ الاستحقاق",
@@ -157,6 +160,7 @@
         "search_by_name_email": "ابحث بالاسم أو البريد الإلكتروني...",
         "set_nickname": "تعيين لقب",
         "edit_nickname": "تعديل اللقب",
+        "nickname_placeholder": "تعيين لقب",
         "send_message": "إرسال رسالة",
         "remove_contact": "إزالة جهة الاتصال",
         "search_for_users": "ابحث عن مستخدمين لإضافتهم",
@@ -208,7 +212,10 @@
         "goal_name_placeholder": "مثال: سيارة جديدة، جهاز ألعاب",
         "category_icon": "أيقونة الفئة",
         "target_amount": "المبلغ المستهدف ($)",
+        "target_amount_placeholder": "5000",
         "timeframe": "المدة (أشهر)",
+        "timeframe_placeholder": "12",
+        "deposit_amount_placeholder": "100",
         "automatic_savings": "الادخار التلقائي",
         "auto_save_desc": "سيقوم النظام بتخصيص الأموال تلقائياً شهرياً",
         "you_need_save": "تحتاج إلى توفير",
@@ -251,9 +258,11 @@
         "recipient": "المستلم",
         "recipient_placeholder": "أدخل اسم المستلم",
         "account_number": "رقم الحساب (اختياري)",
+        "account_placeholder": "MA00...",
         "bank": "البنك (اختياري)",
         "bank_placeholder": "مثال: التجاري وفا",
         "amount": "المبلغ (MAD)",
+        "amount_placeholder": "0.00",
         "quick_amounts": "مبالغ سريعة",
         "note": "ملاحظة (اختياري)",
         "note_placeholder": "ما هذا؟",
@@ -369,6 +378,7 @@
         "deposit_agency_label": "وكالة الإيداع",
         "agency_desc": "توجه إلى وكالة {agency} مع بطاقة الهوية. سيتم إضافة المبلغ بعد تأكيد الوكيل.",
         "amount_label": "مبلغ الإيداع (MAD)",
+        "amount_placeholder": "0.00",
         "continue": "متابعة",
         "balance_summary": "ملخص الرصيد",
         "current_balance": "الرصيد الحالي",
@@ -392,7 +402,9 @@
         "new_withdrawal": "سحب جديد",
         "destination_bank": "البنك المستلم",
         "rib_label": "RIB (24 رقماً)",
+        "rib_placeholder": "MA00 0000 0000 0000 0000 0000",
         "amount_label": "مبلغ السحب",
+        "amount_placeholder": "0.00",
         "transfer_fee": "رسوم التحويل ({bank})",
         "total_debit": "إجمالي المدين",
         "insufficient_funds": "أموال غير كافية",
@@ -463,5 +475,30 @@
         "language": "اللغة",
         "base_currency": "العملة الأساسية",
         "logout": "تسجيل الخروج"
+    },
+    "settings": {
+        "profile": {
+            "full_name_placeholder": "الاسم الكامل",
+            "email_placeholder": "عنوان البريد الإلكتروني"
+        },
+        "security": {
+            "current_password_placeholder": "كلمة المرور الحالية",
+            "new_password_placeholder": "كلمة المرور الجديدة",
+            "confirm_password_placeholder": "تأكيد كلمة المرور"
+        }
+    },
+    "auth": {
+        "code_placeholder": "رمز من 6 أرقام",
+        "recovery_placeholder": "رمز الاستعادة",
+        "password_placeholder": "كلمة المرور"
+    },
+    "taxes": {
+        "search_placeholder": "بحث في المستندات..."
+    },
+    "reports": {
+        "search_placeholder": "بحث في التقارير..."
+    },
+    "ai": {
+        "input_placeholder": "اسأل أي شيء عن أموالك..."
     }
 }

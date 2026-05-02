@@ -18,6 +18,7 @@ class AccountController extends Controller
         $stats = $this->getFinancialStats();
         
         $recentTransactions = DB::table('transactions')
+            ->where('user_id', $user->id)
             ->orderBy('transacted_at', 'desc')
             ->take(5)
             ->get();
@@ -63,7 +64,7 @@ class AccountController extends Controller
             'stats' => [
                 'total_credits' => round($stats['total_credits'], 2),
                 'total_debits' => round($stats['total_debits'], 2),
-                'transaction_count' => DB::table('transactions')->count(),
+                'transaction_count' => DB::table('transactions')->where('user_id', $user->id)->count(),
             ],
             'recentTransactions' => $recentTransactions,
         ]);
@@ -73,6 +74,12 @@ class AccountController extends Controller
     {
         $user = Auth::user();
         $stats = $this->getFinancialStats();
+        $preferences = $user->preferences ?? [];
+        if (is_string($preferences)) {
+            $preferences = json_decode($preferences, true) ?: [];
+        }
+        $currency = $preferences['currency'] ?? 'MAD';
+        $currencies = config('currencies.currencies', []);
 
         return Inertia::render('account', [
             'user' => [
@@ -84,6 +91,7 @@ class AccountController extends Controller
                 'avatar' => $user->avatar,
                 'created_at' => $user->created_at->format('M Y'),
                 'last_login' => now()->format('d M Y, H:i'),
+                'preferences' => $preferences,
             ],
             'security' => [
                 'two_factor_enabled' => !!$user->two_factor_secret,
@@ -93,7 +101,28 @@ class AccountController extends Controller
                 'balance' => round($stats['live_balance'], 2),
                 'total_spending' => round($stats['total_spending'], 2),
                 'total_received' => round($stats['total_credits'], 2),
-            ]
+            ],
+            'currency' => $currency,
+            'currencies' => $currencies,
         ]);
+    }
+
+    public function updateCurrency(Request $request)
+    {
+        $validated = $request->validate([
+            'currency' => ['required', 'string', 'in:MAD,USD,EUR,GBP,AED,SAR,JPY,CNY'],
+        ]);
+
+        $user = Auth::user();
+        $preferences = $user->preferences ?? [];
+        if (is_string($preferences)) {
+            $preferences = json_decode($preferences, true) ?: [];
+        }
+
+        $preferences['currency'] = $validated['currency'];
+        $user->preferences = json_encode($preferences);
+        $user->save();
+
+        return redirect()->back()->with('success', 'Currency updated to ' . $validated['currency'] . '.');
     }
 }

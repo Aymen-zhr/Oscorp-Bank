@@ -1,9 +1,11 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { User, Mail, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
+import useTranslation from '../../hooks/useTranslation';
 
 export default function Profile({ mustVerifyEmail, status }) {
     const { auth, errors } = usePage().props;
+    const { t } = useTranslation();
     const user = auth.user;
 
     const { data, setData, patch, processing, recentlySuccessful } = useForm({
@@ -106,7 +108,7 @@ export default function Profile({ mustVerifyEmail, status }) {
                                     name="name"
                                     value={data.name}
                                     className={inputClasses('name')}
-                                    placeholder="Full Name"
+                                    placeholder={t('settings.profile.full_name_placeholder')}
                                     autoComplete="name"
                                     onChange={(e) => setData('name', e.target.value)}
                                 />
@@ -137,7 +139,7 @@ export default function Profile({ mustVerifyEmail, status }) {
                                     name="email"
                                     value={data.email}
                                     className={inputClasses('email')}
-                                    placeholder="Email Address"
+                                    placeholder={t('settings.profile.email_placeholder')}
                                     autoComplete="email"
                                     onChange={(e) => setData('email', e.target.value)}
                                 />

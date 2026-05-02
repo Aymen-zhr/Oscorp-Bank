@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useCurrency } from '@/hooks/useCurrency';
 import {
     Target, Plus, DollarSign, Calendar, TrendingUp,
     Unlock, Trash2, CheckCircle2, X, Car, Monitor,
@@ -32,6 +33,7 @@ export default function Goals({ goals }) {
     const [showUnlockModal, setShowUnlockModal] = useState(null);
     const [createStep, setCreateStep] = useState(1);
     const { t, locale } = useTranslation();
+    const { format, code } = useCurrency();
 
     const { data: formData, setData, post: formPost, reset, processing } = useForm({
         name: '',
@@ -138,7 +140,7 @@ export default function Goals({ goals }) {
                              style={{ background: 'linear-gradient(135deg, var(--color-bg-card), var(--color-bg-elevated))', border: '1px solid var(--color-border)' }}
                          >
                              <div className="text-sm text-[var(--color-text-muted)] mb-1">{t('goals.total_saved')}</div>
-                             <div className="text-3xl font-bold text-[var(--color-gold)]">MAD {totalSaved.toLocaleString('en-MA', { minimumFractionDigits: 2 })}</div>
+                              <div className="text-3xl font-bold text-[var(--color-gold)]">{format(totalSaved)}</div>
                          </motion.div>
                          <motion.div
                              initial={{ opacity: 0, y: 20 }}
@@ -148,7 +150,7 @@ export default function Goals({ goals }) {
                              style={{ background: 'linear-gradient(135deg, var(--color-bg-card), var(--color-bg-elevated))', border: '1px solid var(--color-border)' }}
                          >
                              <div className="text-sm text-[var(--color-text-muted)] mb-1">{t('goals.remaining')}</div>
-                            <div className="text-3xl font-bold">MAD {totalTarget.toLocaleString('en-MA', { minimumFractionDigits: 2 })}</div>
+                             <div className="text-3xl font-bold">{format(totalTarget)}</div>
                         </motion.div>
                     </div>
 
@@ -241,19 +243,19 @@ export default function Goals({ goals }) {
                                              <div className="grid grid-cols-4 gap-3 mb-4">
                                                  <div>
                                                      <div className="text-xs text-[var(--color-text-muted)] mb-0.5">{t('goals.saved')}</div>
-                                                     <div className="font-semibold">MAD {parseFloat(goal.current_savings).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+                                                      <div className="font-semibold">{format(goal.current_savings)}</div>
                                                  </div>
                                                  <div>
                                                      <div className="text-xs text-[var(--color-text-muted)] mb-0.5">{t('goals.target')}</div>
-                                                     <div className="font-semibold">MAD {parseFloat(goal.target_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+                                                      <div className="font-semibold">{format(goal.target_amount)}</div>
                                                  </div>
                                                  <div>
                                                      <div className="text-xs text-[var(--color-text-muted)] mb-0.5">{t('goals.remaining')}</div>
-                                                     <div className="font-semibold text-red-400">MAD {parseFloat(goal.remaining_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+                                                      <div className="font-semibold text-red-400">{format(goal.remaining_amount)}</div>
                                                  </div>
                                                  <div>
                                                      <div className="text-xs text-[var(--color-text-muted)] mb-0.5">{t('goals.per_month')}</div>
-                                                     <div className="font-semibold text-[var(--color-gold)]">MAD {parseFloat(goal.monthly_savings).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+                                                      <div className="font-semibold text-[var(--color-gold)]">{format(goal.monthly_savings)}</div>
                                                  </div>
                                              </div>
 
@@ -306,7 +308,7 @@ export default function Goals({ goals }) {
                                              </div>
 
                                              <div className="text-center mb-4">
-                                                 <div className="text-2xl font-bold text-[var(--color-gold)]">MAD {parseFloat(goal.current_savings).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+                                                  <div className="text-2xl font-bold text-[var(--color-gold)]">{format(goal.current_savings)}</div>
                                                  <div className="text-sm text-[var(--color-text-muted)]">{t('goals.available_to_unlock')}</div>
                                              </div>
 
@@ -316,7 +318,7 @@ export default function Goals({ goals }) {
                                                  style={{ background: 'linear-gradient(135deg, var(--color-gold), var(--color-gold-dark))', color: '#000' }}
                                              >
                                                  <Unlock className="w-4 h-4" />
-                                                 {t('goals.unlock_amount', { amount: parseFloat(goal.current_savings).toLocaleString('en-US', { minimumFractionDigits: 2 }) })}
+                                                  {t('goals.unlock_amount', { amount: format(goal.current_savings) })}
                                              </button>
                                         </motion.div>
                                     );
@@ -350,7 +352,7 @@ export default function Goals({ goals }) {
                                                      <div className="text-sm text-[var(--color-gold)]">{t('goals.funds_unlocked')}</div>
                                                  </div>
                                              </div>
-                                            <div className="text-xl font-bold">MAD {parseFloat(goal.current_savings).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+                                              <div className="text-xl font-bold">{format(goal.current_savings)}</div>
                                         </motion.div>
                                     );
                                 })}
@@ -460,7 +462,7 @@ export default function Goals({ goals }) {
                                                          type="number"
                                                          value={formData.target_amount}
                                                          onChange={e => setData('target_amount', e.target.value)}
-                                                         placeholder="5000"
+                                                          placeholder={t('goals.target_amount_placeholder')}
                                                          min="1"
                                                          step="0.01"
                                                          className="w-full pl-12 pr-4 py-3 rounded-xl text-base outline-none transition-all focus:ring-2 focus:ring-[var(--color-gold)]/50"
@@ -479,7 +481,7 @@ export default function Goals({ goals }) {
                                                          type="number"
                                                          value={formData.target_months}
                                                          onChange={e => setData('target_months', e.target.value)}
-                                                         placeholder="12"
+                                                          placeholder={t('goals.timeframe_placeholder')}
                                                          min="1"
                                                          max="120"
                                                          className="w-full pl-12 pr-4 py-3 rounded-xl text-base outline-none transition-all focus:ring-2 focus:ring-[var(--color-gold)]/50"
@@ -515,8 +517,8 @@ export default function Goals({ goals }) {
                                                      style={{ background: 'var(--color-gold-bg)', border: '1px solid var(--color-gold)/30' }}
                                                  >
                                                      <div className="text-sm text-[var(--color-text-muted)] mb-1">{t('goals.you_need_save')}</div>
-                                                     <div className="text-2xl font-bold text-[var(--color-gold)]">MAD {monthlySavingsPreview}<span className="text-base font-normal">{t('goals.per_month_label')}</span></div>
-                                                     <div className="text-sm text-[var(--color-text-muted)] mt-1">{t('goals.save_for_months', { months: formData.target_months, amount: parseFloat(formData.target_amount).toLocaleString() })}</div>
+                                                      <div className="text-2xl font-bold text-[var(--color-gold)]">{format(monthlySavingsPreview)}<span className="text-base font-normal">{t('goals.per_month_label')}</span></div>
+                                                     <div className="text-sm text-[var(--color-text-muted)] mt-1">                                                  {t('goals.save_for_months', { months: formData.target_months, amount: format(formData.target_amount) })}</div>
                                                  </motion.div>
                                              )}
 
@@ -587,7 +589,7 @@ export default function Goals({ goals }) {
                                                  type="number"
                                                  value={depositData.amount}
                                                  onChange={e => setDepositData('amount', e.target.value)}
-                                                 placeholder="100"
+                                                  placeholder={t('goals.deposit_amount_placeholder')}
                                                  min="0.01"
                                                  step="0.01"
                                                  className="w-full pl-12 pr-4 py-3 rounded-xl text-lg outline-none transition-all focus:ring-2 focus:ring-[var(--color-gold)]/50"

@@ -3,10 +3,12 @@ import { Send, X, Terminal, BrainCircuit } from 'lucide-react';
 import { usePage, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useCurrency } from '../../hooks/useCurrency';
 
 export default function OISPanel() {
     const { props } = usePage();
     const { t } = useTranslation();
+    const { format } = useCurrency();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
         {
@@ -14,7 +16,7 @@ export default function OISPanel() {
             role: 'ai',
             text: t('dashboard.ois_welcome', {
                 name: props.auth?.user?.name || t('dashboard.ois_default_account_holder'),
-                balance: Number(props.balance || 0).toLocaleString()
+                balance: format(props.balance || 0)
             })
         }
     ]);

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useCurrency } from '@/hooks/useCurrency';
 import {
     Plus, X, Users, Receipt, Tv, Music, Gamepad2, Palette,
     Utensils, Wifi, CheckCircle2, Clock, Trash2,
@@ -29,8 +30,10 @@ function getIconComponent(name) {
 
 const AVATAR_COLORS = ['#D4AF37', '#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EC4899', '#EF4444', '#06B6D4'];
 
-export default function SplitBills({ balance, splits = [], summary = {}, suggestedBills = [], contacts = [] }) {
+export default function SplitBills({ balance, userId, splits = [], summary = {}, suggestedBills = [], contacts = [] }) {
     const { t } = useTranslation();
+    const { format, code } = useCurrency();
+    const isMe = (p) => p.user_id === userId;
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [showContacts, setShowContacts] = useState(false);
@@ -84,9 +87,7 @@ export default function SplitBills({ balance, splits = [], summary = {}, suggest
         return () => clearTimeout(timer);
     }, [contactSearch, showSearch, searchUsers]);
 
-    const fmtCurrency = (amount) => {
-        return Number(amount).toLocaleString('en-MA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    };
+    // Using useCurrency hook instead of fmtCurrency
 
     const fmtDate = (date) => {
         if (!date) return null;
@@ -297,7 +298,7 @@ export default function SplitBills({ balance, splits = [], summary = {}, suggest
                                                         </div>
                                                         <div className="min-w-0">
                                                             <div className="text-[13px] font-semibold truncate" style={{ color: 'var(--color-text-main)' }}>{bill.title}</div>
-                                                            <div className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>{bill.participants} {t('split_bills.people_count').replace('{count}', '')} &middot; MAD {bill.typical_amount}</div>
+                                                            <div className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>{bill.participants} {t('split_bills.people_count').replace('{count}', '')} &middot; {format(bill.typical_amount)}</div>
                                                         </div>
                                                     </button>
                                                 );
@@ -325,8 +326,8 @@ export default function SplitBills({ balance, splits = [], summary = {}, suggest
                                         </div>
                                         <div>
                                             <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--color-text-muted)' }}>{t(label)}</div>
-                                            <div className="text-[20px] font-bold leading-none" style={{ color }}>
-                                                MAD {fmtCurrency(Math.abs(value))}
+                                             <div className="text-[20px] font-bold leading-none" style={{ color }}>
+                                                 {format(Math.abs(value))} {code}
                                             </div>
                                         </div>
                                     </div>
@@ -345,7 +346,7 @@ export default function SplitBills({ balance, splits = [], summary = {}, suggest
                                     {splits.filter(s => s.status === 'pending').map((split) => {
                                         const Icon = getIconComponent(split.icon);
                                         const acceptedCount = split.participants.filter(p => p.acceptance_status === 'accepted').length;
-                                        const isPendingForYou = split.participants.some(p => p.is_you && p.acceptance_status === 'pending');
+                                        const isPendingForYou = split.participants.some(p => isMe(p) && p.acceptance_status === 'pending');
                                         return (
                                             <div key={split.id} className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-card)', border: '1px solid rgba(245,158,11,0.3)' }}>
                                                 <div className="flex items-center gap-4 px-5 py-4">
@@ -361,7 +362,7 @@ export default function SplitBills({ balance, splits = [], summary = {}, suggest
                                                             </span>
                                                         </div>
                                                         <div className="text-[11px] mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                                                            {t('split_bills.accepted_count', { accepted: acceptedCount, total: split.participant_count })} &middot; {t('split_bills.your_share', { amount: fmtCurrency(split.your_share) })}
+                                                            {t('split_bills.accepted_count', { accepted: acceptedCount, total: split.participant_count })} &middot;                                                                  {t('split_bills.your_share', { amount: format(split.your_share) })}
                                                         </div>
                                                     </div>
                                                     {isPendingForYou && (
@@ -406,7 +407,7 @@ export default function SplitBills({ balance, splits = [], summary = {}, suggest
                                     {splits.filter(s => s.status === 'active').map((split) => {
                                         const Icon = getIconComponent(split.icon);
                                         const isExpanded = expandedSplit === split.id;
-                                        const unpaidCount = split.participants.filter(p => !p.is_you && !p.has_paid).length;
+                                        const unpaidCount = split.participants.filter(p => !isMe(p) && !p.has_paid).length;
                                         return (
                                             <div key={split.id} className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
                                                 <div className="flex items-center gap-4 px-5 py-4 cursor-pointer"
@@ -449,10 +450,10 @@ export default function SplitBills({ balance, splits = [], summary = {}, suggest
                                                     <div className="flex items-center gap-3">
                                                         <div className="text-right">
                                                             <div className="text-[16px] font-bold" style={{ color: split.you_owe ? '#EF4444' : '#10B981' }}>
-                                                                MAD {fmtCurrency(split.your_share)}
+                                                                 {format(split.your_share)} {code}
                                                             </div>
                                                             <div className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
-                                                                {t('common.total_amount')}: MAD {fmtCurrency(split.total_amount)}
+                                                                 {t('common.total_amount')}: {format(split.total_amount)} {code}
                                                             </div>
                                                         </div>
                                                         {isExpanded ? <ChevronUp className="w-4 h-4 shrink-0" style={{ color: 'var(--color-text-muted)' }} /> : <ChevronDown className="w-4 h-4 shrink-0" style={{ color: 'var(--color-text-muted)' }} />}
@@ -474,7 +475,7 @@ export default function SplitBills({ balance, splits = [], summary = {}, suggest
                                                                         <div className="space-y-2">
                                                                             {split.participants.map((p, i) => (
                                                                                 <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-xl"
-                                                                                    style={{ background: p.is_you ? 'rgba(212,175,55,0.08)' : 'transparent' }}>
+                                                                                    style={{ background: isMe(p) ? 'rgba(212,175,55,0.08)' : 'transparent' }}>
                                                                                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold"
                                                                                         style={{ background: p.avatar_color + '22', color: p.avatar_color, border: `1.5px solid ${p.avatar_color}40` }}>
                                                                                         {p.name.charAt(0).toUpperCase()}
@@ -482,19 +483,19 @@ export default function SplitBills({ balance, splits = [], summary = {}, suggest
                                                                                     <div className="flex-1">
                                                                                         <div className="flex items-center gap-2">
                                                                                             <span className="text-[13px] font-medium" style={{ color: 'var(--color-text-main)' }}>
-                                                                                                {p.name} {p.is_you && <span className="text-[10px]" style={{ color: 'var(--color-gold)' }}>{t('split_bills.you_label')}</span>}
+                                                                                                 {p.name} {isMe(p) && <span className="text-[10px]" style={{ color: 'var(--color-gold)' }}>{t('split_bills.you_label')}</span>}
                                                                                             </span>
                                                                                         </div>
                                                                                         {p.tag && <div className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>{p.tag}</div>}
                                                                                     </div>
                                                                                     <div className="text-right">
                                                                                         <span className="text-[13px] font-semibold block" style={{ color: 'var(--color-text-main)' }}>
-                                                                                            MAD {fmtCurrency(p.share_amount)}
+                                                                                            {format(p.share_amount)} {code}
                                                                                         </span>
                                                                                         {p.has_paid ? (
                                                                                             <span className="text-[10px] font-medium" style={{ color: '#10B981' }}>{t('split_bills.paid')}</span>
                                                                                         ) : p.partial_paid > 0 ? (
-                                                                                            <span className="text-[10px] font-medium" style={{ color: '#3B82F6' }}>{t('split_bills.partial_paid', { amount: fmtCurrency(p.partial_paid) })}</span>
+                                                                                            <span className="text-[10px] font-medium" style={{ color: '#3B82F6' }}>                                                                 {t('split_bills.partial_paid', { amount: format(p.partial_paid) })}</span>
                                                                                         ) : p.acceptance_status === 'accepted' ? (
                                                                                             <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(245,158,11,0.12)', color: '#F59E0B' }}>{t('split_bills.pending_status')}</span>
                                                                                         ) : null}
@@ -504,12 +505,12 @@ export default function SplitBills({ balance, splits = [], summary = {}, suggest
                                                                         </div>
                                                                     </div>
                                                                      <div className="flex items-center gap-2 pt-2">
-                                                                         {split.you_owe && !split.participants.find(p => p.is_you)?.has_paid && (
+                                                                          {split.you_owe && !split.participants.find(p => isMe(p))?.has_paid && (
                                                                              <>
                                                                                  <button onClick={() => handlePay(split.id)}
                                                                                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-semibold transition-all hover:opacity-80"
                                                                                      style={{ background: 'var(--color-gold)', color: '#000' }}>
-                                                                                     <CreditCard className="w-4 h-4" /> {t('split_bills.pay_amount', { amount: fmtCurrency(split.your_share) })}
+                                                                                     <CreditCard className="w-4 h-4" />                                                                  {t('split_bills.pay_amount', { amount: format(split.your_share) })}
                                                                                  </button>
                                                                                  <button onClick={() => handlePay(split.id, split.your_share / 2)}
                                                                                      className="px-3 py-2.5 rounded-xl text-[11px] font-medium transition-all hover:opacity-80"
@@ -573,7 +574,7 @@ export default function SplitBills({ balance, splits = [], summary = {}, suggest
                                                         <div className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>{t('split_bills.people_count', { count: split.participant_count })} &middot; {t('split_bills.settled')}</div>
                                                     </div>
                                                 <div className="text-right">
-                                                    <div className="text-[14px] font-bold" style={{ color: '#10B981' }}>MAD {fmtCurrency(split.your_share)}</div>
+                                                    <div className="text-[14px] font-bold" style={{ color: '#10B981' }}>{format(split.your_share)} {code}</div>
                                                 </div>
                                                 <CheckCircle2 className="w-4 h-4" style={{ color: '#10B981' }} />
                                             </div>
@@ -669,7 +670,7 @@ export default function SplitBills({ balance, splits = [], summary = {}, suggest
                                     <div>
                                         <label className="text-[11px] font-semibold uppercase tracking-wider mb-2 block" style={{ color: 'var(--color-text-muted)' }}>{t('split_bills.total_amount')}</label>
                                         <input type="number" step="0.01" min="0.01" value={data.total_amount} onChange={e => setData('total_amount', e.target.value)}
-                                            placeholder="0.00"
+                                            placeholder={t('split_bills.amount_placeholder')}
                                             className="w-full px-4 py-3 rounded-xl text-[14px] outline-none"
                                             style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-main)' }} />
                                         {errors.total_amount && <p className="text-red-400 text-[12px] mt-1">{errors.total_amount}</p>}
@@ -790,7 +791,7 @@ export default function SplitBills({ balance, splits = [], summary = {}, suggest
                                                 ) : (
                                                     <>
                                                         <input type="text" value={p.name} onChange={e => updateParticipant(i, 'name', e.target.value)}
-                                                            placeholder="Name"
+                                                            placeholder={t('split_bills.name_placeholder')}
                                                             className="flex-1 bg-transparent text-[13px] outline-none min-w-0"
                                                             style={{ color: 'var(--color-text-main)' }} />
                                                         {p.tag && <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>{p.tag}</span>}
@@ -799,7 +800,7 @@ export default function SplitBills({ balance, splits = [], summary = {}, suggest
                                                 {data.split_type === 'custom' && !p.is_you && (
                                                     <input type="number" step="0.01" min="0" value={p.share_amount}
                                                         onChange={e => updateParticipant(i, 'share_amount', e.target.value)}
-                                                        placeholder="MAD"
+                                                        placeholder={t('split_bills.amount_mad_placeholder')}
                                                         className="w-24 bg-transparent text-[13px] outline-none text-right"
                                                         style={{ color: 'var(--color-text-main)' }} />
                                                 )}

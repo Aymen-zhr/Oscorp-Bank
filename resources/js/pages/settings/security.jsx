@@ -1,9 +1,11 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { Shield, Key, CheckCircle2 } from 'lucide-react';
+import useTranslation from '../../hooks/useTranslation';
 
 export default function Security({ canManageTwoFactor, twoFactorEnabled, requiresConfirmation }) {
     const { errors } = usePage().props;
+    const { t } = useTranslation();
 
     const passwordForm = useForm({
         current_password: '',
@@ -129,7 +131,7 @@ export default function Security({ canManageTwoFactor, twoFactorEnabled, require
                                     name="current_password"
                                     value={passwordForm.current_password}
                                     className={inputClasses('current_password')}
-                                    placeholder="Current Password"
+                                    placeholder={t('settings.security.current_password_placeholder')}
                                     autoComplete="current-password"
                                     onChange={(e) => passwordForm.setData('current_password', e.target.value)}
                                 />

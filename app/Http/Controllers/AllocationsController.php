@@ -5,13 +5,16 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class AllocationsController extends Controller
 {
     public function page()
     {
+        $userId = Auth::id();
         // Calculate category allocations from debit transactions
         $categoryMap = DB::table('transactions')
+            ->where('user_id', $userId)
             ->where('type', 'debit')
             ->select('category', DB::raw('SUM(amount) as total'))
             ->groupBy('category')

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Traits\HasOscorpBalance;
 
 class TaxesController extends Controller
@@ -13,11 +14,13 @@ class TaxesController extends Controller
 
     public function page()
     {
+        $userId = Auth::id();
         $stats = $this->getFinancialStats();
         $startOfYear = Carbon::now()->startOfYear();
 
         // Calculate total income this year from real transactions
         $totalIncomeThisYear = DB::table('transactions')
+            ->where('user_id', $userId)
             ->where('type', 'credit')
             ->where('transacted_at', '>=', $startOfYear)
             ->sum('amount');
@@ -31,6 +34,7 @@ class TaxesController extends Controller
 
         // Calculate tax paid from specific tax-related transactions
         $taxPaidThisYear = DB::table('transactions')
+            ->where('user_id', $userId)
             ->where('type', 'debit')
             ->where('transacted_at', '>=', $startOfYear)
             ->where(function($q) {
@@ -43,6 +47,7 @@ class TaxesController extends Controller
 
         // Calculate deductions from charitable/education/health categories
         $taxDeductions = DB::table('transactions')
+            ->where('user_id', $userId)
             ->where('type', 'debit')
             ->where('transacted_at', '>=', $startOfYear)
             ->whereIn('category', ['Health', 'Education', 'Philanthropy', 'Donations'])
@@ -72,6 +77,7 @@ class TaxesController extends Controller
 
         // If we have real tax transactions, add them as documents
         $taxTransactions = DB::table('transactions')
+            ->where('user_id', $userId)
             ->where('type', 'debit')
             ->where('transacted_at', '>=', Carbon::now()->subMonths(6))
             ->where(function($q) {
@@ -95,6 +101,7 @@ class TaxesController extends Controller
 
         // Build tax categories from actual spending breakdown
         $categoryTotals = DB::table('transactions')
+            ->where('user_id', $userId)
             ->where('type', 'debit')
             ->where('transacted_at', '>=', $startOfYear)
             ->whereNotNull('category')

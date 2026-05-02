@@ -5,14 +5,11 @@ import Topbar from '@/components/dashboard/Topbar';
 import { ArrowDownToLine, CheckCircle, ArrowRight, Banknote, Info, Sparkles, Building2, Copy, Check } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useCurrency } from '@/hooks/useCurrency';
 
 const QUICK_AMOUNTS = [200, 500, 1000, 2000, 5000, 10000];
 
 const AGENCIES = ['Casablanca - Anfa', 'Casablanca - Maarif', 'Rabat - Agdal', 'Marrakech - Gueliz', 'Tangier - City Center'];
-
-function formatMAD(n) {
-    return Number(n).toLocaleString('en-MA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
 
 export default function Deposit({ balance, recentDeposits }) {
     const [success, setSuccess] = useState(false);
@@ -20,6 +17,7 @@ export default function Deposit({ balance, recentDeposits }) {
     const [copied, setCopied] = useState(false);
     const [confirming, setConfirming] = useState(false);
     const { t, locale } = useTranslation();
+    const { format, code } = useCurrency();
 
     const SOURCES = [
         { id: 'bank', name: t('deposit.source_bank'), icon: Building2, desc: 'Direct transfer to your OSCORP RIB' },
@@ -76,7 +74,7 @@ export default function Deposit({ balance, recentDeposits }) {
                             </div>
                             <div className="flex flex-col items-end gap-1">
                                 <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">{t('deposit.available_balance')}</div>
-                                <div className="text-[24px] font-bold text-[var(--color-gold)]">{formatMAD(balance)} <span className="text-[12px] font-medium opacity-60">MAD</span></div>
+                                <div className="text-[24px] font-bold text-[var(--color-gold)]">{format(balance)} <span className="text-[12px] font-medium opacity-60">{code}</span></div>
                             </div>
                         </div>
 
@@ -165,14 +163,14 @@ export default function Deposit({ balance, recentDeposits }) {
                                             <Banknote className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-muted)]" />
                                             <input
                                                 type="number"
-                                                placeholder="0.00"
+                                                placeholder={t('deposit.amount_placeholder')}
                                                 value={data.amount}
                                                 onChange={e => setData('amount', e.target.value)}
                                                 className={`${inputClass} pl-14 text-[28px] font-bold h-20`}
                                             />
                                             <div className="absolute right-5 top-1/2 -translate-y-1/2 flex items-center gap-2">
                                                 <div className="h-8 w-[1px] bg-[var(--color-border)] mx-2" />
-                                                <span className="text-[16px] font-bold text-[var(--color-text-muted)]">MAD</span>
+                                                <span className="text-[16px] font-bold text-[var(--color-text-muted)]">{code}</span>
                                             </div>
                                         </div>
 
@@ -213,15 +211,15 @@ export default function Deposit({ balance, recentDeposits }) {
                                     <div className="space-y-3">
                                         <div className="flex justify-between text-[13px]">
                                             <span className="text-[var(--color-text-muted)]">{t('deposit.current_balance')}</span>
-                                            <span className="font-semibold">{formatMAD(balance)} MAD</span>
+                                                <span className="font-semibold">{format(balance)} {code}</span>
                                         </div>
                                         <div className="flex justify-between text-[13px]">
                                             <span className="text-[var(--color-text-muted)]">{t('deposit.expected_deposit')}</span>
-                                            <span className="font-bold text-emerald-400">+{formatMAD(data.amount || 0)} MAD</span>
+                                                <span className="font-bold text-emerald-400">+{format(data.amount || 0)} {code}</span>
                                         </div>
                                         <div className="pt-3 border-t border-[var(--color-border)] flex justify-between">
                                             <span className="text-[14px] font-bold">{t('deposit.new_balance')}</span>
-                                            <span className="text-[18px] font-bold text-[var(--color-gold)]">{formatMAD(newBalance)} MAD</span>
+                                                <span className="text-[18px] font-bold text-[var(--color-gold)]">{format(newBalance)} {code}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -243,7 +241,7 @@ export default function Deposit({ balance, recentDeposits }) {
                                                         <div className="text-[10px] text-[var(--color-text-muted)]">{new Date(d.transacted_at).toLocaleDateString()}</div>
                                                     </div>
                                                 </div>
-                                                <div className="text-[13px] font-bold text-emerald-400">+{formatMAD(d.amount)}</div>
+                                                        <div className="text-[13px] font-bold text-emerald-400">+{format(d.amount)}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -272,7 +270,7 @@ export default function Deposit({ balance, recentDeposits }) {
                                 <div className="p-4 rounded-2xl bg-[var(--color-bg-elevated)] space-y-3">
                                     <div className="flex justify-between text-[14px]">
                                         <span className="text-[var(--color-text-muted)]">{t('deposit.amount')}</span>
-                                        <span className="font-bold text-[var(--color-text-main)]">{formatMAD(data.amount)} MAD</span>
+                                                    <span className="font-bold text-[var(--color-text-main)]">{format(data.amount)} {code}</span>
                                     </div>
                                     <div className="flex justify-between text-[14px]">
                                         <span className="text-[var(--color-text-muted)]">{t('deposit.method')}</span>

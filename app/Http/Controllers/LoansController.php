@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Traits\HasOscorpBalance;
 
 class LoansController extends Controller
@@ -13,10 +14,12 @@ class LoansController extends Controller
 
     public function page()
     {
+        $userId = Auth::id();
         $stats = $this->getFinancialStats();
 
         // Calculate payments made this year from transactions
         $paidOffThisYear = DB::table('transactions')
+            ->where('user_id', $userId)
             ->where('type', 'debit')
             ->where('transacted_at', '>=', Carbon::now()->startOfYear())
             ->where(function($q) {

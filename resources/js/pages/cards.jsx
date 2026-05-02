@@ -9,11 +9,13 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export default function Cards({ user, card, rib, account, stats, recentTransactions = [] }) {
     const [showFullCard, setShowFullCard] = useState(false);
     const [copied, setCopied] = useState(null);
     const { t, locale } = useTranslation();
+    const { format } = useCurrency();
 
     const copyToClipboard = (text, key) => {
         navigator.clipboard.writeText(text);
@@ -21,9 +23,7 @@ export default function Cards({ user, card, rib, account, stats, recentTransacti
         setTimeout(() => setCopied(null), 2000);
     };
 
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-MA', { style: 'currency', currency: 'MAD' }).format(amount);
-    };
+    // Using useCurrency hook instead of formatCurrency
 
     return (
         <div className="flex h-screen w-full overflow-hidden font-sans antialiased selection:bg-[var(--color-gold)] selection:text-white" style={{ background: 'var(--color-bg-base)' }}>
@@ -131,11 +131,11 @@ export default function Cards({ user, card, rib, account, stats, recentTransacti
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="p-4 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)]">
                                         <div className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase mb-2">{t('cards.spending_limit')}</div>
-                                        <div className="text-[18px] font-bold text-[var(--color-text-main)]">{formatCurrency(card.limit)}</div>
+                                         <div className="text-[18px] font-bold text-[var(--color-text-main)]">{format(card.limit)}</div>
                                     </div>
                                     <div className="p-4 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)]">
                                         <div className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase mb-2">{t('cards.available_credit')}</div>
-                                        <div className="text-[18px] font-bold text-emerald-400">{formatCurrency(card.available)}</div>
+                                         <div className="text-[18px] font-bold text-emerald-400">{format(card.available)}</div>
                                     </div>
                                 </div>
                             </div>
@@ -249,7 +249,7 @@ export default function Cards({ user, card, rib, account, stats, recentTransacti
                                             </div>
                                             <span className="text-[13px] font-bold text-[var(--color-text-main)]">{t('cards.total_inflow')}</span>
                                         </div>
-                                        <span className="text-[14px] font-bold text-emerald-400">+{formatCurrency(stats.total_credits)}</span>
+                                         <span className="text-[14px] font-bold text-emerald-400">+{format(stats.total_credits)}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
@@ -258,7 +258,7 @@ export default function Cards({ user, card, rib, account, stats, recentTransacti
                                             </div>
                                             <span className="text-[13px] font-bold text-[var(--color-text-main)]">{t('cards.total_outflow')}</span>
                                         </div>
-                                        <span className="text-[14px] font-bold text-red-400">-{formatCurrency(stats.total_debits)}</span>
+                                         <span className="text-[14px] font-bold text-red-400">-{format(stats.total_debits)}</span>
                                     </div>
                                     <div className="pt-4 border-t border-[var(--color-border)] flex items-center justify-between">
                                         <div className="flex items-center gap-3">
@@ -305,7 +305,7 @@ export default function Cards({ user, card, rib, account, stats, recentTransacti
                                                     </div>
                                                 </div>
                                                 <div className={`text-[15px] font-bold ${tx.type === 'credit' ? 'text-emerald-400' : 'text-[var(--color-text-main)]'}`}>
-                                                    {tx.type === 'credit' ? '+' : '-'}{formatCurrency(tx.amount)}
+                                                     {tx.type === 'credit' ? '+' : '-'}{format(tx.amount)}
                                                 </div>
                                             </div>
                                         ))}

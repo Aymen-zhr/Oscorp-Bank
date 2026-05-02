@@ -2,22 +2,16 @@ import { ArrowUpRight, TrendingUp, Plus, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from '@inertiajs/react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useCurrency } from '../../hooks/useCurrency';
 
 export default function EarningsCard({ goal }) {
     const { t } = useTranslation();
+    const { format } = useCurrency();
     const cx = 90, cy = 85, r = 60;
     const arcPath = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
     
     // If no goal, use default path progress (0%)
     const pct = goal ? Math.min(1, Math.max(0, goal.progress / 100)) : 0;
-    
-    // Format currency helper
-    const formatMoney = (amount) => {
-        return new Intl.NumberFormat('en-US', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-        }).format(amount) + ' MAD';
-    };
 
     return (
         <motion.div
@@ -62,9 +56,9 @@ export default function EarningsCard({ goal }) {
                             initial={{ opacity: 0, y: 5 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="text-[20px] font-bold text-[var(--color-text-main)] truncate max-w-[140px]"
-                            title={formatMoney(goal.current_savings)}
-                        >
-                            {formatMoney(goal.current_savings)}
+                                                            title={format(goal.current_savings)}
+                                >
+                                    {format(goal.current_savings)}
                         </motion.span>
                         <motion.span
                             initial={{ opacity: 0, scale: 0.8 }}
@@ -72,7 +66,7 @@ export default function EarningsCard({ goal }) {
                             className="inline-flex items-center gap-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap"
                             style={{ background: 'rgba(212,175,55,0.12)', color: 'var(--color-gold)' }}
                         >
-                            <Target className="w-2.5 h-2.5" /> {formatMoney(goal.target_amount)}
+                                    <Target className="w-2.5 h-2.5" /> {format(goal.target_amount)}
                         </motion.span>
                     </div>
 

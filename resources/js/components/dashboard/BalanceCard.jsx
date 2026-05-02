@@ -3,9 +3,11 @@ import { motion } from 'framer-motion';
 import { useState, useRef } from 'react';
 import { Link } from '@inertiajs/react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useCurrency } from '../../hooks/useCurrency';
 
 export default function BalanceCard({ balance }) {
     const { t } = useTranslation();
+    const { format, code } = useCurrency();
     const [showAmount, setShowAmount] = useState(true);
     const [isHovered, setIsHovered] = useState(false);
     const ref = useRef(null);
@@ -74,9 +76,9 @@ export default function BalanceCard({ balance }) {
                             style={{ color: 'var(--color-text-main)' }}
                             animate={{ scale: isHovered ? 1.01 : 1 }}
                         >
-                            {showAmount ? Number(balance).toLocaleString() : '••••••'}
+                            {showAmount ? format(balance) : '••••••'}
                         </motion.span>
-                        <span className="text-[14px] font-medium text-[var(--color-text-muted)]">MAD</span>
+                        <span className="text-[14px] font-medium text-[var(--color-text-muted)]">{code}</span>
                     </motion.div>
                 </div>
             </div>

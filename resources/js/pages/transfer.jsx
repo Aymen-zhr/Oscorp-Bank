@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useCurrency } from '@/hooks/useCurrency';
 import {
     Send, ArrowRightLeft, Users, Clock, CheckCircle2,
     X, Wallet, Plus, Search, ArrowUpRight, ArrowDownLeft
@@ -15,6 +16,7 @@ export default function Transfer({ balance, recentTransfers = [], beneficiaries 
     const [step, setStep] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const { t, locale } = useTranslation();
+    const { format, code } = useCurrency();
 
     const { data, setData, post, processing, errors, reset } = useForm({
         amount: '',
@@ -43,9 +45,7 @@ export default function Transfer({ balance, recentTransfers = [], beneficiaries 
         });
     };
 
-    const fmtCurrency = (amount) => {
-        return new Intl.NumberFormat('en-MA', { minimumFractionDigits: 2 }).format(amount);
-    };
+    // Using useCurrency hook instead
 
     const fmtDate = (date) => {
         return new Date(date).toLocaleDateString('en-MA', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -73,7 +73,7 @@ export default function Transfer({ balance, recentTransfers = [], beneficiaries 
                             </div>
                             <div className="px-5 py-3 rounded-2xl" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
                                 <div className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>{t('transfer.available_balance')}</div>
-                                <div className="text-[22px] font-bold text-[var(--color-gold)]">MAD {fmtCurrency(balance)}</div>
+                                <div className="text-[22px] font-bold text-[var(--color-gold)]">{format(balance)} {code}</div>
                             </div>
                         </motion.div>
 
@@ -138,7 +138,7 @@ export default function Transfer({ balance, recentTransfers = [], beneficiaries 
                                                                 <div className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>{fmtDate(tx.transacted_at)}</div>
                                                             </div>
                                                         </div>
-                                                        <div className="text-[14px] font-bold text-red-400">-MAD {fmtCurrency(tx.amount)}</div>
+                                                         <div className="text-[14px] font-bold text-red-400">-{format(tx.amount)}</div>
                                                     </motion.div>
                                                 ))}
                                             </div>
@@ -170,11 +170,11 @@ export default function Transfer({ balance, recentTransfers = [], beneficiaries 
                                             <div className="grid grid-cols-2 gap-4 mb-6">
                                                 <div>
                                                     <label className="block text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--color-text-muted)' }}>{t('transfer.account_number')}</label>
-                                                    <input type="text" value={data.recipient_account} onChange={e => setData('recipient_account', e.target.value)} placeholder="MA00..." className="w-full px-4 py-3 rounded-xl text-base outline-none transition-all" style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-main)' }} />
+                                                    <input type="text" value={data.recipient_account} onChange={e => setData('recipient_account', e.target.value)} placeholder={t('transfer.account_placeholder')} className="w-full px-4 py-3 rounded-xl text-base outline-none transition-all" style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-main)' }} />
                                                 </div>
                                                 <div>
                                                     <label className="block text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--color-text-muted)' }}>{t('transfer.bank')}</label>
-                                                    <input type="text" value={data.bank} onChange={e => setData('bank', e.target.value)} placeholder="e.g. Attijariwafa" className="w-full px-4 py-3 rounded-xl text-base outline-none transition-all" style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-main)' }} />
+                                                    <input type="text" value={data.bank} onChange={e => setData('bank', e.target.value)} placeholder={t('transfer.bank_placeholder')} className="w-full px-4 py-3 rounded-xl text-base outline-none transition-all" style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-main)' }} />
                                                 </div>
                                             </div>
 
@@ -183,7 +183,7 @@ export default function Transfer({ balance, recentTransfers = [], beneficiaries 
                                                 <label className="block text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--color-text-muted)' }}>{t('transfer.amount')}</label>
                                                 <div className="relative">
                                                     <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'var(--color-text-muted)' }} />
-                                                    <input type="number" value={data.amount} onChange={e => setData('amount', e.target.value)} placeholder="0.00" min="1" step="0.01" className="w-full pl-12 pr-4 py-3 rounded-xl text-2xl font-bold outline-none transition-all focus:ring-2 focus:ring-[var(--color-gold)]/50" style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-gold)' }} required />
+                                                    <input type="number" value={data.amount} onChange={e => setData('amount', e.target.value)} placeholder={t('transfer.amount_placeholder')} min="1" step="0.01" className="w-full pl-12 pr-4 py-3 rounded-xl text-2xl font-bold outline-none transition-all focus:ring-2 focus:ring-[var(--color-gold)]/50" style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-gold)' }} required />
                                                 </div>
                                                 {errors.amount && <p className="mt-1 text-[12px] text-red-400">{errors.amount}</p>}
                                             </div>
@@ -194,7 +194,7 @@ export default function Transfer({ balance, recentTransfers = [], beneficiaries 
                                                 <div className="flex gap-2 flex-wrap">
                                                     {quickAmounts.map(amount => (
                                                         <button key={amount} type="button" onClick={() => setData('amount', amount)} className="px-4 py-2 rounded-xl text-[13px] font-semibold transition-all" style={{ background: data.amount === String(amount) ? 'var(--color-gold)' : 'var(--color-bg-elevated)', color: data.amount === String(amount) ? '#000' : 'var(--color-text-muted)', border: `1px solid ${data.amount === String(amount) ? 'var(--color-gold)' : 'var(--color-border)'}` }}>
-                                                            MAD {fmtCurrency(amount)}
+                                                             {format(amount)} {code}
                                                         </button>
                                                     ))}
                                                 </div>
@@ -212,7 +212,7 @@ export default function Transfer({ balance, recentTransfers = [], beneficiaries 
                                                     <div className="flex items-center justify-between">
                                                         <div>
                                                              <div className="text-[12px] font-semibold" style={{ color: 'var(--color-text-muted)' }}>{t('transfer.sending')}</div>
-                                                            <div className="text-[24px] font-bold text-[var(--color-gold)]">MAD {fmtCurrency(data.amount)}</div>
+                                                            <div className="text-[24px] font-bold text-[var(--color-gold)]">{format(data.amount)} {code}</div>
                                                         </div>
                                                         <div className="text-right">
                                                              <div className="text-[12px] font-semibold" style={{ color: 'var(--color-text-muted)' }}>{t('transfer.to')}</div>

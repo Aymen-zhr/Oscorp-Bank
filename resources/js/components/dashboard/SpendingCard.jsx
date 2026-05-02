@@ -3,6 +3,7 @@ import { usePage, Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useCurrency } from '../../hooks/useCurrency';
 
 const ALLOCATION_COLORS = [
     'var(--color-gold)',
@@ -27,6 +28,7 @@ const getCategoryIcon = (name) => {
 
 export default function SpendingCard({ total }) {
     const { t } = useTranslation();
+    const { format, code } = useCurrency();
     const { props } = usePage();
     const transactions = props.transactions ?? [];
     const [hoveredSegment, setHoveredSegment] = useState(null);
@@ -83,9 +85,9 @@ export default function SpendingCard({ total }) {
 
             <div className="flex items-end justify-between mb-3 relative z-10 shrink-0">
                 <div>
-                    <div className="text-[22px] md:text-[24px] font-bold text-[var(--color-text-main)] tracking-tight leading-none">
-                        {Number(actualTotal).toLocaleString()} <span className="text-[12px] text-[var(--color-text-muted)] font-normal uppercase">MAD</span>
-                    </div>
+                        <div className="text-[22px] md:text-[24px] font-bold text-[var(--color-text-main)] tracking-tight leading-none">
+                            {format(actualTotal)} <span className="text-[12px] text-[var(--color-text-muted)] font-normal uppercase">{code}</span>
+                        </div>
                 </div>
                 <div className="flex items-center gap-1 text-[9px] font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
                     <TrendingDown className="w-2.5 h-2.5" />
@@ -137,8 +139,8 @@ export default function SpendingCard({ total }) {
                                 </div>
                             </div>
                             <div className="text-right">
-                                <div className="text-[12px] font-bold text-[var(--color-text-main)]">{Number(cat.amount).toLocaleString()}</div>
-                                <div className="text-[8px] text-[var(--color-text-muted)] uppercase">MAD</div>
+                                <div className="text-[12px] font-bold text-[var(--color-text-main)]">{format(cat.amount)}</div>
+                                <div className="text-[8px] text-[var(--color-text-muted)] uppercase">{code}</div>
                             </div>
                         </motion.div>
                     );

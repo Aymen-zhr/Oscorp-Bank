@@ -15,17 +15,20 @@ class BillSplitController extends Controller
     public function page()
     {
         $stats = $this->getFinancialStats();
+        $currentUserId = Auth::id();
 
         $splits = DB::table('bill_splits')
-            ->where('creator_id', Auth::id())
-            ->orWhereIn('id', function($query) {
-                $query->select('bill_split_id')
-                    ->from('bill_participants')
-                    ->where('user_id', Auth::id());
+            ->where(function($query) use ($currentUserId) {
+                $query->where('creator_id', $currentUserId)
+                    ->orWhereIn('id', function($q) use ($currentUserId) {
+                        $q->select('bill_split_id')
+                            ->from('bill_participants')
+                            ->where('user_id', $currentUserId);
+                    });
             })
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(function ($split) {
+            ->map(function ($split) use ($currentUserId) {
                 $participants = DB::table('bill_participants')
                     ->leftJoin('users', 'bill_participants.user_id', '=', 'users.id')
                     ->select(
@@ -35,12 +38,20 @@ class BillSplitController extends Controller
                         'users.avatar as user_avatar'
                     )
                     ->where('bill_split_id', $split->id)
-                    ->orderBy('is_you', 'desc')
+                    ->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [$currentUserId])
                     ->orderBy('has_paid')
                     ->get();
 
+                // Compute values dynamically for the current viewer
+                $myParticipant = $participants->firstWhere('user_id', $currentUserId);
+                $myShare = $myParticipant ? (float) $myParticipant->share_amount : 0;
+                $myHasPaid = $myParticipant ? (bool) $myParticipant->has_paid : true;
+                $youOwe = !$myHasPaid;
+
                 return [
                     ... (array) $split,
+                    'your_share' => $myShare,
+                    'you_owe' => $youOwe,
                     'participants' => $participants,
                     'participant_count' => $participants->count(),
                 ];
@@ -131,6 +142,7 @@ class BillSplitController extends Controller
 
         return Inertia::render('split-bills', [
             'balance' => round($stats['live_balance'], 2),
+            'userId' => $currentUserId,
             'splits' => $splits,
             'summary' => $summary,
             'suggestedBills' => $suggestedBills,
@@ -215,14 +227,22 @@ class BillSplitController extends Controller
                 'updated_at' => now(),
             ]);
 
-            foreach ($validated['participants'] as $p) {
-                $shareAmount = $validated['split_type'] === 'equal'
-                    ? round($totalAmount / $participantCount, 2)
-                    : (float) ($p['share_amount'] ?? 0);
+            foreach ($validated['participants'] as $index => $p) {
+                if ($validated['split_type'] === 'equal') {
+                    $sharePerPerson = round($totalAmount / $participantCount, 2);
+                    if ($index === $participantCount - 1) {
+                        $sumOfOthers = $sharePerPerson * ($participantCount - 1);
+                        $shareAmount = round($totalAmount - $sumOfOthers, 2);
+                    } else {
+                        $shareAmount = $sharePerPerson;
+                    }
+                } else {
+                    $shareAmount = (float) ($p['share_amount'] ?? 0);
+                }
 
                 DB::table('bill_participants')->insert([
                     'bill_split_id' => $billSplitId,
-                    'user_id' => !empty($p['user_id']) ? $p['user_id'] : null,
+                    'user_id' => !empty($p['is_you']) ? $user->id : (!empty($p['user_id']) ? $p['user_id'] : null),
                     'name' => $p['name'],
                     'phone_number' => $p['phone_number'] ?? null,
                     'tag' => $p['tag'] ?? null,
@@ -246,13 +266,34 @@ class BillSplitController extends Controller
             'partial_amount' => ['nullable', 'numeric', 'min:0.01'],
         ]);
 
-        DB::transaction(function () use ($id, $validated) {
-            $split = DB::table('bill_splits')->find($id);
-            if ($split && $split->status === 'active') {
-                $paymentAmount = $validated['partial_amount'] ?? $split->your_share;
-                $isPartial = isset($validated['partial_amount']);
+        $userId = Auth::id();
 
-                if (!$isPartial) {
+        DB::transaction(function () use ($id, $validated, $userId) {
+            $split = DB::table('bill_splits')->find($id);
+            if (!$split || $split->status !== 'active') {
+                return;
+            }
+
+            $participant = DB::table('bill_participants')
+                ->where('bill_split_id', $id)
+                ->where('user_id', $userId)
+                ->first();
+
+            if (!$participant) {
+                return;
+            }
+
+            $paymentAmount = $validated['partial_amount'] ?? $participant->share_amount;
+            $isPartial = isset($validated['partial_amount']);
+
+            if (!$isPartial) {
+                $unpaidCount = DB::table('bill_participants')
+                    ->where('bill_split_id', $id)
+                    ->where('has_paid', false)
+                    ->where('id', '!=', $participant->id)
+                    ->count();
+
+                if ($unpaidCount === 0) {
                     DB::table('bill_splits')
                         ->where('id', $id)
                         ->update([
@@ -260,46 +301,46 @@ class BillSplitController extends Controller
                             'updated_at' => now(),
                         ]);
                 }
+            }
 
-                DB::table('bill_participants')
-                    ->where('bill_split_id', $id)
-                    ->where('is_you', true)
-                    ->update([
-                        'has_paid' => !$isPartial,
-                        'partial_paid' => $isPartial ? $paymentAmount : DB::raw('COALESCE(partial_paid, 0) + ' . $split->your_share),
-                        'updated_at' => now(),
-                    ]);
+            DB::table('bill_participants')
+                ->where('id', $participant->id)
+                ->update([
+                    'has_paid' => !$isPartial,
+                    'partial_paid' => $isPartial ? $paymentAmount : $participant->share_amount,
+                    'updated_at' => now(),
+                ]);
 
-                $user = Auth::user();
-                if ($user) {
-                    DB::table('notifications')->insert([
-                        'id' => \Illuminate\Support\Str::uuid(),
-                        'type' => 'App\Notifications\SystemNotification',
-                        'notifiable_type' => 'App\Models\User',
-                        'notifiable_id' => $user->id,
-                        'data' => json_encode([
-                            'title' => $isPartial ? 'Partial Payment' : 'Bill Paid',
-                            'message' => ($isPartial ? 'You paid MAD ' . number_format($paymentAmount, 2) . ' towards "' : 'You paid your share of "') . $split->title . '"',
-                            'type' => 'bill_paid',
-                            'amount' => $paymentAmount,
-                            'icon' => 'credit',
-                        ]),
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-
-                    DB::table('transactions')->insert([
-                        'merchant' => $split->title,
-                        'type' => 'debit',
-                        'category' => 'Bill Split',
+            $user = Auth::user();
+            if ($user) {
+                DB::table('notifications')->insert([
+                    'id' => \Illuminate\Support\Str::uuid(),
+                    'type' => 'App\Notifications\SystemNotification',
+                    'notifiable_type' => 'App\Models\User',
+                    'notifiable_id' => $user->id,
+                    'data' => json_encode([
+                        'title' => $isPartial ? 'Partial Payment' : 'Bill Paid',
+                        'message' => ($isPartial ? 'You paid MAD ' . number_format($paymentAmount, 2) . ' towards "' : 'You paid your share of "') . $split->title . '"',
+                        'type' => 'bill_paid',
                         'amount' => $paymentAmount,
-                        'status' => 'completed',
-                        'logo_color' => $split->logo_color,
-                        'transacted_at' => now(),
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
+                        'icon' => 'credit',
+                    ]),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                DB::table('transactions')->insert([
+                    'user_id' => $user->id,
+                    'merchant' => $split->title,
+                    'type' => 'debit',
+                    'category' => 'Bill Split',
+                    'amount' => $paymentAmount,
+                    'status' => 'completed',
+                    'logo_color' => $split->logo_color,
+                    'transacted_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
             }
         });
 
@@ -315,7 +356,7 @@ class BillSplitController extends Controller
         DB::transaction(function () use ($id, $validated) {
             $participant = DB::table('bill_participants')
                 ->where('bill_split_id', $id)
-                ->where('is_you', true) // Simulate responding as "you"
+                ->where('user_id', Auth::id())
                 ->first();
 
             if ($participant) {
@@ -350,6 +391,13 @@ class BillSplitController extends Controller
 
     public function delete($id)
     {
+        $userId = Auth::id();
+
+        $split = DB::table('bill_splits')->where('id', $id)->where('creator_id', $userId)->first();
+        if (!$split) {
+            return redirect()->route('split-bills')->with('error', 'You can only delete splits you created.');
+        }
+
         DB::table('bill_participants')->where('bill_split_id', $id)->delete();
         DB::table('bill_splits')->where('id', $id)->delete();
 
@@ -358,6 +406,29 @@ class BillSplitController extends Controller
 
     public function settle($id)
     {
+        $userId = Auth::id();
+
+        $split = DB::table('bill_splits')->where('id', $id)->first();
+        if (!$split) {
+            return redirect()->route('split-bills')->with('error', 'Split bill not found.');
+        }
+
+        $isOwner = DB::table('bill_splits')->where('id', $id)->where('creator_id', $userId)->exists();
+        $isParticipant = DB::table('bill_participants')->where('bill_split_id', $id)->where('user_id', $userId)->exists();
+
+        if (!$isOwner && !$isParticipant) {
+            return redirect()->route('split-bills')->with('error', 'You do not have access to this split bill.');
+        }
+
+        $unpaidCount = DB::table('bill_participants')
+            ->where('bill_split_id', $id)
+            ->where('has_paid', false)
+            ->count();
+
+        if ($unpaidCount > 0) {
+            return redirect()->route('split-bills')->with('error', $unpaidCount . ' participant(s) still owe their share.');
+        }
+
         DB::table('bill_splits')
             ->where('id', $id)
             ->where('status', 'active')
@@ -368,9 +439,16 @@ class BillSplitController extends Controller
 
     public function remind($id)
     {
-        $split = DB::table('bill_splits')->find($id);
+        $userId = Auth::id();
+
+        $split = DB::table('bill_splits')->where('id', $id)->first();
         if (!$split) {
             return redirect()->route('split-bills')->with('error', 'Split bill not found.');
+        }
+
+        $isOwner = DB::table('bill_splits')->where('id', $id)->where('creator_id', $userId)->exists();
+        if (!$isOwner) {
+            return redirect()->route('split-bills')->with('error', 'Only the creator can send reminders.');
         }
 
         $unpaidParticipants = DB::table('bill_participants')
@@ -404,8 +482,22 @@ class BillSplitController extends Controller
 
     public function export()
     {
+        $userId = Auth::id();
+
+        $splitIds = DB::table('bill_splits')
+            ->where(function($query) use ($userId) {
+                $query->where('creator_id', $userId)
+                    ->orWhereIn('id', function($q) use ($userId) {
+                        $q->select('bill_split_id')
+                            ->from('bill_participants')
+                            ->where('user_id', $userId);
+                    });
+            })
+            ->pluck('id');
+
         $splits = DB::table('bill_splits')
             ->leftJoin('bill_participants', 'bill_splits.id', '=', 'bill_participants.bill_split_id')
+            ->whereIn('bill_splits.id', $splitIds)
             ->select(
                 'bill_splits.title',
                 'bill_splits.total_amount',

@@ -50,6 +50,7 @@ class AIController extends Controller
             ],
             'recent_transactions' => array_slice(
                 DB::table('transactions')
+                    ->where('user_id', $user->id)
                     ->orderBy('transacted_at', 'desc')
                     ->take(50)
                     ->get()
@@ -176,7 +177,9 @@ PROMPT . json_encode($fullContext);
             $liveBalance = $stats['live_balance'];
             $totalCredits = $stats['total_credits'];
             $totalDebits = $stats['total_debits'];
+            $userId = $user->id;
             $allTransactions = DB::table('transactions')
+                ->where('user_id', $userId)
                 ->orderBy('transacted_at', 'desc')
                 ->get()
                 ->toArray();
@@ -188,6 +191,7 @@ PROMPT . json_encode($fullContext);
 
                 if ($name === 'execute_capital_transfer') {
                     DB::table('transactions')->insert([
+                        'user_id' => $userId,
                         'merchant' => $args['merchant'] ?? 'Unknown',
                         'amount' => $args['amount'] ?? 0,
                         'type' => $args['type'] ?? 'debit',

@@ -13,9 +13,11 @@ class DashboardController extends Controller
 
     public function index()
     {
+        $userId = \Illuminate\Support\Facades\Auth::id();
         $baseBalance = $this->getBaseBalance();
         
         $transactions = DB::table('transactions')
+            ->where('user_id', $userId)
             ->orderBy('transacted_at', 'desc')
             ->take(8)
             ->get();

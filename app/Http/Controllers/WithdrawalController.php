@@ -22,10 +22,19 @@ class WithdrawalController extends Controller
     public function page()
     {
         $stats = $this->getFinancialStats();
+        $userId = Auth::id();
+
+        $recentWithdrawals = DB::table('transactions')
+            ->where('user_id', $userId)
+            ->where('type', 'debit')
+            ->where('category', 'Withdrawal')
+            ->orderBy('transacted_at', 'desc')
+            ->take(5)
+            ->get();
 
         return Inertia::render('withdrawal', [
             'balance' => round($stats['live_balance'], 2),
-            'recentWithdrawals' => $this->transactionService->getLatestByCategory('Withdrawal', 5),
+            'recentWithdrawals' => $recentWithdrawals,
         ]);
     }
 

@@ -22,10 +22,19 @@ class DepositController extends Controller
     public function page()
     {
         $stats = $this->getFinancialStats();
+        $userId = Auth::id();
+
+        $recentDeposits = DB::table('transactions')
+            ->where('user_id', $userId)
+            ->where('type', 'credit')
+            ->where('category', 'Deposit')
+            ->orderBy('transacted_at', 'desc')
+            ->take(5)
+            ->get();
 
         return Inertia::render('deposit', [
             'balance' => round($stats['live_balance'], 2),
-            'recentDeposits' => $this->transactionService->getLatestByCategory('Deposit', 5),
+            'recentDeposits' => $recentDeposits,
         ]);
     }
 

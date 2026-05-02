@@ -5,6 +5,7 @@ import Topbar from '@/components/dashboard/Topbar';
 import { ArrowUpFromLine, CheckCircle, ArrowRight, Banknote, ShieldAlert, AlertTriangle, Building2, Lock, Smartphone, X } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useCurrency } from '@/hooks/useCurrency';
 
 const QUICK_AMOUNTS = [200, 500, 1000, 2000, 5000, 10000];
 const MOROCCAN_BANKS = [
@@ -18,15 +19,12 @@ const MOROCCAN_BANKS = [
     { id: 'oscorp', name: 'OSCORP Private' },
 ];
 
-function formatMAD(n) {
-    return Number(n).toLocaleString('en-MA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
 export default function Withdrawal({ balance, recentWithdrawals }) {
     const [step, setStep] = useState('form'); // 'form', 'otp', 'success'
     const [otp, setOtp] = useState(['', '', '', '']);
     const [fee, setFee] = useState(0);
     const { t, locale } = useTranslation();
+    const { format, code } = useCurrency();
 
     const { data, setData, post, processing, errors, reset } = useForm({
         amount: '',
@@ -93,7 +91,7 @@ export default function Withdrawal({ balance, recentWithdrawals }) {
                             </div>
                             <div className="flex flex-col items-end gap-1">
                                 <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">{t('withdrawal.available_balance')}</div>
-                                <div className="text-[24px] font-bold text-[var(--color-gold)]">{formatMAD(balance)} <span className="text-[12px] font-medium opacity-60">MAD</span></div>
+                                <div className="text-[24px] font-bold text-[var(--color-gold)]">{format(balance)} <span className="text-[12px] font-medium opacity-60">{code}</span></div>
                             </div>
                         </div>
 
@@ -141,7 +139,7 @@ export default function Withdrawal({ balance, recentWithdrawals }) {
                                                 <label className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">{t('withdrawal.rib_label')}</label>
                                                 <input
                                                     type="text"
-                                                    placeholder="MA00 0000 0000 0000 0000 0000"
+                                                    placeholder={t('withdrawal.rib_placeholder')}
                                                     value={data.rib}
                                                     onChange={e => {
                                                         const val = e.target.value.replace(/\D/g, '').slice(0, 24);
@@ -160,14 +158,14 @@ export default function Withdrawal({ balance, recentWithdrawals }) {
                                                 <Banknote className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-muted)]" />
                                                 <input
                                                     type="number"
-                                                    placeholder="0.00"
+                                                    placeholder={t('withdrawal.amount_placeholder')}
                                                     value={data.amount}
                                                     onChange={e => setData('amount', e.target.value)}
                                                     className={`${inputClass} pl-14 text-[28px] font-bold h-20 ${isInsufficient ? 'border-red-500 shadow-[0_0_0_4px_rgba(239,68,68,0.1)]' : ''}`}
                                                 />
                                                 <div className="absolute right-5 top-1/2 -translate-y-1/2 flex items-center gap-2">
                                                     <div className="h-8 w-[1px] bg-[var(--color-border)] mx-2" />
-                                                    <span className="text-[16px] font-bold text-[var(--color-text-muted)]">MAD</span>
+                                                    <span className="text-[16px] font-bold text-[var(--color-text-muted)]">{code}</span>
                                                 </div>
                                             </div>
 
@@ -194,11 +192,11 @@ export default function Withdrawal({ balance, recentWithdrawals }) {
                                                     className="p-6 rounded-2xl bg-[var(--color-bg-elevated)] border border-[var(--color-border)] space-y-3 overflow-hidden">
                                                     <div className="flex justify-between text-[13px]">
                                                         <span className="text-[var(--color-text-muted)]">{t('withdrawal.transfer_fee', { bank: data.bank.split(' ')[0] })}</span>
-                                                        <span className="font-bold text-amber-400">{formatMAD(fee)} MAD</span>
+                                                        <span className="font-bold text-amber-400">{format(fee)} {code}</span>
                                                     </div>
                                                     <div className="flex justify-between text-[13px]">
                                                         <span className="text-[var(--color-text-muted)]">{t('withdrawal.total_debit')}</span>
-                                                        <span className="font-bold text-red-400">{formatMAD(totalAmount)} MAD</span>
+                                                        <span className="font-bold text-red-400">{format(totalAmount)} {code}</span>
                                                     </div>
                                                 </motion.div>
                                             )}
@@ -263,7 +261,7 @@ export default function Withdrawal({ balance, recentWithdrawals }) {
                                                              <div className="text-[12px] font-bold">{w.bank || t('withdrawal.default_label')}</div>
                                                             <div className="text-[10px] text-[var(--color-text-muted)]">{new Date(w.transacted_at).toLocaleDateString()}</div>
                                                         </div>
-                                                        <div className="text-[13px] font-bold text-red-500">-{formatMAD(w.amount)}</div>
+                                                         <div className="text-[13px] font-bold text-red-500">-{format(w.amount)}</div>
                                                     </div>
                                                 ))
                                             )}

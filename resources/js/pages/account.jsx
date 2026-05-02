@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useCurrency } from '@/hooks/useCurrency';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     User, Mail, AtSign, Phone, Calendar, ShieldCheck, 
     CreditCard, ArrowRight, Copy, Check, LogOut,
-    Sparkles, Key, Bell, Fingerprint, Globe
+    Sparkles, Key, Bell, Fingerprint, Globe, ChevronDown, CheckCircle2
 } from 'lucide-react';
 
-export default function Account({ user, security, financial }) {
+export default function Account({ user, security, financial, currency: currentCurrency, currencies }) {
     const [copied, setCopied] = useState(false);
+    const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
     const { t, locale } = useTranslation();
+    const { format, code, info: currencyInfo } = useCurrency();
 
     const copyTag = () => {
         navigator.clipboard.writeText(user.tag);
@@ -20,7 +23,12 @@ export default function Account({ user, security, financial }) {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const fmtCurrency = (val) => new Intl.NumberFormat('en-MA', { style: 'currency', currency: 'MAD' }).format(val);
+    const changeCurrency = (newCode) => {
+        router.post('/account/currency', { currency: newCode }, {
+            preserveScroll: true,
+            onSuccess: () => setShowCurrencyPicker(false),
+        });
+    };
 
     return (
         <div className="flex h-screen w-full overflow-hidden font-sans antialiased" style={{ background: 'var(--color-bg-base)' }}>
@@ -139,17 +147,17 @@ export default function Account({ user, security, financial }) {
                                     <div className="space-y-6 relative z-10">
                                         <div>
                                             <div className="text-[11px] font-bold uppercase tracking-widest opacity-40 mb-1">{t('account.live_liquidity')}</div>
-                                            <div className="text-[32px] font-bold tracking-tight" style={{ color: 'var(--color-gold)' }}>{fmtCurrency(financial.balance)}</div>
+                                             <div className="text-[32px] font-bold tracking-tight" style={{ color: 'var(--color-gold)' }}>{format(financial.balance)}</div>
                                         </div>
                                         
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="p-4 rounded-2xl" style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }}>
                                                 <div className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">{t('account.total_spent')}</div>
-                                                <div className="text-[15px] font-bold" style={{ color: 'var(--color-text-main)' }}>{fmtCurrency(financial.total_spending)}</div>
+                                                 <div className="text-[15px] font-bold" style={{ color: 'var(--color-text-main)' }}>{format(financial.total_spending)}</div>
                                             </div>
                                             <div className="p-4 rounded-2xl" style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }}>
                                                 <div className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1">{t('account.total_inflow')}</div>
-                                                <div className="text-[15px] font-bold" style={{ color: 'var(--color-text-main)' }}>{fmtCurrency(financial.total_received)}</div>
+                                                 <div className="text-[15px] font-bold" style={{ color: 'var(--color-text-main)' }}>{format(financial.total_received)}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -163,18 +171,61 @@ export default function Account({ user, security, financial }) {
                                 <section className="p-8 rounded-[32px] space-y-6" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
                                     <h3 className="text-[18px] font-bold" style={{ color: 'var(--color-text-main)' }}>{t('account.preferences')}</h3>
                                     <div className="space-y-3">
-                                        {[
-{ label: t('account.language'), value: 'English (MA)', Icon: Globe },
-{ label: t('account.base_currency'), value: 'MAD (Dirham)', Icon: CreditCard },
-                                        ].map((item, i) => (
-                                            <button key={i} className="w-full flex items-center justify-between p-4 rounded-2xl transition-all hover:bg-[var(--color-gold-bg)]" style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }}>
+                                        <div className="w-full flex items-center justify-between p-4 rounded-2xl" style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }}>
+                                            <div className="flex items-center gap-3">
+                                                <Globe className="w-4 h-4 opacity-50" />
+                                                <span className="text-[13px] font-semibold" style={{ color: 'var(--color-text-main)' }}>{t('account.language')}</span>
+                                            </div>
+                                            <span className="text-[12px] font-bold" style={{ color: 'var(--color-gold)' }}>English (MA)</span>
+                                        </div>
+                                        
+                                        <div className="relative">
+                                            <button 
+                                                onClick={() => setShowCurrencyPicker(!showCurrencyPicker)}
+                                                className="w-full flex items-center justify-between p-4 rounded-2xl transition-all hover:bg-[var(--color-gold-bg)]" 
+                                                style={{ background: 'var(--color-bg-elevated)', border: `1px solid ${showCurrencyPicker ? 'var(--color-gold-border)' : 'var(--color-border)'}` }}>
                                                 <div className="flex items-center gap-3">
-                                                    <item.Icon className="w-4 h-4 opacity-50" />
-                                                    <span className="text-[13px] font-semibold" style={{ color: 'var(--color-text-main)' }}>{item.label}</span>
+                                                    <CreditCard className="w-4 h-4 opacity-50" />
+                                                    <span className="text-[13px] font-semibold" style={{ color: 'var(--color-text-main)' }}>{t('account.base_currency')}</span>
                                                 </div>
-                                                <span className="text-[12px] font-bold" style={{ color: 'var(--color-gold)' }}>{item.value}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[12px] font-bold" style={{ color: 'var(--color-gold)' }}>{currencyInfo.symbol_native} {code}</span>
+                                                    <ChevronDown className={`w-4 h-4 transition-transform ${showCurrencyPicker ? 'rotate-180' : ''}`} style={{ color: 'var(--color-text-muted)' }} />
+                                                </div>
                                             </button>
-                                        ))}
+
+                                            <AnimatePresence>
+                                                {showCurrencyPicker && (
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                        exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                                                        transition={{ duration: 0.15 }}
+                                                        className="absolute z-50 w-full mt-2 p-2 rounded-2xl shadow-2xl" 
+                                                        style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', backdropFilter: 'blur(20px)' }}>
+                                                        {Object.entries(currencies).map(([curCode, curInfo]) => (
+                                                            <button
+                                                                key={curCode}
+                                                                onClick={() => changeCurrency(curCode)}
+                                                                className="w-full flex items-center justify-between p-3 rounded-xl transition-all hover:bg-white/5"
+                                                                style={curCode === code ? { background: 'var(--color-gold-bg)' } : {}}>
+                                                                <div className="flex items-center gap-3">
+                                                                    <span className="text-[16px] font-bold" style={{ color: 'var(--color-text-main)' }}>{curInfo.symbol_native}</span>
+                                                                    <div className="text-left">
+                                                                        <div className="text-[13px] font-semibold" style={{ color: 'var(--color-text-main)' }}>{curCode}</div>
+                                                                        <div className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>{curInfo.name}</div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-[10px] font-mono" style={{ color: 'var(--color-text-muted)' }}>1 MAD = {curInfo.rate.toFixed(curInfo.decimal_digits)} {curCode}</span>
+                                                                    {curCode === code && <CheckCircle2 className="w-4 h-4" style={{ color: 'var(--color-gold)' }} />}
+                                                                </div>
+                                                            </button>
+                                                        ))}
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
                                     </div>
                                     
                                     <button className="w-full py-4 rounded-2xl text-[14px] font-bold transition-all flex items-center justify-center gap-2 bg-red-500/10 text-red-500 hover:bg-red-500/20">

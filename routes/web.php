@@ -29,6 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('accounts', [AccountController::class, 'cards'])->name('accounts');
     Route::get('cards', [AccountController::class, 'cards'])->name('cards');
     Route::get('account', [AccountController::class, 'profile'])->name('account');
+    Route::post('account/currency', [AccountController::class, 'updateCurrency'])->name('account.currency.update');
     Route::get('loans', [\App\Http\Controllers\LoansController::class, 'page'])->name('loans');
     Route::get('taxes', [\App\Http\Controllers\TaxesController::class, 'page'])->name('taxes');
     Route::get('subscriptions', [\App\Http\Controllers\SubscriptionsController::class, 'page'])->name('subscriptions');

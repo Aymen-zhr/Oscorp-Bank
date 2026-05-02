@@ -3,6 +3,7 @@ import { usePage, Link, router } from '@inertiajs/react';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useCurrency } from '../../hooks/useCurrency';
 
 const languages = [
     { code: 'en', labelKey: 'languages.english', flag: '🇬🇧' },
@@ -15,6 +16,7 @@ export default function Topbar() {
     const balance = props.balance ?? 0;
     const locale = props.locale ?? 'en';
     let transactions = props.transactions ?? [];
+    const { format, code } = useCurrency();
 
     if (transactions?.data) {
         transactions = transactions.data;
@@ -99,7 +101,7 @@ export default function Topbar() {
                         animate={{ scale: [1, 1.3, 1] }}
                         transition={{ duration: 2, repeat: Infinity }}
                     />
-                    <span className="text-[14px] font-bold text-[var(--color-gold)]">{Number(balance).toLocaleString()} MAD</span>
+                    <span className="text-[14px] font-bold text-[var(--color-gold)]">{format(balance)}</span>
                 </motion.div>
 
                 <motion.div
@@ -110,7 +112,7 @@ export default function Topbar() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.1 }}
                 >
-                    <span className="text-[12px] font-semibold">+{Number(credits).toLocaleString()}</span>
+                    <span className="text-[12px] font-semibold">+{format(credits)}</span>
                     <span className="text-[10px] text-emerald-400/70">{t('topbar.in')}</span>
                 </motion.div>
 
@@ -122,7 +124,7 @@ export default function Topbar() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.15 }}
                 >
-                    <span className="text-[12px] font-semibold">-{Number(debits).toLocaleString()}</span>
+                    <span className="text-[12px] font-semibold">-{format(debits)}</span>
                     <span className="text-[10px] text-red-400/70">{t('topbar.out')}</span>
                 </motion.div>
             </div>

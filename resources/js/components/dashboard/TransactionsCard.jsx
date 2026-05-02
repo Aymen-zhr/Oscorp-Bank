@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useCurrency } from '../../hooks/useCurrency';
 
 const LOGO_KEY = 'pk_binMfKfXSiOiYpfo3CyL2w';
 
@@ -28,7 +29,7 @@ function getDomain(merchant) {
     return null;
 }
 
-function TransactionItem({ tx, index }) {
+function TransactionItem({ tx, index, format }) {
     const [failed, setFailed] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const domain = getDomain(tx.merchant);
@@ -73,15 +74,16 @@ function TransactionItem({ tx, index }) {
                     <div className="text-[9px] text-[var(--color-text-muted)] uppercase tracking-tight">{tx.category}</div>
                 </div>
             </div>
-            <div className={`text-[13px] font-bold ${tx.type === 'credit' ? 'text-emerald-400' : 'text-red-400'}`}>
-                {tx.type === 'credit' ? '+' : '-'}{Math.abs(Number(tx.amount)).toLocaleString()}
-            </div>
+                <div className={`text-[13px] font-bold ${tx.type === 'credit' ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {tx.type === 'credit' ? '+' : '-'}{format(tx.amount).replace(/\s+[A-Z]{2,3}$/, '').trim()}
+                </div>
         </motion.div>
     );
 }
 
 export default function TransactionsCard({ transactions }) {
     const { t } = useTranslation();
+    const { format } = useCurrency();
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -115,7 +117,7 @@ export default function TransactionsCard({ transactions }) {
             <div className="flex-1 overflow-hidden space-y-1">
                 {transactions?.length > 0 ? (
                     transactions.slice(0, 5).map((tx, i) => (
-                        <TransactionItem key={tx.id || i} tx={tx} index={i} />
+                        <TransactionItem key={tx.id || i} tx={tx} index={i} format={format} />
                     ))
                 ) : (
                     <div className="flex-1 flex items-center justify-center py-4">

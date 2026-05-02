@@ -103,6 +103,9 @@
         "title_label": "Titre",
         "title_placeholder": "ex. Netflix Famille",
         "total_amount": "Montant total (MAD)",
+        "amount_placeholder": "0.00",
+        "name_placeholder": "Nom",
+        "amount_mad_placeholder": "MAD",
         "description": "Description (optionnel)",
         "description_placeholder": "Abonnement mensuel",
         "due_date_label": "Date d'échéance",
@@ -157,6 +160,7 @@
         "search_by_name_email": "Rechercher par nom ou email...",
         "set_nickname": "Définir un surnom",
         "edit_nickname": "Modifier le surnom",
+        "nickname_placeholder": "Définir un surnom",
         "send_message": "Envoyer un message",
         "remove_contact": "Retirer le contact",
         "search_for_users": "Recherchez des utilisateurs à ajouter",
@@ -208,7 +212,10 @@
         "goal_name_placeholder": "ex. Nouvelle voiture, PC gaming",
         "category_icon": "Icône de catégorie",
         "target_amount": "Montant cible ($)",
+        "target_amount_placeholder": "5000",
         "timeframe": "Durée (mois)",
+        "timeframe_placeholder": "12",
+        "deposit_amount_placeholder": "100",
         "automatic_savings": "Épargne automatique",
         "auto_save_desc": "Le système allouera automatiquement des fonds mensuellement",
         "you_need_save": "Vous devez économiser",
@@ -251,9 +258,11 @@
         "recipient": "Destinataire",
         "recipient_placeholder": "Entrez le nom du destinataire",
         "account_number": "Numéro de compte (optionnel)",
+        "account_placeholder": "MA00...",
         "bank": "Banque (optionnel)",
         "bank_placeholder": "ex. Attijariwafa",
         "amount": "Montant (MAD)",
+        "amount_placeholder": "0.00",
         "quick_amounts": "Montants rapides",
         "note": "Note (optionnel)",
         "note_placeholder": "Pour quoi ?",
@@ -369,6 +378,7 @@
         "deposit_agency_label": "Agence de dépôt",
         "agency_desc": "Visitez l'agence {agency} avec votre carte d'identité. Le montant sera crédité après validation de l'agent.",
         "amount_label": "Montant du dépôt (MAD)",
+        "amount_placeholder": "0.00",
         "continue": "Continuer",
         "balance_summary": "RÉSUMÉ DU SOLDE",
         "current_balance": "Solde actuel",
@@ -392,7 +402,9 @@
         "new_withdrawal": "Nouveau retrait",
         "destination_bank": "Banque de destination",
         "rib_label": "RIB (24 chiffres)",
+        "rib_placeholder": "MA00 0000 0000 0000 0000 0000",
         "amount_label": "Montant du retrait",
+        "amount_placeholder": "0.00",
         "transfer_fee": "Frais de transfert ({bank})",
         "total_debit": "Total débité",
         "insufficient_funds": "Fonds insuffisants",
@@ -463,5 +475,30 @@
         "language": "Langue",
         "base_currency": "Devise de base",
         "logout": "Déconnexion"
+    },
+    "settings": {
+        "profile": {
+            "full_name_placeholder": "Nom complet",
+            "email_placeholder": "Adresse email"
+        },
+        "security": {
+            "current_password_placeholder": "Mot de passe actuel",
+            "new_password_placeholder": "Nouveau mot de passe",
+            "confirm_password_placeholder": "Confirmer le mot de passe"
+        }
+    },
+    "auth": {
+        "code_placeholder": "Code à 6 chiffres",
+        "recovery_placeholder": "Code de récupération",
+        "password_placeholder": "Clé d'accès"
+    },
+    "taxes": {
+        "search_placeholder": "Rechercher des documents..."
+    },
+    "reports": {
+        "search_placeholder": "Rechercher des rapports..."
+    },
+    "ai": {
+        "input_placeholder": "Posez une question sur vos finances..."
     }
 }

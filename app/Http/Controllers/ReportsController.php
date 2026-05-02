@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Traits\HasOscorpBalance;
 use Carbon\Carbon;
 
@@ -13,12 +14,14 @@ class ReportsController extends Controller
 
     public function page()
     {
+        $userId = Auth::id();
         $stats = $this->getFinancialStats();
 
         // Fetch raw transactions for last 6 months and group in PHP for DB compatibility
         $sixMonthsAgo = Carbon::now()->subMonths(5)->startOfMonth();
         
         $transactions = DB::table('transactions')
+            ->where('user_id', $userId)
             ->where('transacted_at', '>=', $sixMonthsAgo)
             ->get();
 
@@ -55,6 +58,7 @@ class ReportsController extends Controller
         $currentMonthStart = Carbon::now()->startOfMonth();
         
         $categoriesQuery = DB::table('transactions')
+            ->where('user_id', $userId)
             ->where('type', 'debit')
             ->whereNotNull('category');
         
@@ -65,6 +69,7 @@ class ReportsController extends Controller
 
         if ($totalExpenses == 0) {
             $totalExpenses = DB::table('transactions')
+                ->where('user_id', $userId)
                 ->where('type', 'debit')
                 ->sum('amount');
         } else {

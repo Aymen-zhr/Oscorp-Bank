@@ -16,7 +16,8 @@ class TransactionController extends Controller
 
     public function page(Request $request)
     {
-        $query = DB::table('transactions')->orderBy('transacted_at', 'desc');
+        $userId = auth()->id();
+        $query = DB::table('transactions')->where('user_id', $userId)->orderBy('transacted_at', 'desc');
 
         $type = $request->input('type');
         $category = $request->input('category');
@@ -49,6 +50,7 @@ class TransactionController extends Controller
         $stats = $this->getFinancialStats();
 
         $categories = DB::table('transactions')
+            ->where('user_id', $userId)
             ->whereNotNull('category')
             ->distinct()
             ->pluck('category')
@@ -78,7 +80,8 @@ class TransactionController extends Controller
      */
     public function export(Request $request)
     {
-        $query = DB::table('transactions')->orderBy('transacted_at', 'desc');
+        $userId = auth()->id();
+        $query = DB::table('transactions')->where('user_id', $userId)->orderBy('transacted_at', 'desc');
 
         // Apply same filters as the page
         if ($request->type && $request->type !== 'all') {

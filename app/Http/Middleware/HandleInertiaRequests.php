@@ -5,8 +5,13 @@ namespace App\Http\Middleware;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
+use App\Traits\HasOscorpBalance;
+use Illuminate\Support\Facades\Auth;
+
 class HandleInertiaRequests extends Middleware
 {
+    use HasOscorpBalance;
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -36,18 +41,26 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $locale = $request->cookie('locale', config('app.locale', 'en'));
+        $user = Auth::user();
+        $stats = $user ? $this->getFinancialStats() : null;
+        
+        $preferences = $user ? ($user->preferences ?? []) : [];
+        $currency = $preferences['currency'] ?? 'MAD';
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user() ? array_merge($request->user()->toArray(), [
-                    'unreadNotificationsCount' => $request->user()->unreadNotifications()->count(),
-                    'recentNotifications' => $request->user()->unreadNotifications()->limit(5)->get(),
+                'user' => $user ? array_merge($user->toArray(), [
+                    'unreadNotificationsCount' => $user->unreadNotifications()->count(),
+                    'recentNotifications' => $user->unreadNotifications()->limit(5)->get(),
                 ]) : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'locale' => $locale,
             'isRTL' => false, // Always LTR as requested
+            'balance' => $stats ? round($stats['live_balance'], 2) : 0,
+            'currency' => $currency,
         ];
     }
 }

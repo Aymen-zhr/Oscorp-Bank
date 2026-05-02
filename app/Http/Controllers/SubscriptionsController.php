@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Traits\HasOscorpBalance;
 
 class SubscriptionsController extends Controller
@@ -13,13 +14,15 @@ class SubscriptionsController extends Controller
 
     public function page()
     {
-        $user = \Illuminate\Support\Facades\Auth::user();
+        $userId = Auth::id();
+        $user = Auth::user();
         $stats = $this->getFinancialStats();
 
         // Find recurring subscription transactions from the database
         $recurringMerchants = DB::table('transactions')
-            ->select('merchant', DB::raw('AVG(amount) as avg_amount'), DB::raw('COUNT(*) as count'), 'category')
+            ->where('user_id', $userId)
             ->where('type', 'debit')
+            ->select('merchant', 'category', DB::raw('AVG(amount) as avg_amount'), DB::raw('COUNT(*) as count'))
             ->groupBy('merchant', 'category')
             ->having('count', '>=', 2)
             ->orderBy('avg_amount', 'desc')
@@ -72,6 +75,7 @@ class SubscriptionsController extends Controller
 
         // Generate billing history from real transactions
         $billingHistory = DB::table('transactions')
+            ->where('user_id', $userId)
             ->where('type', 'debit')
             ->where('transacted_at', '>=', Carbon::now()->subMonths(3))
             ->orderBy('transacted_at', 'desc')

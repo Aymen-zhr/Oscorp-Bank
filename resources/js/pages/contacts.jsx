@@ -253,7 +253,7 @@ export default function Contacts({ balance, contacts = [], contactStats = {} }) 
                                                             {isEditing ? (
                                                                 <input type="text" value={contact.nickname || ''}
                                                                     onChange={e => setData('name', e.target.value)}
-                                                                    placeholder="Set nickname"
+                                                                    placeholder={t('contacts.nickname_placeholder')}
                                                                     className="bg-transparent text-[14px] font-semibold outline-none"
                                                                     style={{ color: 'var(--color-text-main)' }} />
                                                             ) : (

@@ -103,6 +103,9 @@
         "title_label": "Title",
         "title_placeholder": "e.g. Netflix Family",
         "total_amount": "Total Amount (MAD)",
+        "amount_placeholder": "0.00",
+        "name_placeholder": "Name",
+        "amount_mad_placeholder": "MAD",
         "description": "Description (optional)",
         "description_placeholder": "Monthly subscription",
         "due_date_label": "Due Date",
@@ -157,6 +160,7 @@
         "search_by_name_email": "Search by name or email...",
         "set_nickname": "Set nickname",
         "edit_nickname": "Edit nickname",
+        "nickname_placeholder": "Set nickname",
         "send_message": "Send message",
         "remove_contact": "Remove contact",
         "search_for_users": "Search for users to add",
@@ -208,7 +212,10 @@
         "goal_name_placeholder": "e.g., New Car, Gaming PC",
         "category_icon": "Category Icon",
         "target_amount": "Target Amount ($)",
+        "target_amount_placeholder": "5000",
         "timeframe": "Timeframe (months)",
+        "timeframe_placeholder": "12",
+        "deposit_amount_placeholder": "100",
         "automatic_savings": "Automatic Savings",
         "auto_save_desc": "System will automatically allocate funds monthly",
         "you_need_save": "You need to save",
@@ -251,9 +258,11 @@
         "recipient": "Recipient",
         "recipient_placeholder": "Enter recipient name",
         "account_number": "Account Number (optional)",
+        "account_placeholder": "MA00...",
         "bank": "Bank (optional)",
         "bank_placeholder": "e.g. Attijariwafa",
         "amount": "Amount (MAD)",
+        "amount_placeholder": "0.00",
         "quick_amounts": "Quick Amounts",
         "note": "Note (optional)",
         "note_placeholder": "What's this for?",
@@ -380,6 +389,7 @@
         "deposit_agency_label": "Deposit Agency",
         "agency_desc": "Visit the {agency} agency with your ID card. The amount will be credited upon agent validation.",
         "amount_label": "Deposit Amount (MAD)",
+        "amount_placeholder": "0.00",
         "continue": "Continue",
         "balance_summary": "BALANCE SUMMARY",
         "current_balance": "Current Balance",
@@ -403,7 +413,9 @@
         "new_withdrawal": "New Withdrawal",
         "destination_bank": "Destination Bank",
         "rib_label": "RIB (24 Digits)",
+        "rib_placeholder": "MA00 0000 0000 0000 0000 0000",
         "amount_label": "Withdrawal Amount",
+        "amount_placeholder": "0.00",
         "transfer_fee": "Transfer Fee ({bank})",
         "total_debit": "Total Debit",
         "insufficient_funds": "Insufficient Funds",
@@ -474,5 +486,30 @@
         "language": "Language",
         "base_currency": "Base Currency",
         "logout": "De-authenticate"
+    },
+    "settings": {
+        "profile": {
+            "full_name_placeholder": "Full Name",
+            "email_placeholder": "Email Address"
+        },
+        "security": {
+            "current_password_placeholder": "Current Password",
+            "new_password_placeholder": "New Password",
+            "confirm_password_placeholder": "Confirm Password"
+        }
+    },
+    "auth": {
+        "code_placeholder": "6-digit code",
+        "recovery_placeholder": "Recovery code",
+        "password_placeholder": "Passkey"
+    },
+    "taxes": {
+        "search_placeholder": "Search documents..."
+    },
+    "reports": {
+        "search_placeholder": "Search reports..."
+    },
+    "ai": {
+        "input_placeholder": "Ask anything about your finances..."
     }
 }
