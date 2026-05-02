@@ -6,6 +6,8 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\GoalsController;
+use App\Http\Controllers\DepositController;
+use App\Http\Controllers\WithdrawalController;
 
 Route::inertia('/', 'home', [
     'canRegister' => Features::enabled(Features::registration()),
@@ -27,6 +29,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('goals/{goal}/deposit', [\App\Http\Controllers\GoalsController::class, 'deposit'])->name('goals.deposit');
     Route::post('goals/{goal}/unlock', [\App\Http\Controllers\GoalsController::class, 'unlock'])->name('goals.unlock');
     Route::delete('goals/{goal}', [\App\Http\Controllers\GoalsController::class, 'destroy'])->name('goals.destroy');
+
+    // Deposit & Withdrawal
+    Route::get('deposit',     [DepositController::class,    'page'])->name('deposit');
+    Route::post('deposit',    [DepositController::class,    'store'])->name('deposit.store');
+    Route::get('withdrawal',  [WithdrawalController::class, 'page'])->name('withdrawal');
+    Route::post('withdrawal', [WithdrawalController::class, 'store'])->name('withdrawal.store');
     
     // Consolidated Settings & Profile Routes
     Route::get('settings', [\App\Http\Controllers\SettingsController::class, 'page'])->name('settings');
