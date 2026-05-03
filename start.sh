@@ -1,9 +1,6 @@
 #!/bin/bash
 
 # Railway persistent volume setup
-# All data directories must live in /data for persistence
-
-# Create persistent directories if they don't exist
 mkdir -p /data/database
 mkdir -p /data/storage/framework/cache/data
 mkdir -p /data/storage/framework/sessions
@@ -11,8 +8,8 @@ mkdir -p /data/storage/framework/views
 mkdir -p /data/storage/logs
 mkdir -p /data/storage/app
 
-# Remove non-persistent directories and symlink to persistent ones
-rm -rf database/storage database/database.sqlite
+# Symlink to persistent storage
+rm -rf database/database.sqlite
 ln -sf /data/database/database.sqlite database/database.sqlite
 
 rm -rf storage/framework/cache
@@ -33,9 +30,8 @@ if [ ! -f /data/database/database.sqlite ]; then
     php artisan migrate --force
 fi
 
-# Clear caches
 php artisan config:clear
 php artisan cache:clear
 
-# Start the server
-heroku-php-apache2 public/
+# Use PHP built-in server with public/index.php as router
+php -S 0.0.0.0:${PORT:-8080} -t public public/index.php
