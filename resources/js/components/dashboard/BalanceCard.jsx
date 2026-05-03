@@ -84,7 +84,7 @@ export default function BalanceCard({ balance }) {
             </div>
 
             <div className="flex gap-2 relative z-10 w-full mt-auto">
-                <Link href="/deposit" className="flex-1">
+                <Link href="/receive" className="flex-1">
                     <motion.button
                         className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-bold transition-all"
                         style={{ background: 'var(--color-gold)', color: '#000', boxShadow: '0 4px 10px rgba(212,175,55,0.2)' }}
@@ -92,11 +92,11 @@ export default function BalanceCard({ balance }) {
                         whileTap={{ scale: 0.98 }}
                     >
                         <ArrowDownLeft className="w-3 h-3" />
-                        {t('common.deposit')}
+                        {t('common.receive')}
                     </motion.button>
                 </Link>
                 
-                <Link href="/withdrawal" className="flex-1">
+                <Link href="/send" className="flex-1">
                     <motion.button
                         className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-bold transition-all border"
                         style={{ background: 'var(--color-bg-elevated)', color: 'var(--color-text-main)', borderColor: 'var(--color-border)' }}
@@ -104,7 +104,7 @@ export default function BalanceCard({ balance }) {
                         whileTap={{ scale: 0.98 }}
                     >
                         <ArrowUpRight className="w-3 h-3" />
-                        {t('common.withdrawal')}
+                        {t('common.send')}
                     </motion.button>
                 </Link>
             </div>

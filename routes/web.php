@@ -10,8 +10,8 @@ use App\Http\Controllers\GoalsController;
 use App\Http\Controllers\AllocationsController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransferController;
-use App\Http\Controllers\DepositController;
-use App\Http\Controllers\WithdrawalController;
+use App\Http\Controllers\SendMoneyController;
+use App\Http\Controllers\ReceiveMoneyController;
 
 Route::inertia('/', 'home', [
     'canRegister' => Features::enabled(Features::registration()),
@@ -42,11 +42,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('allocations', [AllocationsController::class, 'page'])->name('allocations');
 
-    // Deposit & Withdrawal
-    Route::get('deposit',     [DepositController::class,    'page'])->name('deposit');
-    Route::post('deposit',    [DepositController::class,    'store'])->name('deposit.store');
-    Route::get('withdrawal',  [WithdrawalController::class, 'page'])->name('withdrawal');
-    Route::post('withdrawal', [WithdrawalController::class, 'store'])->name('withdrawal.store');
+    // Send & Receive Money
+    Route::get('send', [SendMoneyController::class, 'page'])->name('send');
+    Route::post('send', [SendMoneyController::class, 'store'])->name('send.store');
+    Route::get('receive', [ReceiveMoneyController::class, 'page'])->name('receive');
+    Route::post('receive', [ReceiveMoneyController::class, 'requestPayment'])->name('receive.request');
 
     // Transfer
     Route::get('transfer', [TransferController::class, 'page'])->name('transfer');
@@ -82,4 +82,3 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
     Route::post('notifications/{id}/mark-read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.markRead');
 });
-
