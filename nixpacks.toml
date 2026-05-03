@@ -1,0 +1,16 @@
+[phases.setup]
+nixPkgs = ["php84", "composer", "nodejs_20"]
+
+[phases.install]
+cmds = [
+    "cp .env.production .env",
+    "php artisan key:generate --force",
+    "composer install --no-dev --optimize-autoloader",
+    "npm install",
+    "npm run build",
+    "mkdir -p /data/database /data/storage/framework/cache/data /data/storage/framework/sessions /data/storage/framework/views /data/storage/logs /data/storage/app",
+    "touch /data/database/database.sqlite"
+]
+
+[start]
+cmd = "bash start.sh"
