@@ -68,6 +68,19 @@ function SidebarContent({
     hoveredItem, setHoveredItem, userCardHover, setUserCardHover, 
     activeItem, activeBottomItem, dateStr, t
 }) {
+    const sidebarNavRef = useRef(null);
+
+    useEffect(() => {
+        const savedScroll = localStorage.getItem('sidebar-scroll');
+        if (savedScroll && sidebarNavRef.current) {
+            sidebarNavRef.current.scrollTop = parseInt(savedScroll, 10);
+        }
+    }, []);
+
+    const handleSidebarScroll = (e) => {
+        localStorage.setItem('sidebar-scroll', e.currentTarget.scrollTop);
+    };
+
     return (
         <div className="relative z-10 flex h-full flex-col">
             <div className="flex items-center justify-between px-6 pt-6 pb-4">
@@ -168,7 +181,11 @@ function SidebarContent({
                 </motion.div>
             </Link>
 
-            <nav className="custom-scrollbar flex-1 space-y-1 overflow-y-auto px-3">
+            <nav 
+                ref={sidebarNavRef}
+                onScroll={handleSidebarScroll}
+                className="custom-scrollbar flex-1 space-y-1 overflow-y-auto px-3"
+            >
                 <div className="mb-2 px-3 text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)] uppercase">{t('common.menu')}</div>
                 {navItems.map((item, index) => {
                     const isActive = index === activeItem;
