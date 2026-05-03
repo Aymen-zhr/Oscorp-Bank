@@ -2,7 +2,7 @@ import { Head, router, usePage, Link } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
-import { ArrowUpRight, CheckCircle, Send, Search, User, X } from 'lucide-react';
+import { ArrowUpRight, CheckCircle, Send as SendIcon, Search, User, X } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -113,7 +113,7 @@ export default function Send({ balance, recentSends = [] }) {
                             <div>
                                 <div className="flex items-center gap-3 mb-2">
                                     <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: '#EF444418', border: '1px solid #EF444430' }}>
-                                        <Send className="w-6 h-6" style={{ color: '#EF4444' }} />
+                                        <SendIcon className="w-6 h-6" style={{ color: '#EF4444' }} />
                                     </div>
                                     <h1 className="text-[32px] font-bold" style={{ color: 'var(--color-text-main)' }}>{t('send.title')}</h1>
                                 </div>
