@@ -46,7 +46,7 @@ export default function Allocations({ categories = [], totalAllocation = 0 }) {
         <div className="flex h-screen w-full overflow-hidden bg-[var(--color-bg-base)] text-[var(--color-text-main)] font-sans antialiased selection:bg-[var(--color-gold)] selection:text-white transition-colors duration-0">
             <Head title="OSCORP | Capital Allocations" />
             
-            <Sidebar />
+            <Sidebar active="allocations" />
 
             <div className="flex-1 flex flex-col overflow-hidden relative">
                 <Topbar />

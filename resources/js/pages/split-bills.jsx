@@ -80,12 +80,14 @@ export default function SplitBills({ balance, userId, splits = [], summary = {},
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (showSearch && contactSearch.length >= 2) {
+            if (contactSearch.length >= 2) {
                 searchUsers(contactSearch);
+            } else {
+                setSearchResults([]);
             }
         }, 300);
         return () => clearTimeout(timer);
-    }, [contactSearch, showSearch, searchUsers]);
+    }, [contactSearch, searchUsers]);
 
     // Using useCurrency hook instead of fmtCurrency
 
@@ -239,7 +241,7 @@ export default function SplitBills({ balance, userId, splits = [], summary = {},
     return (
         <div className="flex h-screen w-full overflow-hidden" style={{ background: 'var(--color-bg-base)' }}>
             <Head title="OSCORP | Split Bills" />
-            <Sidebar />
+            <Sidebar active="split-bills" />
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Topbar />
 

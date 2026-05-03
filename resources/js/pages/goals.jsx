@@ -92,7 +92,7 @@ export default function Goals({ goals }) {
         <div className="flex h-screen w-full overflow-hidden bg-[var(--color-bg-base)] text-[var(--color-text-main)] font-sans antialiased selection:bg-[var(--color-gold)] selection:text-white">
             <Head title="OSCORP Goals" />
 
-            <Sidebar />
+            <Sidebar active="goals" />
             
             <div className="flex-1 flex flex-col overflow-hidden relative">
                 {/* Background Fixed Glows (Stabilized) */}

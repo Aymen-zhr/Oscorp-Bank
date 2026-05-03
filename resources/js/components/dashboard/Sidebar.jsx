@@ -55,6 +55,7 @@ const navItems = [
     { icon: Target, label: 'common.goals', href: '/goals' },
     { icon: Receipt, label: 'common.taxes', href: '/taxes' },
     { icon: Package, label: 'common.subscriptions', href: '/subscriptions' },
+    { icon: Bell, label: 'common.notifications', href: '/notifications' },
 ];
 
 const bottomItems = [
@@ -65,7 +66,7 @@ const bottomItems = [
 function SidebarContent({ 
     user, userName, isDark, toggleTheme, setIsOpen, 
     hoveredItem, setHoveredItem, userCardHover, setUserCardHover, 
-    activeItem, dateStr, t
+    activeItem, activeBottomItem, dateStr, t
 }) {
     return (
         <div className="relative z-10 flex h-full flex-col">
@@ -175,6 +176,7 @@ function SidebarContent({
                         <Link
                             key={item.label}
                             href={item.href}
+                            preserveScroll
                             onClick={() => setIsOpen(false)}
                             onMouseEnter={() => setHoveredItem(index)}
                             onMouseLeave={() => setHoveredItem(null)}
@@ -205,18 +207,24 @@ function SidebarContent({
                 })}
 
                 <div className="mt-6 mb-2 px-3 text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)] uppercase">{t('common.support')}</div>
-                {bottomItems.map((item) => (
-                    <Link
-                        key={item.label}
-                        href={item.href}
-                        onClick={() => setIsOpen(false)}
-                        className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium text-[var(--color-text-muted)] transition-all hover:text-[var(--color-text-main)]"
-                        whileHover={{ x: 4 }}
-                    >
-                        <item.icon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                        {t(item.label)}
-                    </Link>
-                ))}
+                {bottomItems.map((item, index) => {
+                    const isActive = index === activeBottomItem;
+                    return (
+                        <Link
+                            key={index}
+                            href={item.href}
+                            preserveScroll
+                            onClick={() => setIsOpen(false)}
+                            className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-all ${
+                                isActive ? 'text-[var(--color-gold)] bg-[var(--color-gold-bg)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                            }`}
+                            whileHover={{ x: 4 }}
+                        >
+                            <item.icon className={`h-5 w-5 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                            {t(item.label)}
+                        </Link>
+                    );
+                })}
 
                 <motion.button
                     onClick={() => {
@@ -235,7 +243,7 @@ function SidebarContent({
     );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ active }) {
     const { props } = usePage();
     const user = props.auth?.user;
     const userName = user?.name?.split(' ')[0] ?? 'Guest';
@@ -254,15 +262,41 @@ export default function Sidebar() {
     }, []);
 
     const activeItem = useMemo(() => {
-        return navItems.findIndex((item) =>
-            item.href === '#' ? false : currentUrl.includes(item.href),
+        if (active) {
+            const index = navItems.findIndex(item => item.label.includes(active) || item.href.includes(active));
+            if (index !== -1) return index;
+        }
+        
+        // Find all matches
+        const matches = navItems
+            .map((item, index) => ({ item, index }))
+            .filter(({ item }) => item.href !== '#' && (currentUrl === item.href || currentUrl.startsWith(item.href + '/')));
+            
+        // If no matches with slash, try exact or startsWith for root-level
+        if (matches.length === 0) {
+            return navItems.findIndex(item => item.href !== '#' && currentUrl === item.href);
+        }
+
+        // Return the most specific match (longest href)
+        return matches.reduce((prev, curr) => 
+            curr.item.href.length > prev.item.href.length ? curr : prev
+        ).index;
+    }, [currentUrl, active]);
+
+    const activeBottomItem = useMemo(() => {
+        if (active) {
+            const index = bottomItems.findIndex(item => item.label.includes(active) || item.href.includes(active));
+            if (index !== -1) return index;
+        }
+        return bottomItems.findIndex((item) =>
+            item.href !== '#' && (currentUrl === item.href || currentUrl.startsWith(item.href + '/'))
         );
-    }, [currentUrl]);
+    }, [currentUrl, active]);
 
     const commonProps = {
         user, userName, isDark, toggleTheme, setIsOpen,
         hoveredItem, setHoveredItem, userCardHover, setUserCardHover,
-        activeItem, dateStr, t
+        activeItem, activeBottomItem, dateStr, t
     };
 
     return (

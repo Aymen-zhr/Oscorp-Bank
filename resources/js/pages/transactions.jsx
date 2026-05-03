@@ -171,7 +171,7 @@ export default function Transactions({ transactions, filters, categories, stats 
     return (
         <div className="flex h-screen w-full overflow-hidden" style={{ background: 'var(--color-bg-base)' }}>
             <Head title="OSCORP | Transactions" />
-            <Sidebar />
+            <Sidebar active="transactions" />
             <div className="flex-1 flex flex-col overflow-hidden relative">
                 {/* Background Fixed Glows (Stabilized) */}
                 <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[var(--color-gold)] opacity-[0.03] rounded-full blur-[120px] pointer-events-none z-0" />

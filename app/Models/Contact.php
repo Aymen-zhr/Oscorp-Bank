@@ -12,6 +12,7 @@ class Contact extends Model
         'contact_user_id',
         'nickname',
         'avatar_color',
+        'status',
     ];
 
     public function user(): BelongsTo

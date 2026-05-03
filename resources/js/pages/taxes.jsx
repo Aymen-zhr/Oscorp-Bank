@@ -54,7 +54,7 @@ export default function Taxes({ taxDocuments = [], taxCategories = [], upcomingD
     return (
         <div className="flex h-screen w-full overflow-hidden font-sans antialiased" style={{ background: 'var(--color-bg-base)' }}>
             <Head title="OSCORP | Taxes" />
-            <Sidebar />
+            <Sidebar active="taxes" />
             <div className="flex-1 flex flex-col overflow-hidden relative">
                 {/* Background Fixed Glows (Stabilized) */}
                 <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[var(--color-gold)] opacity-[0.03] rounded-full blur-[120px] pointer-events-none z-0" />

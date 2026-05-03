@@ -28,7 +28,7 @@ export default function Cards({ user, card, rib, account, stats, recentTransacti
     return (
         <div className="flex h-screen w-full overflow-hidden font-sans antialiased selection:bg-[var(--color-gold)] selection:text-white" style={{ background: 'var(--color-bg-base)' }}>
             <Head title="Card Information" />
-            <Sidebar />
+            <Sidebar active="cards" />
             
             <div className="flex-1 flex flex-col overflow-hidden relative">
                 {/* Background Ambient Glows (Stabilized) */}

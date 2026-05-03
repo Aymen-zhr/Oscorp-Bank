@@ -10,6 +10,18 @@ export default function Notifications({ notifications }) {
         router.post(`/notifications/${id}/mark-read`, {}, { preserveScroll: true });
     };
 
+    const handleAccept = (contactId, notificationId) => {
+        router.post(`/contacts/${contactId}/accept`, {}, {
+            onSuccess: () => markAsRead(notificationId)
+        });
+    };
+
+    const handleDeny = (contactId, notificationId) => {
+        router.post(`/contacts/${contactId}/deny`, {}, {
+            onSuccess: () => markAsRead(notificationId)
+        });
+    };
+
     const markAllAsRead = () => {
         router.post('/notifications/mark-all-read', {}, { preserveScroll: true });
     };
@@ -36,7 +48,7 @@ export default function Notifications({ notifications }) {
         <div className="flex h-screen w-full overflow-hidden bg-[var(--color-bg-base)] text-[var(--color-text-main)] font-sans antialiased selection:bg-[var(--color-gold)] selection:text-white transition-colors duration-0">
             <Head title="Notifications - Oscorp" />
             
-            <Sidebar />
+            <Sidebar active="notifications" />
 
             <div className="flex-1 flex flex-col overflow-hidden relative">
                 <Topbar />
@@ -115,14 +127,33 @@ export default function Notifications({ notifications }) {
                                         </div>
                                     </div>
 
-                                    {!notification.read_at && (
-                                        <button 
-                                            onClick={() => markAsRead(notification.id)}
-                                            className="shrink-0 px-3 py-1.5 rounded-lg text-[12px] font-medium border border-[var(--color-border)] hover:bg-[var(--color-bg-elevated)] transition-colors self-start sm:self-center"
-                                        >
-                                            Mark Read
-                                        </button>
-                                    )}
+                                    <div className="flex items-center gap-2">
+                                        {notification.data.action_type === 'contact_request' && !notification.read_at && (
+                                            <>
+                                                <button 
+                                                    onClick={() => handleAccept(notification.data.contact_id, notification.id)}
+                                                    className="shrink-0 px-3 py-1.5 rounded-lg text-[12px] font-bold bg-[var(--color-gold)] text-black hover:brightness-110 transition-all self-start sm:self-center"
+                                                >
+                                                    Accept
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDeny(notification.data.contact_id, notification.id)}
+                                                    className="shrink-0 px-3 py-1.5 rounded-lg text-[12px] font-medium border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors self-start sm:self-center"
+                                                >
+                                                    Deny
+                                                </button>
+                                            </>
+                                        )}
+
+                                        {!notification.read_at && (
+                                            <button 
+                                                onClick={() => markAsRead(notification.id)}
+                                                className="shrink-0 px-3 py-1.5 rounded-lg text-[12px] font-medium border border-[var(--color-border)] hover:bg-[var(--color-bg-elevated)] transition-colors self-start sm:self-center"
+                                            >
+                                                {notification.data.action_type === 'contact_request' ? 'Ignore' : 'Mark Read'}
+                                            </button>
+                                        )}
+                                    </div>
                                 </motion.div>
                             ))
                         )}

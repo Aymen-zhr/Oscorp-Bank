@@ -43,7 +43,7 @@ export default function Reports({ stats, monthlyData = [], spendingCategories = 
     return (
         <div className="flex h-screen w-full overflow-hidden" style={{ background: 'var(--color-bg-base)' }}>
             <Head title="OSCORP | Reports" />
-            <Sidebar />
+            <Sidebar active="reports" />
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Topbar />
                 <motion.div

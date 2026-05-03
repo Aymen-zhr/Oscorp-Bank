@@ -58,7 +58,7 @@ export default function Deposit({ balance, recentDeposits }) {
     return (
         <div className="flex h-screen w-full overflow-hidden font-sans antialiased selection:bg-[var(--color-gold)] selection:text-white" style={{ background: 'var(--color-bg-base)' }}>
             <Head title="OSCORP | Deposit Funds" />
-            <Sidebar />
+            <Sidebar active="deposit" />
 
             <div className="flex-1 flex flex-col overflow-hidden relative">
                 <Topbar />

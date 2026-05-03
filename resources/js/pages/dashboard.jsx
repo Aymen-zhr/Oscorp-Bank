@@ -25,7 +25,7 @@ export default function Dashboard({ balance, totalSpending, transactions, active
         <div className="flex h-screen w-full overflow-hidden bg-[var(--color-bg-base)] text-[var(--color-text-main)] font-sans antialiased selection:bg-[var(--color-gold)] selection:text-white">
             <Head title={t('dashboard.title')} />
 
-            <Sidebar />
+            <Sidebar active="dashboard" />
 
             <div className="flex-1 flex flex-col overflow-hidden min-w-0">
                 <Topbar />

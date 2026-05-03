@@ -54,7 +54,7 @@ export default function Transfer({ balance, recentTransfers = [], beneficiaries 
     return (
         <div className="flex h-screen w-full overflow-hidden bg-[var(--color-bg-base)] text-[var(--color-text-main)] font-sans antialiased">
             <Head title="OSCORP | Transfer" />
-            <Sidebar />
+            <Sidebar active="transfer" />
 
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Topbar />

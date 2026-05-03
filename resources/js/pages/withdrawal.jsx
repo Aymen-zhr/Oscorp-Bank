@@ -75,7 +75,7 @@ export default function Withdrawal({ balance, recentWithdrawals }) {
     return (
         <div className="flex h-screen w-full overflow-hidden font-sans antialiased selection:bg-[var(--color-gold)] selection:text-white" style={{ background: 'var(--color-bg-base)' }}>
             <Head title="OSCORP | Withdrawal" />
-            <Sidebar />
+            <Sidebar active="withdrawal" />
 
             <div className="flex-1 flex flex-col overflow-hidden relative">
                 <Topbar />

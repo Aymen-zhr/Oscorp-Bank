@@ -33,7 +33,7 @@ export default function Account({ user, security, financial, currency: currentCu
     return (
         <div className="flex h-screen w-full overflow-hidden font-sans antialiased" style={{ background: 'var(--color-bg-base)' }}>
             <Head title="Account Details" />
-            <Sidebar />
+            <Sidebar active="account" />
             
             <div className="flex-1 flex flex-col overflow-hidden relative">
                 <Topbar balance={financial.balance} />

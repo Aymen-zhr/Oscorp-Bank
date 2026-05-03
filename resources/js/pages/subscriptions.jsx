@@ -17,7 +17,7 @@ export default function Subscriptions({ subscriptions = [], billingHistory = [],
     return (
         <div className="flex h-screen w-full overflow-hidden font-sans antialiased" style={{ background: 'var(--color-bg-base)' }}>
             <Head title="OSCORP | Subscriptions" />
-            <Sidebar />
+            <Sidebar active="subscriptions" />
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Topbar />
                 <motion.div

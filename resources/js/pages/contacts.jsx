@@ -12,7 +12,7 @@ import {
 
 const AVATAR_COLORS = ['#D4AF37', '#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EC4899', '#EF4444', '#06B6D4'];
 
-export default function Contacts({ balance, contacts = [], contactStats = {} }) {
+export default function Contacts({ balance, contacts = [], pendingRequests = [], contactStats = {} }) {
     const { t } = useTranslation();
     const [showAddModal, setShowAddModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -65,15 +65,15 @@ export default function Contacts({ balance, contacts = [], contactStats = {} }) 
     }, [contacts, searchQuery]);
 
     const addContact = (user) => {
-        post('/contacts', {
-            data: {
-                contact_user_id: user.id,
-                nickname: null,
-                avatar_color: AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
-            },
+        router.post('/contacts', {
+            contact_user_id: user.id,
+            nickname: null,
+            avatar_color: AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
+        }, {
             onSuccess: () => {
                 setSearchQuery('');
                 setSearchResults([]);
+                setShowAddModal(false);
             },
         });
     };
@@ -81,6 +81,14 @@ export default function Contacts({ balance, contacts = [], contactStats = {} }) 
     const removeContact = (contactId) => {
         router.delete(`/contacts/${contactId}`);
         setShowActions(null);
+    };
+
+    const acceptRequest = (requestId) => {
+        router.post(`/contacts/${requestId}/accept`);
+    };
+
+    const denyRequest = (requestId) => {
+        router.post(`/contacts/${requestId}/deny`);
     };
 
     const saveNickname = (contactId, nickname) => {
@@ -109,7 +117,7 @@ export default function Contacts({ balance, contacts = [], contactStats = {} }) 
     return (
         <div className="flex h-screen w-full overflow-hidden" style={{ background: 'var(--color-bg-base)' }}>
             <Head title="OSCORP | Contacts" />
-            <Sidebar />
+            <Sidebar active="contacts" />
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Topbar />
 
@@ -208,6 +216,42 @@ export default function Contacts({ balance, contacts = [], contactStats = {} }) 
                                             </div>
                                         );
                                     })}
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* Pending Requests */}
+                        {pendingRequests.length > 0 && (
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                                <h3 className="text-[14px] font-bold mb-3 flex items-center gap-2" style={{ color: '#F59E0B' }}>
+                                    <Clock className="w-4 h-4" />
+                                    Incoming Requests ({pendingRequests.length})
+                                </h3>
+                                <div className="space-y-2">
+                                    {pendingRequests.map((request) => (
+                                        <div key={request.id} className="flex items-center gap-4 px-5 py-3 rounded-2xl"
+                                            style={{ background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.2)' }}>
+                                            <div className="w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-bold shrink-0"
+                                                style={{ background: 'rgba(245,158,11,0.1)', color: '#F59E0B', border: '1.5px solid rgba(245,158,11,0.3)' }}>
+                                                {getInitials(request.name)}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-[14px] font-semibold" style={{ color: 'var(--color-text-main)' }}>{request.name}</div>
+                                                <div className="text-[12px]" style={{ color: 'var(--color-text-muted)' }}>{request.email}</div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <button onClick={() => acceptRequest(request.id)}
+                                                    className="px-3 py-1.5 rounded-xl text-[12px] font-bold transition-all hover:brightness-110"
+                                                    style={{ background: 'var(--color-gold)', color: '#000' }}>
+                                                    Accept
+                                                </button>
+                                                <button onClick={() => denyRequest(request.id)}
+                                                    className="px-3 py-1.5 rounded-xl text-[12px] font-medium border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors">
+                                                    Deny
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </motion.div>
                         )}

@@ -316,7 +316,7 @@ export default function AIChat({ auth }) {
     return (
         <div className="flex h-screen w-full overflow-hidden bg-[var(--color-bg-base)] text-[var(--color-text-main)] font-sans antialiased">
             <Head title="OSCORP AI | Intelligence System" />
-            <Sidebar />
+            <Sidebar active="ai" />
 
             <div className="flex-1 flex min-w-0">
                 {/* Chat History Sidebar */}
