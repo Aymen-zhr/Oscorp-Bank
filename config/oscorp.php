@@ -31,5 +31,17 @@ return [
         'deposit' => '#D4AF37',
         'withdrawal' => '#EF4444',
         'transfer' => ['#D4AF37', '#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EC4899'],
+        'default_avatar' => '#64748B',
+    ],
+    'limits' => [
+        'max_transfer' => 500000,
+        'max_deposit' => 500000,
+        'max_withdrawal' => 500000,
+        'pagination' => 20,
+        'contacts_recent' => 5,
+        'contacts_search' => 20,
+        'notifications_recent' => 5,
+        'subscription_history' => 15,
+        'receive_recent' => 10,
     ],
 ];

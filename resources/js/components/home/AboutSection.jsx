@@ -30,7 +30,7 @@ export default function AboutSection() {
                             Your capital is not merely stored; it is strategically positioned, relentlessly monitored, and instantly accessible.
                         </p>
 
-                        <div className="mt-12 grid grid-cols-3 gap-8 border-t border-[var(--color-border)] pt-8">
+                        <div className="mt-8 md:mt-12 grid grid-cols-3 gap-4 sm:gap-8 border-t border-[var(--color-border)] pt-6 md:pt-8">
                             {[
                                 { value: '12K+', label: 'Elite Clients' },
                                 { value: '$4.2B', label: 'Assets Managed' },

@@ -41,8 +41,6 @@ class DashboardController extends Controller
         }
             
         return Inertia::render('dashboard', [
-            'balance'            => round($stats['live_balance'], 2),
-            'totalSpending'      => round($stats['total_spending'], 2),
             'transactions'       => $transactions,
             'activeGoal'         => $goalData,
         ]);

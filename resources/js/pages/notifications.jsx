@@ -4,26 +4,27 @@ import { motion } from 'framer-motion';
 import { Bell, CheckCircle, Clock, ShieldAlert, ArrowLeft } from 'lucide-react';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
+import { ROUTES } from '@/constants';
 
 export default function Notifications({ notifications }) {
     const markAsRead = (id) => {
-        router.post(`/notifications/${id}/mark-read`, {}, { preserveScroll: true });
+        router.post(`${ROUTES.notifications}/${id}/mark-read`, {}, { preserveScroll: true });
     };
 
     const handleAccept = (contactId, notificationId) => {
-        router.post(`/contacts/${contactId}/accept`, {}, {
+        router.post(`${ROUTES.contacts}/${contactId}/accept`, {}, {
             onSuccess: () => markAsRead(notificationId)
         });
     };
 
     const handleDeny = (contactId, notificationId) => {
-        router.post(`/contacts/${contactId}/deny`, {}, {
+        router.post(`${ROUTES.contacts}/${contactId}/deny`, {}, {
             onSuccess: () => markAsRead(notificationId)
         });
     };
 
     const markAllAsRead = () => {
-        router.post('/notifications/mark-all-read', {}, { preserveScroll: true });
+        router.post(ROUTES.notifications + '/mark-all-read', {}, { preserveScroll: true });
     };
 
     const getIcon = (type) => {

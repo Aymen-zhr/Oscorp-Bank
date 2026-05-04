@@ -1,9 +1,28 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, X, Terminal, BrainCircuit } from 'lucide-react';
+import { Send, X, Terminal } from 'lucide-react';
 import { usePage, router } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useCurrency } from '../../hooks/useCurrency';
+
+// Website Logo Component (Hexagon)
+const OscorpLogo = ({ size = 20, color = "currentColor", strokeWidth = 6 }) => (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path 
+            d="M50 10L15 32V68L50 90L85 68V32L50 10Z" 
+            stroke={color} 
+            strokeWidth={strokeWidth} 
+            strokeLinejoin="round"
+        />
+        <path 
+            d="M50 30L35 39V61L50 70L65 61V39L50 30Z" 
+            fill={color} 
+            fillOpacity="0.2" 
+            stroke={color} 
+            strokeWidth="2" 
+        />
+    </svg>
+);
 
 export default function OISPanel() {
     const { props } = usePage();
@@ -111,7 +130,7 @@ export default function OISPanel() {
                     className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#1A1612] to-[#0A0908] flex items-center justify-center relative z-10"
                     style={{ boxShadow: 'inset 0 0 10px rgba(212,175,55,0.8)' }}
                 >
-                    <BrainCircuit className="w-5 h-5 text-[#D4AF37]" />
+                    <OscorpLogo size={24} color="#D4AF37" strokeWidth={8} />
                 </motion.div>
             </motion.button>
 
@@ -139,7 +158,7 @@ export default function OISPanel() {
                             
                             <div className="flex items-center gap-3 relative z-10">
                                 <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-[var(--color-gold)] to-[var(--color-gold-dark)] shadow-[0_0_15px_var(--color-glow-primary)]">
-                                    <BrainCircuit className="w-4 h-4 text-white" />
+                                    <OscorpLogo size={20} color="white" strokeWidth={10} />
                                 </div>
                                 <div>
                                     <div className="text-[15px] font-bold text-[var(--color-gold)] tracking-wide">{t('dashboard.ois_panel_title')}</div>

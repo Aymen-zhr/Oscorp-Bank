@@ -4,10 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     User, Lock, Bell, Shield, Globe, Download, Trash2, 
     Check, Camera, Loader2, AlertCircle, Eye, EyeOff,
-    Upload, X, Image as ImageIcon, Sparkles, ChevronRight
+    Upload, X, Image as ImageIcon, Sparkles, ChevronRight,
+    Phone, AtSign, Briefcase, MapPin
 } from 'lucide-react';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
+import UserAvatar from '@/components/dashboard/UserAvatar';
+import { DICEBEAR_BASE_URL, TIMEOUTS, ROUTES } from '@/constants';
 
 export default function Settings({ user, preferences, security }) {
     const { flash } = usePage().props;
@@ -17,15 +20,19 @@ export default function Settings({ user, preferences, security }) {
     
     // --- Profile Form ---
     const profileForm = useForm({
-        name: user.name,
-        email: user.email,
+        name: user.name || '',
+        email: user.email || '',
         avatar: user.avatar || 'adventurer',
+        phone: user.phone || '',
+        tag: user.tag || '',
+        job_title: user.job_title || '',
+        address: user.address || '',
     });
 
     const [avatarPreview, setAvatarPreview] = useState(
         user.avatar?.startsWith('/') 
             ? user.avatar 
-            : `https://api.dicebear.com/9.x/${user.avatar || 'adventurer'}/svg?seed=${user.name}&backgroundColor=111827`
+            : `${DICEBEAR_BASE_URL}/${user.avatar || 'adventurer'}/svg?seed=${user.name}&backgroundColor=111827`
     );
 
     const handleFileChange = (e) => {
@@ -42,7 +49,7 @@ export default function Settings({ user, preferences, security }) {
     
     const handleProfileSubmit = (e) => {
         e.preventDefault();
-        profileForm.post('/settings/profile', {
+        profileForm.post(ROUTES.settings + '/profile', {
             preserveScroll: true,
             forceFormData: true,
         });
@@ -59,7 +66,7 @@ export default function Settings({ user, preferences, security }) {
 
     const handlePasswordSubmit = (e) => {
         e.preventDefault();
-        passwordForm.post('/settings/password', {
+        passwordForm.post(ROUTES.settings + '/password', {
             preserveScroll: true,
             onSuccess: () => passwordForm.reset(),
         });
@@ -74,7 +81,7 @@ export default function Settings({ user, preferences, security }) {
 
     const handlePreferencesSubmit = (e) => {
         e.preventDefault();
-        preferencesForm.post('/settings/preferences', {
+        preferencesForm.post(ROUTES.settings + '/preferences', {
             preserveScroll: true,
         });
     };
@@ -82,7 +89,7 @@ export default function Settings({ user, preferences, security }) {
     // --- Actions ---
     const handleExport = () => {
         setExporting(true);
-        setTimeout(() => setExporting(false), 2000);
+        setTimeout(() => setExporting(false), TIMEOUTS.copyFeedback);
     };
 
     const tabs = [
@@ -105,7 +112,7 @@ export default function Settings({ user, preferences, security }) {
                 
                 <Topbar />
                 
-                <div className="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar relative z-10">
+                <div className="flex-1 overflow-y-auto p-6 md:p-10 pb-32 md:pb-10 custom-scrollbar relative z-10">
                     <div className="max-w-5xl mx-auto">
                         <header className="mb-10">
                             <motion.div 
@@ -198,7 +205,16 @@ export default function Settings({ user, preferences, security }) {
                                                         whileHover={{ scale: 1.05 }}
                                                         className="w-32 h-32 rounded-[32px] overflow-hidden ring-4 ring-[var(--color-gold)]/20 shadow-2xl relative"
                                                     >
-                                                        <img src={avatarPreview} alt={user.name} className="w-full h-full object-cover bg-[var(--color-bg-base)]" />
+                                                        {profileForm.data.avatar instanceof File ? (
+                                                            <img src={avatarPreview} alt={user.name} className="w-full h-full object-cover bg-[var(--color-bg-base)]" />
+                                                        ) : (
+                                                            <UserAvatar 
+                                                                user={{ ...user, avatar: profileForm.data.avatar }} 
+                                                                size="w-full h-full" 
+                                                                className="rounded-none ring-0 shadow-none"
+                                                                isDark={true}
+                                                            />
+                                                        )}
                                                         <div 
                                                             onClick={() => fileInputRef.current?.click()}
                                                             className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer backdrop-blur-[2px]"
@@ -260,6 +276,66 @@ export default function Settings({ user, preferences, security }) {
                                                             />
                                                         </div>
                                                         {profileForm.errors.email && <p className="text-red-400 text-[12px] font-medium pl-1">{profileForm.errors.email}</p>}
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="text-[11px] font-bold text-[var(--color-gold)] uppercase tracking-[2px]">Phone Number</label>
+                                                        <div className="relative group">
+                                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-gold)] transition-colors" />
+                                                            <input 
+                                                                type="tel" 
+                                                                value={profileForm.data.phone} 
+                                                                onChange={e => profileForm.setData('phone', e.target.value)}
+                                                                className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-[var(--color-gold)]/50 focus:ring-4 focus:ring-[var(--color-gold)]/5 transition-all text-[15px] font-medium text-[var(--color-text-main)]"
+                                                                placeholder="+212 600 000 000"
+                                                            />
+                                                        </div>
+                                                        {profileForm.errors.phone && <p className="text-red-400 text-[12px] font-medium pl-1">{profileForm.errors.phone}</p>}
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="text-[11px] font-bold text-[var(--color-gold)] uppercase tracking-[2px]">Digital Handle</label>
+                                                        <div className="relative group">
+                                                            <AtSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-gold)] transition-colors" />
+                                                            <input 
+                                                                type="text" 
+                                                                value={profileForm.data.tag} 
+                                                                onChange={e => profileForm.setData('tag', e.target.value)}
+                                                                className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-[var(--color-gold)]/50 focus:ring-4 focus:ring-[var(--color-gold)]/5 transition-all text-[15px] font-medium text-[var(--color-text-main)]"
+                                                                placeholder="@username"
+                                                            />
+                                                        </div>
+                                                        {profileForm.errors.tag && <p className="text-red-400 text-[12px] font-medium pl-1">{profileForm.errors.tag}</p>}
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="text-[11px] font-bold text-[var(--color-gold)] uppercase tracking-[2px]">Job Title</label>
+                                                        <div className="relative group">
+                                                            <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-gold)] transition-colors" />
+                                                            <input 
+                                                                type="text" 
+                                                                value={profileForm.data.job_title} 
+                                                                onChange={e => profileForm.setData('job_title', e.target.value)}
+                                                                className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-[var(--color-gold)]/50 focus:ring-4 focus:ring-[var(--color-gold)]/5 transition-all text-[15px] font-medium text-[var(--color-text-main)]"
+                                                                placeholder="e.g. Executive Director"
+                                                            />
+                                                        </div>
+                                                        {profileForm.errors.job_title && <p className="text-red-400 text-[12px] font-medium pl-1">{profileForm.errors.job_title}</p>}
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="text-[11px] font-bold text-[var(--color-gold)] uppercase tracking-[2px]">Residential Address</label>
+                                                        <div className="relative group">
+                                                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-gold)] transition-colors" />
+                                                            <input 
+                                                                type="text" 
+                                                                value={profileForm.data.address} 
+                                                                onChange={e => profileForm.setData('address', e.target.value)}
+                                                                className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-[var(--color-gold)]/50 focus:ring-4 focus:ring-[var(--color-gold)]/5 transition-all text-[15px] font-medium text-[var(--color-text-main)]"
+                                                                placeholder="Enter your full address"
+                                                            />
+                                                        </div>
+                                                        {profileForm.errors.address && <p className="text-red-400 text-[12px] font-medium pl-1">{profileForm.errors.address}</p>}
                                                     </div>
                                                 </div>
                                                 

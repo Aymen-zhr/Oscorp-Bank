@@ -71,7 +71,7 @@ export default function AuthLayout({ activeTab, children, title, subtitle }) {
         <div className="min-h-screen w-full flex relative overflow-hidden selection:bg-[var(--color-gold)] selection:text-white" style={{ background: 'var(--color-bg-base)', color: 'var(--color-text-main)' }}>
             
             {/* Left Column: Atmospheric Branding */}
-            <div ref={leftContainerRef} className="hidden lg:flex lg:w-1/2 relative items-center justify-center overflow-hidden bg-[#0A0908] border-r border-white/5">
+             <div ref={leftContainerRef} className="hidden lg:flex lg:w-1/2 relative items-center justify-center overflow-hidden" style={{ background: '#0A0908' }}>
                 
                 {/* Dynamic Mouse Glow */}
                 <motion.div
@@ -157,15 +157,15 @@ export default function AuthLayout({ activeTab, children, title, subtitle }) {
             </div>
 
             {/* Right Column: Form */}
-            <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 lg:p-12 relative z-10">
-                
-                {/* Mobile Header */}
-                <div className="flex lg:hidden items-center gap-4 mb-12">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--color-gold), var(--color-gold-dark))' }}>
-                        <Shield className="text-white w-6 h-6" />
-                    </div>
-                    <span className="text-3xl font-black tracking-tighter">OSCORP</span>
-                </div>
+             <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-12 relative z-10">
+
+                 {/* Mobile Header */}
+                 <div className="flex lg:hidden items-center gap-3 mb-8 sm:mb-12">
+                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--color-gold), var(--color-gold-dark))' }}>
+                         <Shield className="text-white w-5 h-5 sm:w-6 sm:h-6" />
+                     </div>
+                     <span className="text-2xl sm:text-3xl font-black tracking-tighter">OSCORP</span>
+                 </div>
 
                 {/* Tab Switcher */}
                 <div className="w-full max-w-[460px] mb-10 p-1.5 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)] shadow-2xl relative">

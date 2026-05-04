@@ -54,11 +54,10 @@ class ContactController extends Controller
             ->select('bill_participants.user_id', \Illuminate\Support\Facades\DB::raw('COUNT(*) as split_count'))
             ->groupBy('bill_participants.user_id')
             ->orderByDesc('split_count')
-            ->limit(5)
+            ->limit(config('oscorp.limits.contacts_recent', 5))
             ->get();
 
         return Inertia::render('contacts', [
-            'balance' => round($stats['live_balance'], 2),
             'contacts' => $contacts,
             'pendingRequests' => $pendingRequests,
             'contactStats' => [
@@ -102,7 +101,7 @@ class ContactController extends Controller
                 $q->where('name', 'like', "%{$query}%")
                   ->orWhere('email', 'like', "%{$query}%");
             })
-            ->limit(20)
+            ->limit(config('oscorp.limits.contacts_search', 20))
             ->get(['id', 'name', 'email', 'avatar'])
             ->map(fn($user) => [
                 'id' => $user->id,
@@ -134,7 +133,7 @@ class ContactController extends Controller
             ],
             [
                 'nickname' => $validated['nickname'] ?? null,
-                'avatar_color' => $validated['avatar_color'] ?? '#64748B',
+                'avatar_color' => $validated['avatar_color'] ?? config('oscorp.colors.default_avatar', '#64748B'),
                 'status' => 'pending',
             ]
         );
@@ -161,6 +160,7 @@ class ContactController extends Controller
     {
         $contact = Contact::where('id', $id)
             ->where('contact_user_id', Auth::id())
+            ->with('user')
             ->firstOrFail();
 
         $contact->update(['status' => 'accepted']);
@@ -173,16 +173,18 @@ class ContactController extends Controller
             ],
             [
                 'status' => 'accepted',
-                'avatar_color' => '#64748B',
+                'avatar_color' => config('oscorp.colors.default_avatar', '#64748B'),
             ]
         );
 
         // Notify the requester
-        $contact->user->notify(new \App\Notifications\SystemNotification([
-            'type' => 'success',
-            'title' => 'Request Accepted',
-            'message' => Auth::user()->name . ' accepted your contact request.',
-        ]));
+        if ($contact->user) {
+            $contact->user->notify(new \App\Notifications\SystemNotification([
+                'type' => 'success',
+                'title' => 'Request Accepted',
+                'message' => Auth::user()->name . ' accepted your contact request.',
+            ]));
+        }
 
         return back()->with('success', 'Contact request accepted.');
     }

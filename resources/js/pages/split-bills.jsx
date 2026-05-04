@@ -12,15 +12,16 @@ import {
     Calendar, Hash, Sparkles, CreditCard, XCircle, ShieldCheck,
     UserPlus, Search, Bell, RefreshCw, Download, Repeat
 } from 'lucide-react';
+import { AVATAR_COLORS, QUICK_BILL_ICONS as QUICK_BILL_COLORS, ROUTES } from '@/constants';
 
 const QUICK_BILL_ICONS = [
-    { value: 'tv', icon: Tv, labelKey: 'split_bills.bill_icons.netflix', color: '#E50914' },
-    { value: 'music', icon: Music, labelKey: 'split_bills.bill_icons.spotify', color: '#1DB954' },
-    { value: 'gamepad-2', icon: Gamepad2, labelKey: 'split_bills.bill_icons.xbox', color: '#107C10' },
-    { value: 'palette', icon: Palette, labelKey: 'split_bills.bill_icons.adobe', color: '#FF0000' },
-    { value: 'utensils', icon: Utensils, labelKey: 'split_bills.bill_icons.dining', color: '#F59E0B' },
-    { value: 'wifi', icon: Wifi, labelKey: 'split_bills.bill_icons.internet', color: '#3B82F6' },
-    { value: 'receipt', icon: Receipt, labelKey: 'split_bills.bill_icons.other', color: '#D4AF37' },
+    { value: 'tv', icon: Tv, labelKey: 'split_bills.bill_icons.netflix', color: QUICK_BILL_COLORS[0].color },
+    { value: 'music', icon: Music, labelKey: 'split_bills.bill_icons.spotify', color: QUICK_BILL_COLORS[1].color },
+    { value: 'gamepad-2', icon: Gamepad2, labelKey: 'split_bills.bill_icons.xbox', color: QUICK_BILL_COLORS[2].color },
+    { value: 'palette', icon: Palette, labelKey: 'split_bills.bill_icons.adobe', color: QUICK_BILL_COLORS[3].color },
+    { value: 'utensils', icon: Utensils, labelKey: 'split_bills.bill_icons.dining', color: QUICK_BILL_COLORS[4].color },
+    { value: 'wifi', icon: Wifi, labelKey: 'split_bills.bill_icons.internet', color: QUICK_BILL_COLORS[5].color },
+    { value: 'receipt', icon: Receipt, labelKey: 'split_bills.bill_icons.other', color: QUICK_BILL_COLORS[6].color },
 ];
 
 function getIconComponent(name) {
@@ -28,10 +29,8 @@ function getIconComponent(name) {
     return option ? option.icon : Receipt;
 }
 
-const AVATAR_COLORS = ['#D4AF37', '#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EC4899', '#EF4444', '#06B6D4'];
-
 export default function SplitBills({ balance, userId, splits = [], summary = {}, suggestedBills = [], contacts = [] }) {
-    const { t } = useTranslation();
+    const { t, locale } = useTranslation();
     const { format, code } = useCurrency();
     const isMe = (p) => p.user_id === userId;
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -68,7 +67,7 @@ export default function SplitBills({ balance, userId, splits = [], summary = {},
         }
         setSearching(true);
         try {
-            const res = await fetch(`/contacts/search?q=${encodeURIComponent(query)}`);
+            const res = await fetch(`${ROUTES.contacts}/search?q=${encodeURIComponent(query)}`);
             const results = await res.json();
             setSearchResults(results);
         } catch (e) {
@@ -93,7 +92,7 @@ export default function SplitBills({ balance, userId, splits = [], summary = {},
 
     const fmtDate = (date) => {
         if (!date) return null;
-        return new Date(date).toLocaleDateString('en-MA', { day: 'numeric', month: 'short', year: 'numeric' });
+        return new Date(date).toLocaleDateString(locale || 'en-MA', { day: 'numeric', month: 'short', year: 'numeric' });
     };
 
     const sharePerPerson = useMemo(() => {
@@ -775,7 +774,7 @@ export default function SplitBills({ balance, userId, splits = [], summary = {},
                                         <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-xl" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
                                             <Hash className="w-3.5 h-3.5" style={{ color: 'var(--color-gold)' }} />
                                             <span className="text-[12px] font-medium" style={{ color: 'var(--color-gold)' }}>
-                                                {t('split_bills.each_pays', { amount: fmtCurrency(sharePerPerson) })}
+                                                {t('split_bills.each_pays', { amount: format(sharePerPerson) })}
                                             </span>
                                         </div>
                                     )}

@@ -68,7 +68,6 @@ class TransactionController extends Controller
             ],
             'categories' => $categories,
             'stats' => [
-                'balance' => round($stats['live_balance'], 2),
                 'total_credits' => round($stats['total_credits'], 2),
                 'total_debits' => round($stats['total_debits'], 2),
             ],

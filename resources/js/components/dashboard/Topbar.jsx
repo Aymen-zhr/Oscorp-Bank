@@ -2,6 +2,7 @@ import { Bell, Search, Zap, User, Settings, LogOut, ChevronDown, Menu, Globe } f
 import { usePage, Link, router } from '@inertiajs/react';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import UserAvatar from './UserAvatar';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useCurrency } from '../../hooks/useCurrency';
 
@@ -37,8 +38,8 @@ export default function Topbar() {
     const now = new Date();
     const day = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
 
-    const credits = transactions?.filter ? transactions.filter(t => t.type === 'credit').reduce((s, t) => s + Number(t.amount), 0) : 0;
-    const debits = transactions?.filter ? transactions.filter(t => t.type === 'debit').reduce((s, t) => s + Number(t.amount), 0) : 0;
+    const credits = props.total_credits ?? 0;
+    const debits = props.total_debits ?? 0;
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -64,7 +65,7 @@ export default function Topbar() {
     };
 
     return (
-        <header className="flex items-center justify-between px-4 md:px-6 py-3 shrink-0 gap-3 md:gap-4 relative z-50"
+        <header className="flex items-center justify-between px-4 md:px-6 py-2.5 shrink-0 gap-3 md:gap-4 relative z-50"
             style={{ background: 'var(--color-bg-card)', borderBottom: '1px solid var(--color-border)' }}
         >
             <div className="flex items-center gap-3">
@@ -305,15 +306,12 @@ export default function Topbar() {
                         whileTap={{ scale: 0.98 }}
                     >
                         <motion.div
-                            className="w-8 h-8 rounded-lg overflow-hidden ring-2 ring-[var(--color-gold)]/30"
                             whileHover={{ scale: 1.1 }}
                         >
-                            <img
-                                src={user?.avatar?.startsWith('/')
-                                    ? user.avatar
-                                    : `https://api.dicebear.com/9.x/${user?.avatar || 'adventurer'}/svg?seed=${user?.name || 'user'}&backgroundColor=${document.documentElement.classList.contains('dark') ? '111827' : 'F3F4F6'}`}
-                                alt="avatar"
-                                className="w-full h-full object-cover"
+                            <UserAvatar 
+                                user={user} 
+                                size="w-8 h-8" 
+                                isDark={document.documentElement.classList.contains('dark')} 
                             />
                         </motion.div>
                         <motion.div

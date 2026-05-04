@@ -9,11 +9,12 @@ import {
     MoreVertical, Phone, MessageSquare, Split, Clock, ArrowRight,
     Sparkles, Hash
 } from 'lucide-react';
+import { ROUTES } from '@/constants';
 
 const AVATAR_COLORS = ['#D4AF37', '#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EC4899', '#EF4444', '#06B6D4'];
 
 export default function Contacts({ balance, contacts = [], pendingRequests = [], contactStats = {} }) {
-    const { t } = useTranslation();
+    const { t, locale } = useTranslation();
     const [showAddModal, setShowAddModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
@@ -33,7 +34,7 @@ export default function Contacts({ balance, contacts = [], pendingRequests = [],
         }
         setSearching(true);
         try {
-            const res = await fetch(`/contacts/search?q=${encodeURIComponent(query)}`);
+            const res = await fetch(`${ROUTES.contacts}/search?q=${encodeURIComponent(query)}`);
             const results = await res.json();
             setSearchResults(results);
         } catch (e) {
@@ -102,12 +103,12 @@ export default function Contacts({ balance, contacts = [], pendingRequests = [],
     };
 
     const fmtCurrency = (amount) => {
-        return Number(amount).toLocaleString('en-MA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return Number(amount).toLocaleString(locale || 'en-MA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
     const fmtDate = (date) => {
         if (!date) return null;
-        return new Date(date).toLocaleDateString('en-MA', { day: 'numeric', month: 'short', year: 'numeric' });
+        return new Date(date).toLocaleDateString(locale || 'en-MA', { day: 'numeric', month: 'short', year: 'numeric' });
     };
 
     const getInitials = (name) => {

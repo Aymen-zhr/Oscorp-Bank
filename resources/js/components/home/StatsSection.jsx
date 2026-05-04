@@ -46,7 +46,7 @@ export default function StatsSection() {
                     </p>
                 </motion.div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[24px] overflow-hidden">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[24px] overflow-hidden text-center">
                     {stats.map((s, i) => (
                         <motion.div
                             key={s.label}

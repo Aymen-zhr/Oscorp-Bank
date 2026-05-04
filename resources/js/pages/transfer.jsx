@@ -10,7 +10,7 @@ import {
     X, Wallet, Plus, Search, ArrowUpRight, ArrowDownLeft
 } from 'lucide-react';
 
-const quickAmounts = [500, 1000, 2500, 5000, 10000];
+import { QUICK_AMOUNTS, ROUTES } from '@/constants';
 
 export default function Transfer({ balance, recentTransfers = [], beneficiaries = [] }) {
     const [step, setStep] = useState(1);
@@ -37,7 +37,7 @@ export default function Transfer({ balance, recentTransfers = [], beneficiaries 
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post('/transfer', {
+        post(ROUTES.transfer, {
             onSuccess: () => {
                 reset();
                 setStep(1);
@@ -48,7 +48,7 @@ export default function Transfer({ balance, recentTransfers = [], beneficiaries 
     // Using useCurrency hook instead
 
     const fmtDate = (date) => {
-        return new Date(date).toLocaleDateString('en-MA', { day: 'numeric', month: 'short', year: 'numeric' });
+        return new Date(date).toLocaleDateString(locale || 'en-MA', { day: 'numeric', month: 'short', year: 'numeric' });
     };
 
     return (
@@ -192,7 +192,7 @@ export default function Transfer({ balance, recentTransfers = [], beneficiaries 
                                             <div className="mb-6">
                                                 <div className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--color-text-muted)' }}>{t('transfer.quick_amounts')}</div>
                                                 <div className="flex gap-2 flex-wrap">
-                                                    {quickAmounts.map(amount => (
+                                                    {QUICK_AMOUNTS.map(amount => (
                                                         <button key={amount} type="button" onClick={() => setData('amount', amount)} className="px-4 py-2 rounded-xl text-[13px] font-semibold transition-all" style={{ background: data.amount === String(amount) ? 'var(--color-gold)' : 'var(--color-bg-elevated)', color: data.amount === String(amount) ? '#000' : 'var(--color-text-muted)', border: `1px solid ${data.amount === String(amount) ? 'var(--color-gold)' : 'var(--color-border)'}` }}>
                                                              {format(amount)} {code}
                                                         </button>

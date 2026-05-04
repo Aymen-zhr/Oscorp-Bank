@@ -10,53 +10,13 @@ import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
-
-/* ── Category colours ──────────────────────────────────────── */
-const CAT_COLOR = {
-    Food: '#F59E0B', Dining: '#F97316', Groceries: '#84CC16',
-    Transport: '#6366F1', Entertainment: '#EC4899', Bills: '#EF4444',
-    Utilities: '#06B6D4', Shopping: '#10B981', Health: '#8B5CF6',
-    Telecoms: '#3B82F6', Transfer: '#D4AF37', Salary: '#22C55E',
-    Rent: '#F43F5E', Wellness: '#A78BFA',
-};
-const catColor = (c) => CAT_COLOR[c] || '#64748B';
-
-/* ── Logo.dev config ───────────────────────────────────────── */
-const LOGO_KEY = 'pk_binMfKfXSiOiYpfo3CyL2w';
-
-const DOMAIN_MAP = {
-    // Streaming / tech
-    netflix: 'netflix.com', spotify: 'spotify.com', amazon: 'amazon.com',
-    apple: 'apple.com', google: 'google.com', microsoft: 'microsoft.com',
-    youtube: 'youtube.com', adobe: 'adobe.com', dropbox: 'dropbox.com',
-    zoom: 'zoom.us', slack: 'slack.com', paypal: 'paypal.com',
-    steam: 'steampowered.com', airbnb: 'airbnb.com', uber: 'uber.com',
-    // Food & retail
-    mcdonald: 'mcdonalds.com', starbucks: 'starbucks.com', kfc: 'kfc.com',
-    'pizza hut': 'pizzahut.com', domino: 'dominos.com',
-    carrefour: 'carrefour.com', zara: 'zara.com', 'h&m': 'hm.com',
-    jumia: 'jumia.ma',
-    // Morocco
-    marjane: 'marjane.ma', inwi: 'inwi.ma',
-    'maroc telecom': 'iam.ma', orange: 'orange.ma', lydec: 'lydec.ma',
-    bmce: 'banqueofafrica.com', attijariwafa: 'attijariwafabank.com',
-    cih: 'cihbank.com', wafacash: 'wafacash.ma',
-};
-
-function getDomain(merchant) {
-    if (!merchant) return null;
-    const lower = merchant.toLowerCase();
-    for (const [key, domain] of Object.entries(DOMAIN_MAP)) {
-        if (lower.includes(key)) return domain;
-    }
-    return null;
-}
+import { catColor, LOGO_KEY, LOGO_BASE_URL, getDomain, DICEBEAR_BASE_URL, STATUS_COLORS } from '@/constants';
 
 /* ── Merchant Logo component ───────────────────────────────── */
 const MerchantLogo = function MerchantLogo({ merchant, logoColor, size = 46 }) {
     const [failed, setFailed] = useState(false);
     const domain = getDomain(merchant);
-    const color  = logoColor || '#64748B';
+    const color  = logoColor || STATUS_COLORS.default;
     const letter = (merchant || '?').charAt(0).toUpperCase();
 
     const base = {
@@ -70,7 +30,7 @@ const MerchantLogo = function MerchantLogo({ merchant, logoColor, size = 46 }) {
         return (
             <div style={{ ...base, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 8, overflow: 'hidden' }}>
                 <img
-                    src={`https://img.logo.dev/${domain}?token=${LOGO_KEY}&size=64&format=png`}
+                    src={`${LOGO_BASE_URL}/${domain}?token=${LOGO_KEY}&size=64&format=png`}
                     alt={merchant}
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                     onError={() => setFailed(true)}
@@ -108,13 +68,13 @@ const MemoizedAmount = function(props) { return <Amount {...props} />; };
 // Wrapper to pass format and code to Amount
 
 /* ── Helpers ───────────────────────────────────────────────── */
-const fmtTime = (d) => {
+const fmtTime = (d, loc) => {
     const date = new Date(d);
-    return isNaN(date.getTime()) ? '–' : date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    return isNaN(date.getTime()) ? '–' : date.toLocaleTimeString(loc || 'en-GB', { hour: '2-digit', minute: '2-digit' });
 };
-const fmtDay  = (d) => {
+const fmtDay  = (d, loc) => {
     const date = new Date(d);
-    return isNaN(date.getTime()) ? 'Unknown Date' : date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    return isNaN(date.getTime()) ? 'Unknown Date' : date.toLocaleDateString(loc || 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 };
 
 /* ── Quick chip ────────────────────────────────────────────── */
@@ -179,7 +139,7 @@ export default function Transactions({ transactions, filters, categories, stats 
                 
                 <Topbar />
 
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto pb-32 md:pb-0">
                     <div className="max-w-5xl mx-auto px-6 py-5 space-y-5">
 
                         {/* ── Header ── */}
@@ -200,8 +160,8 @@ export default function Transactions({ transactions, filters, categories, stats 
                         </motion.div>
 
                         {/* ── Stats ── */}
-                        <div className="grid grid-cols-3 gap-3">
-                            {statsCards.map(({ label, value, color, Icon }, i) => (
+                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                             {statsCards.map(({ label, value, color, Icon }, i) => (
                                 <motion.div key={label}
                                     initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 * (i + 1) }}
                                     className="p-4 rounded-2xl flex items-center gap-4"
@@ -335,7 +295,7 @@ export default function Transactions({ transactions, filters, categories, stats 
                                             <div className="flex items-center gap-3 mb-2.5 px-1">
                                                 <span className="text-[11px] font-bold uppercase tracking-[0.15em]"
                                                     style={{ color: 'var(--color-text-muted)' }}>
-                                                    {fmtDay(txs[0].transacted_at)}
+                                                    {fmtDay(txs[0].transacted_at, locale)}
                                                 </span>
                                                 <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
                                                 <span className="text-[10px] px-2 py-0.5 rounded-full"
@@ -348,49 +308,49 @@ export default function Transactions({ transactions, filters, categories, stats 
                                             <div className="rounded-2xl overflow-hidden"
                                                 style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
                                                 {txs.map((tx, i) => (
-                                                    <motion.div key={tx.id}
-                                                        initial={{ opacity: 0, x: -6 }}
-                                                        animate={{ opacity: 1, x: 0 }}
-                                                        transition={{ delay: gi * 0.04 + i * 0.02 }}
-                                                        className="flex items-center gap-4 px-5 py-4 transition-colors cursor-default"
-                                                        style={{ borderBottom: i < txs.length - 1 ? '1px solid var(--color-border)' : 'none' }}
-                                                        onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-elevated)'}
-                                                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                                                    >
-                                                        <MemoizedMerchantLogo merchant={tx.merchant} logoColor={tx.logo_color} />
+                                                     <motion.div key={tx.id}
+                                                         initial={{ opacity: 0, x: -6 }}
+                                                         animate={{ opacity: 1, x: 0 }}
+                                                         transition={{ delay: gi * 0.04 + i * 0.02 }}
+                                                         className="flex items-center gap-3 sm:gap-4 px-3 sm:px-5 py-3 sm:py-4 transition-colors cursor-default"
+                                                         style={{ borderBottom: i < txs.length - 1 ? '1px solid var(--color-border)' : 'none' }}
+                                                         onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-elevated)'}
+                                                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                                     >
+                                                         <MemoizedMerchantLogo merchant={tx.merchant} logoColor={tx.logo_color} size={36} />
 
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center gap-2 flex-wrap">
-                                                                <span className="text-[15px] font-semibold truncate" style={{ color: 'var(--color-text-main)' }}>
-                                                                    {tx.merchant}
-                                                                </span>
-                                                                {tx.card_last4 && (
-                                                                    <span className="flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded-md"
-                                                                        style={{ background: 'var(--color-bg-base)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
-                                                                        <CreditCard className="w-3 h-3" /> ••{tx.card_last4}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <div className="flex items-center gap-2 mt-1.5">
-                                                                {tx.category && (
-                                                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                                                                        style={{
-                                                                            background: catColor(tx.category) + '18',
-                                                                            color: catColor(tx.category),
-                                                                            border: `1px solid ${catColor(tx.category)}30`,
-                                                                        }}>
-                                                                        {tx.category}
-                                                                    </span>
-                                                                )}
-                                                                <span className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
-                                                                    {fmtTime(tx.transacted_at)}
-                                                                </span>
-                                                            </div>
-                                                        </div>
+                                                         <div className="flex-1 min-w-0">
+                                                             <div className="flex items-center gap-2 flex-wrap">
+                                                                 <span className="text-[14px] sm:text-[15px] font-semibold truncate" style={{ color: 'var(--color-text-main)' }}>
+                                                                     {tx.merchant}
+                                                                 </span>
+                                                                 {tx.card_last4 && (
+                                                                     <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-mono px-1.5 py-0.5 rounded-md"
+                                                                         style={{ background: 'var(--color-bg-base)', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
+                                                                         <CreditCard className="w-3 h-3" /> ••{tx.card_last4}
+                                                                     </span>
+                                                                 )}
+                                                             </div>
+                                                             <div className="flex items-center gap-2 mt-1">
+                                                                 {tx.category && (
+                                                                     <span className="text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full truncate max-w-[120px]"
+                                                                         style={{
+                                                                             background: catColor(tx.category) + '18',
+                                                                             color: catColor(tx.category),
+                                                                             border: `1px solid ${catColor(tx.category)}30`,
+                                                                         }}>
+                                                                         {tx.category}
+                                                                     </span>
+                                                                 )}
+                                                                 <span className="text-[10px] sm:text-[11px] shrink-0" style={{ color: 'var(--color-text-muted)' }}>
+                                                                     {fmtTime(tx.transacted_at, locale)}
+                                                                 </span>
+                                                             </div>
+                                                         </div>
 
-                                                        <MemoizedAmount tx={tx} format={format} code={code} />
-                                                    </motion.div>
-                                                ))}
+                                                         <MemoizedAmount tx={tx} format={format} code={code} />
+                                                     </motion.div>
+                                                 ))}
                                             </div>
                                         </div>
                                     ))}

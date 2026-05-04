@@ -53,14 +53,22 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user ? array_merge($user->toArray(), [
                     'unreadNotificationsCount' => $user->unreadNotifications()->count(),
-                    'recentNotifications' => $user->unreadNotifications()->limit(5)->get(),
+                    'recentNotifications' => $user->unreadNotifications()->limit(config('oscorp.limits.notifications_recent', 5))->get(),
                 ]) : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'locale' => $locale,
             'isRTL' => false, // Always LTR as requested
             'balance' => $stats ? round($stats['live_balance'], 2) : 0,
+            'total_credits' => $stats ? round($stats['total_credits'], 2) : 0,
+            'total_debits' => $stats ? round($stats['total_debits'], 2) : 0,
+            'monthly_credits' => $stats ? round($stats['monthly_credits'], 2) : 0,
+            'monthly_debits' => $stats ? round($stats['monthly_debits'], 2) : 0,
+            'monthly_categories' => $stats ? $stats['monthly_categories'] : [],
+            'capital_allocation' => $stats ? $stats['capital_allocation'] : [],
+            'total_capital' => $stats ? ($stats['live_balance'] + $stats['goal_savings']) : 0,
             'currency' => $currency,
+            'rib' => config('oscorp.rib'),
         ];
     }
 }

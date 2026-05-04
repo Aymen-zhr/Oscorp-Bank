@@ -26,7 +26,7 @@ class TaxesController extends Controller
             ->sum('amount');
 
         if ($totalIncomeThisYear == 0) {
-            $totalIncomeThisYear = $stats['total_credits'] > 0 ? $stats['total_credits'] : 500000;
+            $totalIncomeThisYear = $stats['total_credits'] > 0 ? $stats['total_credits'] : config('taxes.default_income', 500000);
         }
 
         // Moroccan progressive tax calculation
@@ -50,7 +50,7 @@ class TaxesController extends Controller
             ->where('user_id', $userId)
             ->where('type', 'debit')
             ->where('transacted_at', '>=', $startOfYear)
-            ->whereIn('category', ['Health', 'Education', 'Philanthropy', 'Donations'])
+            ->whereIn('category', config('taxes.deductible_categories', ['Health', 'Education', 'Philanthropy', 'Donations']))
             ->sum('amount');
 
         // Build tax documents from real data
@@ -168,20 +168,23 @@ class TaxesController extends Controller
      */
     private function calculateMoroccanTax($annualIncome)
     {
+        $brackets = config('taxes.brackets');
         $tax = 0;
 
-        if ($annualIncome <= 30000) {
-            $tax = 0;
-        } elseif ($annualIncome <= 50000) {
-            $tax = ($annualIncome - 30000) * 0.10;
-        } elseif ($annualIncome <= 60000) {
-            $tax = 2000 + ($annualIncome - 50000) * 0.20;
-        } elseif ($annualIncome <= 80000) {
-            $tax = 4000 + ($annualIncome - 60000) * 0.30;
-        } elseif ($annualIncome <= 180000) {
-            $tax = 10000 + ($annualIncome - 80000) * 0.34;
-        } else {
-            $tax = 44000 + ($annualIncome - 180000) * 0.38;
+        foreach ($brackets as $i => $bracket) {
+            $nextThreshold = $brackets[$i + 1]['threshold'] ?? PHP_INT_MAX;
+
+            if ($annualIncome <= $bracket['threshold']) {
+                $prevThreshold = $i > 0 ? $brackets[$i - 1]['threshold'] : 0;
+                $tax = $bracket['cumulative'] + ($annualIncome - $prevThreshold) * $bracket['rate'];
+                break;
+            }
+        }
+
+        if ($annualIncome > end($brackets)['threshold'] && end($brackets)['threshold'] !== PHP_INT_MAX) {
+            $lastBracket = end($brackets);
+            $prevThreshold = $brackets[count($brackets) - 2]['threshold'];
+            $tax = $lastBracket['cumulative'] + ($annualIncome - $prevThreshold) * $lastBracket['rate'];
         }
 
         return $tax;

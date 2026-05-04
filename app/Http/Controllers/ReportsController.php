@@ -17,12 +17,13 @@ class ReportsController extends Controller
         $userId = Auth::id();
         $stats = $this->getFinancialStats();
 
-        // Fetch raw transactions for last 6 months and group in PHP for DB compatibility
-        $sixMonthsAgo = Carbon::now()->subMonths(5)->startOfMonth();
+        $trendMonths = config('reports.trend_months', 6);
+        $monthsOffset = $trendMonths - 1;
+        $trendStart = Carbon::now()->subMonths($monthsOffset)->startOfMonth();
         
         $transactions = DB::table('transactions')
             ->where('user_id', $userId)
-            ->where('transacted_at', '>=', $sixMonthsAgo)
+            ->where('transacted_at', '>=', $trendStart)
             ->get();
 
         // Group by year-month in PHP
@@ -40,9 +41,9 @@ class ReportsController extends Controller
             }
         }
 
-        // Build complete 6-month array with zero-filled gaps
+        // Build complete trend array with zero-filled gaps
         $monthlyData = [];
-        for ($i = 5; $i >= 0; $i--) {
+        for ($i = $monthsOffset; $i >= 0; $i--) {
             $month = Carbon::now()->subMonths($i);
             $key = $month->format('Y-m');
             $agg = $monthlyAgg[$key] ?? ['income' => 0, 'expenses' => 0];

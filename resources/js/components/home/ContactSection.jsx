@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, ArrowRight, CheckCircle } from 'lucide-react';
 
-const info = [
-    { icon: Mail, label: 'Secure Communication', value: 'client.relations@oscorp.bank' },
-    { icon: Phone, label: 'Priority Support', value: '+212 522 000 000' },
-    { icon: MapPin, label: 'Global Headquarters', value: 'Twin Center, Casablanca, Morocco' },
+const ICON_MAP = { Mail, Phone, MapPin };
+
+const contactData = [
+    { icon: 'Mail', labelKey: 'contact.secure_communication', value: 'client.relations@oscorp.bank' },
+    { icon: 'Phone', labelKey: 'contact.priority_support', value: '+212 522 000 000' },
+    { icon: 'MapPin', labelKey: 'contact.global_headquarters', value: 'Twin Center, Casablanca, Morocco' },
 ];
 
 export default function ContactSection() {
@@ -48,17 +50,20 @@ export default function ContactSection() {
                         className="lg:col-span-2 space-y-4">
                         
                         <div className="flex flex-col gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[24px] overflow-hidden">
-                            {info.map((it, i) => (
-                                <div key={it.label} className="flex items-center gap-6 p-6 bg-[var(--color-bg-card)]">
-                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-[var(--color-border)] bg-[var(--color-bg-base)]">
-                                        <it.icon className="w-4 h-4 text-[var(--color-text-main)]" />
+                            {contactData.map((it, i) => {
+                                const Icon = ICON_MAP[it.icon];
+                                return (
+                                    <div key={it.labelKey} className="flex items-center gap-6 p-6 bg-[var(--color-bg-card)]">
+                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-[var(--color-border)] bg-[var(--color-bg-base)]">
+                                            <Icon className="w-4 h-4 text-[var(--color-text-main)]" />
+                                        </div>
+                                        <div>
+                                            <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">{it.labelKey}</div>
+                                            <div className="text-[14px] font-semibold text-[var(--color-text-main)]">{it.value}</div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">{it.label}</div>
-                                        <div className="text-[14px] font-semibold text-[var(--color-text-main)]">{it.value}</div>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         <div className="p-8 rounded-[24px] border border-[var(--color-border)] bg-[var(--color-bg-card)]">

@@ -29,13 +29,13 @@ class AllocationsController extends Controller
 
         // If no categories, provide defaults for the showcase
         if (empty($categoryMap)) {
-            $categoryMap = [
+            $categoryMap = config('allocations.demo_assets', [
                 ['name' => 'Real Estate', 'amount' => 120000],
                 ['name' => 'Vehicles', 'amount' => 55000],
                 ['name' => 'Philanthropy', 'amount' => 15000],
                 ['name' => 'Luxury Goods', 'amount' => 8500],
                 ['name' => 'Travel', 'amount' => 34000],
-            ];
+            ]);
         }
 
         $totalAllocation = array_reduce($categoryMap, fn($sum, $cat) => $sum + $cat['amount'], 0);

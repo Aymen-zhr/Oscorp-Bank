@@ -190,6 +190,112 @@ body {
     background: var(--color-border-hover);
 }
 
+/* Luxury UI Utilities */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.015);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+}
+
+.border-etched {
+    border: 0.5px solid rgba(212, 175, 55, 0.2);
+}
+
+.metallic-shine {
+    position: relative;
+    overflow: hidden;
+}
+
+.metallic-shine::after {
+    content: '';
+    position: absolute;
+    top: -150%;
+    left: -150%;
+    width: 300%;
+    height: 300%;
+    background: linear-gradient(
+        45deg,
+        transparent 45%,
+        rgba(255, 255, 255, 0.08) 48%,
+        rgba(255, 255, 255, 0.12) 50%,
+        rgba(255, 255, 255, 0.08) 52%,
+        transparent 55%
+    );
+    transform: rotate(25deg);
+    animation: metallic-sweep 8s infinite linear;
+    pointer-events: none;
+}
+
+@keyframes metallic-sweep {
+    0% { transform: translate(-30%, -30%) rotate(25deg); }
+    100% { transform: translate(30%, 30%) rotate(25deg); }
+}
+
+.gold-glow-focus:focus-within {
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.15);
+    border-color: rgba(212, 175, 55, 0.4) !important;
+    background: rgba(212, 175, 55, 0.02) !important;
+}
+
+.text-gold-gradient {
+    background: linear-gradient(to bottom, #FFD700, #D4AF37);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+
+.executive-button {
+    background: linear-gradient(135deg, #1a1a1a, #000);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    color: #D4AF37;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.executive-button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.executive-button:hover {
+    border-color: #D4AF37;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+    transform: translateY(-1px);
+}
+
+.executive-button:hover::before {
+    opacity: 1;
+}
+
+.scanline-anim {
+    position: relative;
+    overflow: hidden;
+}
+
+.scanline-anim::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: rgba(212, 175, 55, 0.1);
+    opacity: 0.5;
+    animation: scanline 4s linear infinite;
+}
+
+@keyframes scanline {
+    0% { top: 0; }
+    100% { top: 100%; }
+}
+
 /* View Transition API Animations */
 ::view-transition-old(root),
 ::view-transition-new(root) {

@@ -2,6 +2,7 @@ import { Head } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
+import { useTranslation } from '@/hooks/useTranslation';
 import { 
     Landmark, Plus, ArrowUpRight, ArrowDownRight, 
     Clock, CheckCircle, AlertCircle, Percent, Calculator, 
@@ -14,6 +15,7 @@ const ICON_MAP = {
 };
 
 export default function Loans({ activeLoans = [], loanOffers = [], stats = {} }) {
+    const { locale } = useTranslation();
     const [activeTab, setActiveTab] = useState('active');
 
     // Calculator State
@@ -42,7 +44,7 @@ export default function Loans({ activeLoans = [], loanOffers = [], stats = {} })
     })();
 
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-MA', { maximumFractionDigits: 0 }).format(amount);
+        return new Intl.NumberFormat(locale || 'en-MA', { maximumFractionDigits: 0 }).format(amount);
     };
 
     return (

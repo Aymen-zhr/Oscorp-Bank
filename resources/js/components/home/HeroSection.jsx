@@ -124,10 +124,10 @@ export default function HeroSection({ canRegister }) {
                     </motion.div>
 
                     <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.8 }}
-                        className="text-[56px] lg:text-[80px] font-semibold leading-[1.05] tracking-tight mb-8 text-[var(--color-text-main)]">
-                        Capital,<br />
-                        <span className="text-[var(--color-text-muted)] italic font-light">Architected.</span>
-                    </motion.h1>
+                         className="text-[40px] md:text-[56px] lg:text-[80px] font-semibold leading-[1.05] tracking-tight mb-6 md:mb-8 text-[var(--color-text-main)]">
+                         Capital,<br />
+                         <span className="text-[var(--color-text-muted)] italic font-light">Architected.</span>
+                     </motion.h1>
 
                     <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.8 }}
                         className="text-[16px] lg:text-[18px] text-[var(--color-text-muted)] leading-relaxed mb-12 max-w-[500px] font-medium">

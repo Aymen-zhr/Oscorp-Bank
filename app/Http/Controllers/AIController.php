@@ -52,7 +52,7 @@ class AIController extends Controller
                 DB::table('transactions')
                     ->where('user_id', $user->id)
                     ->orderBy('transacted_at', 'desc')
-                    ->take(50)
+                    ->take(config('ai.transaction_context_limit', 50))
                     ->get()
                     ->toArray(),
                 0, 50
@@ -352,10 +352,10 @@ PROMPT . json_encode($fullContext);
                     'projected_savings_12m' => round($monthlySavings * 12)
                 ],
                 'goals' => [
-                    ['category' => 'Essential', 'amount' => round($monthlyExpenses * 0.6), 'color' => '#D4AF37'],
-                    ['category' => 'Savings', 'amount' => round($monthlySavings * 0.5), 'color' => '#10B981'],
-                    ['category' => 'Discretionary', 'amount' => round($monthlyExpenses * 0.2), 'color' => '#6366F1'],
-                    ['category' => 'Emergency', 'amount' => round($monthlySavings * 0.5), 'color' => '#F59E0B']
+                    ['category' => 'Essential', 'amount' => round($monthlyExpenses * config('ai.budget_allocations.essential_pct', 0.6)), 'color' => config('ai.budget_colors.essential', '#D4AF37')],
+                    ['category' => 'Savings', 'amount' => round($monthlySavings * config('ai.budget_allocations.savings_pct', 0.5)), 'color' => config('ai.budget_colors.savings', '#10B981')],
+                    ['category' => 'Discretionary', 'amount' => round($monthlyExpenses * config('ai.budget_allocations.discretionary_pct', 0.2)), 'color' => config('ai.budget_colors.discretionary', '#6366F1')],
+                    ['category' => 'Emergency', 'amount' => round($monthlySavings * config('ai.budget_allocations.emergency_pct', 0.5)), 'color' => config('ai.budget_colors.emergency', '#F59E0B')]
                 ]
             ];
         } elseif ($planType === 'savings') {

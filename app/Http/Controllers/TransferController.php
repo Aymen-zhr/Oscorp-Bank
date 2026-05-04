@@ -24,7 +24,6 @@ class TransferController extends Controller
         $stats = $this->getFinancialStats();
 
         return Inertia::render('transfer', [
-            'balance' => round($stats['live_balance'], 2),
             'recentTransfers' => $this->transactionService->getLatestByCategory('Transfer', 10),
             'beneficiaries' => $this->transactionService->getBeneficiaries(8),
         ]);

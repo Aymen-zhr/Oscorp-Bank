@@ -32,53 +32,51 @@ class LoansController extends Controller
 
         if ($paidOffThisYear == 0) {
             // Estimate based on total debits
-            $paidOffThisYear = round($stats['total_debits'] * 0.15);
+            $paidOffThisYear = round($stats['total_debits'] * config('loans.estimation_multiplier', 0.15));
         }
 
         // Active loans (pre-populated for demo)
-        $activeLoans = [
-            [
-                'id' => 'LN-001',
-                'type' => 'Home Mortgage',
-                'principal' => 1200000,
-                'balance' => 985400,
-                'rate' => 3.5,
-                'monthlyPayment' => 8500,
-                'nextPayment' => Carbon::now()->addDays(5)->format('Y-m-d'),
+        $demoLoans = config('loans.demo_loans', []);
+        $activeLoans = [];
+        foreach ($demoLoans as $loan) {
+            $activeLoans[] = [
+                'id' => $loan['id'],
+                'type' => $loan['type'],
+                'principal' => $loan['principal'],
+                'balance' => round($stats['live_balance'], 2),
+                'rate' => $loan['rate'],
+                'monthlyPayment' => $loan['monthly_payment'],
+                'nextPayment' => Carbon::now()->addDays($loan['next_payment_days'])->format('Y-m-d'),
                 'status' => 'Active',
-                'progress' => round(((1200000 - 985400) / 1200000) * 100),
-                'term' => '20 years',
-                'icon' => 'Home'
-            ],
-            [
-                'id' => 'LN-002',
-                'type' => 'Auto Loan',
-                'principal' => 250000,
-                'balance' => 142000,
-                'rate' => 4.2,
-                'monthlyPayment' => 4800,
-                'nextPayment' => Carbon::now()->addDays(12)->format('Y-m-d'),
-                'status' => 'Active',
-                'progress' => round(((250000 - 142000) / 250000) * 100),
-                'term' => '5 years',
-                'icon' => 'Car'
-            ]
-        ];
+                'progress' => round((($loan['principal'] - $loan['balance']) / $loan['principal']) * 100),
+                'term' => $loan['term'],
+                'icon' => $loan['icon'],
+            ];
+        }
 
         // Generate amortization schedule for the first loan
         $amortizationSchedule = $this->generateAmortization(
             $activeLoans[0]['balance'],
             $activeLoans[0]['rate'],
-            $activeLoans[0]['monthlyPayment']
+            $activeLoans[0]['monthlyPayment'],
+            config('loans.amortization_months', 12)
         );
 
         // Pre-approved loan offers based on user's financial profile
-        $preApprovedLimit = round($stats['live_balance'] * 3);
-        $loanOffers = [
-            ['type' => 'Personal Loan', 'maxAmount' => min(500000, $preApprovedLimit), 'rate' => 5.5, 'term' => '1-5 years', 'featured' => false, 'icon' => 'User', 'preApproved' => true],
-            ['type' => 'Business Loan', 'maxAmount' => 2000000, 'rate' => 4.8, 'term' => '1-10 years', 'featured' => true, 'icon' => 'Briefcase', 'preApproved' => false],
-            ['type' => 'Education Loan', 'maxAmount' => 300000, 'rate' => 3.2, 'term' => '1-7 years', 'featured' => false, 'icon' => 'GraduationCap', 'preApproved' => true],
-        ];
+        $preApprovedLimit = round($stats['live_balance'] * config('loans.pre_approved_multiplier', 3));
+        $loanOffersConfig = config('loans.offers', []);
+        $loanOffers = [];
+        foreach ($loanOffersConfig as $offer) {
+            $loanOffers[] = [
+                'type' => $offer['type'],
+                'maxAmount' => min($offer['max_amount'], $preApprovedLimit),
+                'rate' => $offer['rate'],
+                'term' => $offer['term'],
+                'featured' => $offer['featured'],
+                'icon' => $offer['icon'],
+                'preApproved' => $offer['pre_approved'],
+            ];
+        }
 
         $totalOutstanding = collect($activeLoans)->sum('balance');
         $monthlyPayments = collect($activeLoans)->sum('monthlyPayment');

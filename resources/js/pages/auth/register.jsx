@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Head, useForm, Link } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Mail, Lock, ArrowRight, Eye, EyeOff, Check, X, ShieldCheck } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, Eye, EyeOff, Check, X, ShieldCheck, Phone, Briefcase, MapPin } from 'lucide-react';
 import AuthLayout from '@/components/auth/AuthLayout';
 
 function PasswordStrength({ password }) {
@@ -92,6 +92,9 @@ export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
+        phone: '',
+        job_title: '',
+        address: '',
         password: '',
         password_confirmation: '',
     });
@@ -227,6 +230,135 @@ export default function Register() {
                     <div className="relative group">
                         <motion.div
                             className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
+                            animate={{ color: focusedField === 'phone' || data.phone ? 'var(--color-gold)' : 'var(--color-text-muted)', scale: focusedField === 'phone' ? 1.1 : 1 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            <Phone className="w-5 h-5" />
+                        </motion.div>
+                        <input
+                            id="phone"
+                            type="tel"
+                            name="phone"
+                            value={data.phone}
+                            className={inputClasses('phone')}
+                            placeholder="Primary Contact Number"
+                            required
+                            onFocus={() => setFocusedField('phone')}
+                            onBlur={() => setFocusedField(null)}
+                            onChange={(e) => setData('phone', e.target.value)}
+                        />
+                        <label htmlFor="phone" className={labelClasses('phone')}>
+                            Primary Contact Number
+                        </label>
+                        {data.phone && !errors.phone && (
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="absolute right-4 top-1/2 -translate-y-1/2"
+                            >
+                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                </div>
+                            </motion.div>
+                        )}
+                    </div>
+                    {errors.phone && (
+                        <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="mt-1 pl-2 text-[12px] text-red-500 font-medium">
+                            {errors.phone}
+                        </motion.p>
+                    )}
+                </motion.div>
+
+                <motion.div custom={3} variants={fieldVariants} initial="hidden" animate="visible">
+                    <div className="relative group">
+                        <motion.div
+                            className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
+                            animate={{ color: focusedField === 'job_title' || data.job_title ? 'var(--color-gold)' : 'var(--color-text-muted)', scale: focusedField === 'job_title' ? 1.1 : 1 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            <Briefcase className="w-5 h-5" />
+                        </motion.div>
+                        <input
+                            id="job_title"
+                            type="text"
+                            name="job_title"
+                            value={data.job_title}
+                            className={inputClasses('job_title')}
+                            placeholder="Professional Title"
+                            required
+                            onFocus={() => setFocusedField('job_title')}
+                            onBlur={() => setFocusedField(null)}
+                            onChange={(e) => setData('job_title', e.target.value)}
+                        />
+                        <label htmlFor="job_title" className={labelClasses('job_title')}>
+                            Professional Title
+                        </label>
+                        {data.job_title && !errors.job_title && (
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="absolute right-4 top-1/2 -translate-y-1/2"
+                            >
+                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                </div>
+                            </motion.div>
+                        )}
+                    </div>
+                    {errors.job_title && (
+                        <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="mt-1 pl-2 text-[12px] text-red-500 font-medium">
+                            {errors.job_title}
+                        </motion.p>
+                    )}
+                </motion.div>
+
+                <motion.div custom={4} variants={fieldVariants} initial="hidden" animate="visible">
+                    <div className="relative group">
+                        <motion.div
+                            className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
+                            animate={{ color: focusedField === 'address' || data.address ? 'var(--color-gold)' : 'var(--color-text-muted)', scale: focusedField === 'address' ? 1.1 : 1 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            <MapPin className="w-5 h-5" />
+                        </motion.div>
+                        <input
+                            id="address"
+                            type="text"
+                            name="address"
+                            value={data.address}
+                            className={inputClasses('address')}
+                            placeholder="Residential Address"
+                            required
+                            onFocus={() => setFocusedField('address')}
+                            onBlur={() => setFocusedField(null)}
+                            onChange={(e) => setData('address', e.target.value)}
+                        />
+                        <label htmlFor="address" className={labelClasses('address')}>
+                            Residential Address
+                        </label>
+                        {data.address && !errors.address && (
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="absolute right-4 top-1/2 -translate-y-1/2"
+                            >
+                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                </div>
+                            </motion.div>
+                        )}
+                    </div>
+                    {errors.address && (
+                        <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="mt-1 pl-2 text-[12px] text-red-500 font-medium">
+                            {errors.address}
+                        </motion.p>
+                    )}
+                </motion.div>
+
+                <motion.div custom={5} variants={fieldVariants} initial="hidden" animate="visible">
+                    <div className="relative group">
+                        <motion.div
+                            className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
                             animate={{ color: focusedField === 'password' || data.password ? 'var(--color-gold)' : 'var(--color-text-muted)', scale: focusedField === 'password' ? 1.1 : 1 }}
                             transition={{ duration: 0.2 }}
                         >
@@ -273,7 +405,7 @@ export default function Register() {
                     )}
                 </motion.div>
 
-                <motion.div custom={3} variants={fieldVariants} initial="hidden" animate="visible">
+                <motion.div custom={6} variants={fieldVariants} initial="hidden" animate="visible">
                     <div className="relative group">
                         <motion.div
                             className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
@@ -344,7 +476,7 @@ export default function Register() {
                     </AnimatePresence>
                 </motion.div>
 
-                <motion.div custom={4} variants={fieldVariants} initial="hidden" animate="visible" className="mt-2">
+                <motion.div custom={7} variants={fieldVariants} initial="hidden" animate="visible" className="mt-2">
                     <motion.button
                         type="submit"
                         disabled={processing}

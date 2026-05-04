@@ -1,21 +1,5 @@
 import { motion } from 'framer-motion';
-
-const LOGO_KEY = 'pk_binMfKfXSiOiYpfo3CyL2w';
-
-const partners = [
-    { name: 'Visa', domain: 'visa.com' },
-    { name: 'Mastercard', domain: 'mastercard.com' },
-    { name: 'PayPal', domain: 'paypal.com' },
-    { name: 'Stripe', domain: 'stripe.com' },
-    { name: 'Bloomberg', domain: 'bloomberg.com' },
-    { name: 'HSBC', domain: 'hsbc.com' },
-    { name: 'JPMorgan', domain: 'jpmorgan.com' },
-    { name: 'BlackRock', domain: 'blackrock.com' },
-    { name: 'Goldman Sachs', domain: 'goldmansachs.com' },
-    { name: 'Fidelity', domain: 'fidelity.com' },
-    { name: 'AmEx', domain: 'americanexpress.com' },
-    { name: 'Swift', domain: 'swift.com' },
-];
+import { LOGO_KEY, LOGO_BASE_URL, PARTNERS } from '../../constants';
 
 function LogoCard({ partner }) {
     return (
@@ -23,7 +7,7 @@ function LogoCard({ partner }) {
             className="flex-shrink-0 flex items-center gap-3 px-6 py-3 bg-[var(--color-bg-base)] border border-[var(--color-border)] mx-2"
         >
             <img
-                src={`https://img.logo.dev/${partner.domain}?token=${LOGO_KEY}&size=40&format=png`}
+                src={`${LOGO_BASE_URL}/${partner.domain}?token=${LOGO_KEY}&size=40&format=png`}
                 alt={partner.name}
                 className="w-5 h-5 object-contain grayscale opacity-60 mix-blend-luminosity"
                 onError={(e) => { e.target.style.display = 'none'; }}
@@ -36,7 +20,7 @@ function LogoCard({ partner }) {
 }
 
 export default function PartnersLoop() {
-    const doubled = [...partners, ...partners];
+    const doubled = [...PARTNERS, ...PARTNERS];
     return (
         <section className="py-12 overflow-hidden relative border-t border-b border-[var(--color-border)] bg-[var(--color-bg-card)]">
             <div className="absolute left-0 top-0 h-full w-24 z-10 pointer-events-none"

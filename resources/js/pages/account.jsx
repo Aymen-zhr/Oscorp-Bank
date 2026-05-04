@@ -10,6 +10,8 @@ import {
     CreditCard, ArrowRight, Copy, Check, LogOut,
     Sparkles, Key, Bell, Fingerprint, Globe, ChevronDown, CheckCircle2
 } from 'lucide-react';
+import UserAvatar from '@/components/dashboard/UserAvatar';
+import { TIMEOUTS, ROUTES } from '@/constants';
 
 export default function Account({ user, security, financial, currency: currentCurrency, currencies }) {
     const [copied, setCopied] = useState(false);
@@ -20,11 +22,11 @@ export default function Account({ user, security, financial, currency: currentCu
     const copyTag = () => {
         navigator.clipboard.writeText(user.tag);
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        setTimeout(() => setCopied(false), TIMEOUTS.copyFeedback);
     };
 
     const changeCurrency = (newCode) => {
-        router.post('/account/currency', { currency: newCode }, {
+        router.post(ROUTES.account + '/currency', { currency: newCode }, {
             preserveScroll: true,
             onSuccess: () => setShowCurrencyPicker(false),
         });
@@ -38,17 +40,21 @@ export default function Account({ user, security, financial, currency: currentCu
             <div className="flex-1 flex flex-col overflow-hidden relative">
                 <Topbar balance={financial.balance} />
                 
-                <main className="flex-1 overflow-y-auto custom-scrollbar p-8">
-                    <div className="max-w-5xl mx-auto space-y-8 pb-12">
+                <main className="flex-1 overflow-y-auto custom-scrollbar p-8 pb-32 md:pb-8">
+                    <div className="max-w-5xl mx-auto space-y-8">
                         
                         {/* Hero Header */}
                         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                             <div className="flex items-center gap-6">
                                 <div className="relative group">
-                                    <div className="w-24 h-24 rounded-3xl flex items-center justify-center text-[32px] font-bold shadow-2xl transition-all group-hover:scale-105"
-                                        style={{ background: 'var(--color-gold-bg)', color: 'var(--color-gold)', border: '2px solid var(--color-gold)' }}>
-                                        {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover rounded-3xl" /> : user.name.charAt(0)}
-                                    </div>
+                                    <motion.div whileHover={{ scale: 1.05 }}>
+                                        <UserAvatar 
+                                            user={user} 
+                                            size="w-24 h-24" 
+                                            className="rounded-[32px]"
+                                            isDark={true} // Dashboard is usually dark
+                                        />
+                                    </motion.div>
                                     <div className="absolute -bottom-2 -right-2 p-2 rounded-xl bg-[var(--color-bg-card)] border border-[var(--color-border)] shadow-lg">
                                         <Sparkles className="w-4 h-4 text-[var(--color-gold)]" />
                                     </div>
@@ -84,7 +90,7 @@ export default function Account({ user, security, financial, currency: currentCu
                                 <section className="p-8 rounded-[32px] space-y-6" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-[18px] font-bold" style={{ color: 'var(--color-text-main)' }}>{t('account.credentials')}</h3>
-                                        <button className="text-[13px] font-bold transition-all hover:text-[var(--color-gold)]" style={{ color: 'var(--color-text-muted)' }}>{t('account.edit_profile')}</button>
+                                        <button onClick={() => router.visit(ROUTES.settings)} className="text-[13px] font-bold transition-all hover:text-[var(--color-gold)]" style={{ color: 'var(--color-text-muted)' }}>{t('account.edit_profile')}</button>
                                     </div>
                                     
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

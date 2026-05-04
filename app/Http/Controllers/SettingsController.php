@@ -32,6 +32,10 @@ class SettingsController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'avatar' => $user->avatar ?? 'adventurer',
+                'phone' => $user->phone,
+                'tag' => $user->tag,
+                'job_title' => $user->job_title,
+                'address' => $user->address,
             ],
             'preferences' => $preferences,
             'security' => [
@@ -48,10 +52,18 @@ class SettingsController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,'.$user->id,
             'avatar' => 'nullable', // Can be string (DiceBear) or File
+            'phone' => 'nullable|string|max:20',
+            'tag' => 'nullable|string|max:50',
+            'job_title' => 'nullable|string|max:100',
+            'address' => 'nullable|string|max:500',
         ]);
 
         $user->name = $request->name;
         $user->email = $request->email;
+        $user->phone = $request->phone;
+        $user->tag = $request->tag;
+        $user->job_title = $request->job_title;
+        $user->address = $request->address;
 
         if ($request->hasFile('avatar')) {
             $file = $request->file('avatar');

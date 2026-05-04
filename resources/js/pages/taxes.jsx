@@ -2,6 +2,7 @@ import { Head } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
+import { useTranslation } from '@/hooks/useTranslation';
 import { 
     Receipt, Download, Upload, Calendar, AlertCircle, 
     CheckCircle, Clock, TrendingUp, Calculator, Building2,
@@ -14,6 +15,7 @@ const ICON_MAP = {
 };
 
 export default function Taxes({ taxDocuments = [], taxCategories = [], upcomingDeadlines = [], stats = {} }) {
+    const { locale } = useTranslation();
     const [activeTab, setActiveTab] = useState('overview');
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -48,7 +50,7 @@ export default function Taxes({ taxDocuments = [], taxCategories = [], upcomingD
     })();
 
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-MA', { maximumFractionDigits: 0 }).format(amount);
+        return new Intl.NumberFormat(locale || 'en-MA', { maximumFractionDigits: 0 }).format(amount);
     };
 
     return (

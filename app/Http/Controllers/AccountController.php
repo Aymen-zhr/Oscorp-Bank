@@ -20,7 +20,7 @@ class AccountController extends Controller
         $recentTransactions = DB::table('transactions')
             ->where('user_id', $user->id)
             ->orderBy('transacted_at', 'desc')
-            ->take(5)
+            ->take(config('oscorp.limits.contacts_recent', 5))
             ->get();
 
         $cardConfig = config('oscorp.card');
@@ -43,7 +43,6 @@ class AccountController extends Controller
                 'expiry' => $cardConfig['expiry'],
                 'cvv' => '***',
                 'type' => 'VISA Platinum',
-                'balance' => round($stats['live_balance'], 2),
                 'limit' => $cardLimit,
                 'available' => round($cardLimit - $stats['total_spending'], 2),
             ],
@@ -98,7 +97,6 @@ class AccountController extends Controller
                 'email_verified' => !!$user->email_verified_at,
             ],
             'financial' => [
-                'balance' => round($stats['live_balance'], 2),
                 'total_spending' => round($stats['total_spending'], 2),
                 'total_received' => round($stats['total_credits'], 2),
             ],

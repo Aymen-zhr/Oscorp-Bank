@@ -141,7 +141,6 @@ class BillSplitController extends Controller
         ];
 
         return Inertia::render('split-bills', [
-            'balance' => round($stats['live_balance'], 2),
             'userId' => $currentUserId,
             'splits' => $splits,
             'summary' => $summary,
@@ -155,7 +154,7 @@ class BillSplitController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:500'],
-            'total_amount' => ['required', 'numeric', 'min:0.01', 'max:100000'],
+            'total_amount' => ['required', 'numeric', 'min:0.01', 'max:' . config('oscorp.limits.max_transfer', 100000)],
             'icon' => ['nullable', 'string', 'max:50'],
             'logo_color' => ['nullable', 'string', 'max:50'],
             'split_type' => ['required', 'in:equal,custom'],

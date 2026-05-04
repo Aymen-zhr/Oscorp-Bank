@@ -1,6 +1,7 @@
 import { Link, usePage, router } from '@inertiajs/react';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import UserAvatar from './UserAvatar';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
@@ -43,8 +44,8 @@ const navItems = [
     { icon: Sparkles, label: 'sidebar.oscar_ai', href: '/ai' },
     { icon: User, label: 'common.account', href: '/account' },
     { icon: CreditCard, label: 'sidebar.card_info', href: '/cards' },
-    { icon: ArrowDownToLine, label: 'common.receive', href: '/receive' },
-    { icon: ArrowUpFromLine, label: 'common.send', href: '/send' },
+    { icon: ArrowDownToLine, label: 'receive', href: '/receive' },
+    { icon: ArrowUpFromLine, label: 'send', href: '/send' },
     { icon: ArrowRightLeft, label: 'common.transfer', href: '/transfer' },
     { icon: Users, label: 'common.split_bills', href: '/split-bills' },
     { icon: Users, label: 'common.contacts', href: '/contacts' },
@@ -140,14 +141,12 @@ function SidebarContent({
                     />
                     <div className="mb-3 flex items-center justify-between relative z-10">
                         <motion.div
-                            className="h-12 w-12 overflow-hidden rounded-xl ring-2 ring-[var(--color-gold)]/30"
-                            style={{ boxShadow: '0 0 20px rgba(212,175,55,0.15)' }}
                             whileHover={{ scale: 1.1 }}
                         >
-                            <img
-                                src={user?.avatar?.startsWith('/') ? user.avatar : `https://api.dicebear.com/9.x/${user?.avatar || 'adventurer'}/svg?seed=${userName}&backgroundColor=${isDark ? '111827' : 'F3F4F6'}`}
-                                alt={userName}
-                                className="h-full w-full object-cover"
+                            <UserAvatar 
+                                user={user} 
+                                size="h-12 w-12" 
+                                isDark={isDark} 
                             />
                         </motion.div>
 

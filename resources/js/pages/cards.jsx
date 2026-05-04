@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
@@ -10,6 +10,7 @@ import {
 import { useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
+import { TIMEOUTS } from '@/constants';
 
 export default function Cards({ user, card, rib, account, stats, recentTransactions = [] }) {
     const [showFullCard, setShowFullCard] = useState(false);
@@ -20,7 +21,7 @@ export default function Cards({ user, card, rib, account, stats, recentTransacti
     const copyToClipboard = (text, key) => {
         navigator.clipboard.writeText(text);
         setCopied(key);
-        setTimeout(() => setCopied(null), 2000);
+        setTimeout(() => setCopied(null), TIMEOUTS.copyFeedback);
     };
 
     // Using useCurrency hook instead of formatCurrency
@@ -40,7 +41,7 @@ export default function Cards({ user, card, rib, account, stats, recentTransacti
                 <motion.div 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex-1 overflow-y-auto px-6 py-8 custom-scrollbar"
+                    className="flex-1 overflow-y-auto px-6 py-8 pb-32 md:pb-8 custom-scrollbar"
                 >
                     <div className="max-w-7xl mx-auto space-y-8">
                         {/* Header */}
@@ -60,8 +61,8 @@ export default function Cards({ user, card, rib, account, stats, recentTransacti
                         </div>
 
                         {/* Top Cards Grid */}
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                            
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+
                             {/* Card Section */}
                             <div className="lg:col-span-5 space-y-6">
                                 <h3 className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)] px-1">{t('cards.active_card')}</h3>

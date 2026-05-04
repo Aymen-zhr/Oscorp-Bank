@@ -9,7 +9,7 @@ class NotificationController extends Controller
 {
     public function index(Request $request)
     {
-        $notifications = $request->user()->notifications()->paginate(20);
+        $notifications = $request->user()->notifications()->paginate(config('oscorp.limits.pagination', 20));
 
         return Inertia::render('notifications', [
             'notifications' => $notifications,

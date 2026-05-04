@@ -11,15 +11,16 @@ import {
     XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend 
 } from 'recharts';
 import Sidebar from '@/components/dashboard/Sidebar';
+import { STATUS_COLORS, ROUTES } from '@/constants';
 
-const CHART_COLORS = ['#D4AF37', '#10B981', '#6366F1', '#F59E0B', '#EC4899', '#8B5CF6'];
+const CHART_COLORS = [STATUS_COLORS.gold, STATUS_COLORS.credit, '#6366F1', '#F59E0B', '#EC4899', '#8B5CF6'];
 
 export default function AIChat({ auth }) {
     const userName = auth?.user?.name || 'User';
     
     const quickActions = [
-        { id: 'spending', label: 'Spending Analysis', icon: PieChart, color: '#D4AF37', prompt: 'Analyze my spending patterns and provide recommendations' },
-        { id: 'income', label: 'Income Overview', icon: TrendingUp, color: '#10B981', prompt: 'Show me my income versus expenses breakdown' },
+        { id: 'spending', label: 'Spending Analysis', icon: PieChart, color: STATUS_COLORS.gold, prompt: 'Analyze my spending patterns and provide recommendations' },
+        { id: 'income', label: 'Income Overview', icon: TrendingUp, color: STATUS_COLORS.credit, prompt: 'Show me my income versus expenses breakdown' },
         { id: 'budget', label: 'Budget Strategy', icon: Target, color: '#6366F1', prompt: 'Create an optimized monthly budget for my lifestyle' },
         { id: 'forecast', label: 'Future Projection', icon: BarChart3, color: '#F59E0B', prompt: 'Forecast my financial trajectory for the coming months' },
         { id: 'savings', label: 'Wealth Building', icon: Wallet, color: '#EC4899', prompt: 'Create a strategic savings plan for me' },
@@ -96,7 +97,7 @@ export default function AIChat({ auth }) {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content 
                 || document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=')[1];
             
-            const response = await fetch('/ai/chat', {
+            const response = await fetch(ROUTES.ai + '/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

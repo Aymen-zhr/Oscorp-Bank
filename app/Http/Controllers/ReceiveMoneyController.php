@@ -23,12 +23,23 @@ class ReceiveMoneyController extends Controller
             ->where('type', 'credit')
             ->where('category', 'Received')
             ->orderBy('transacted_at', 'desc')
-            ->take(10)
+            ->take(config('oscorp.limits.receive_recent', 10))
             ->get();
 
+        $contacts = \App\Models\Contact::where('user_id', $userId)
+            ->where('status', 'accepted')
+            ->with('contactUser:id,name,email,avatar')
+            ->get()
+            ->map(fn($c) => [
+                'id' => $c->contact_user_id,
+                'name' => $c->nickname ?? $c->contactUser->name,
+                'email' => $c->contactUser->email,
+                'avatar' => $c->contactUser->avatar,
+            ]);
+
         return Inertia::render('receive', [
-            'balance' => round($stats['live_balance'], 2),
             'recentReceives' => $recentReceives,
+            'contacts' => $contacts,
         ]);
     }
 

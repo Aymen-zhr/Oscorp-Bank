@@ -1,19 +1,21 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Topbar from '@/components/dashboard/Topbar';
-import { ArrowDownToLine, CheckCircle, Copy, Search, X, Share2, QrCode, User } from 'lucide-react';
+import { ArrowDownToLine, CheckCircle, Copy, Search, X, Share2, QrCode, Download, ShieldCheck, Clock } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
+import { QRCodeCanvas } from 'qrcode.react';
+import { TIMEOUTS, ROUTES } from '@/constants';
 
-const QUICK_AMOUNTS = [50, 100, 200, 500, 1000, 2000];
-
-export default function Receive({ balance, recentReceives = [] }) {
+export default function Receive({ balance, recentReceives = [], contacts = [] }) {
     const { t } = useTranslation();
     const { format, code } = useCurrency();
+    const { props } = usePage();
     const [copied, setCopied] = useState(false);
-    const [showRequestModal, setShowRequestModal] = useState(false);
+    
+    // Request Payment State
     const [requestSearch, setRequestSearch] = useState('');
     const [requestResults, setRequestResults] = useState([]);
     const [selectedRequester, setSelectedRequester] = useState(null);
@@ -22,21 +24,32 @@ export default function Receive({ balance, recentReceives = [] }) {
     const [requestNote, setRequestNote] = useState('');
     const [requestSending, setRequestSending] = useState(false);
     const [requestSuccess, setRequestSuccess] = useState(false);
-    const [searching, setSearching] = useState(false);
 
-    const myRIB = "MA64 0079 9901 1234 5678 9012 34";
+    const myRIB = props.rib?.full || 'MA64 0079 9901 1234 5678 9012 34';
 
     const copyRIB = () => {
         navigator.clipboard.writeText(myRIB);
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        setTimeout(() => setCopied(false), TIMEOUTS.copyFeedback);
     };
 
     const copyLink = () => {
-        const url = `${window.location.origin}/send?to=${btoa(myRIB)}`;
+        const url = `${window.location.origin}/send?to=${encodeURIComponent(myRIB)}`;
         navigator.clipboard.writeText(url);
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        setTimeout(() => setCopied(false), TIMEOUTS.copyFeedback);
+    };
+
+    const downloadQR = () => {
+        const canvas = document.getElementById("receive-qr");
+        if (!canvas) return;
+        const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+        let downloadLink = document.createElement("a");
+        downloadLink.href = pngUrl;
+        downloadLink.download = `OSCORP_QR_${myRIB.replace(/\\s/g, '_')}.png`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
     };
 
     const searchUsers = useCallback(async (query) => {
@@ -44,21 +57,18 @@ export default function Receive({ balance, recentReceives = [] }) {
             setRequestResults([]);
             return;
         }
-        setSearching(true);
         try {
-            const res = await fetch(`/contacts/search?q=${encodeURIComponent(query)}`);
+            const res = await fetch(`${ROUTES.contacts}/search?q=${encodeURIComponent(query)}`);
             const results = await res.json();
             setRequestResults(results);
         } catch (e) {
             console.error('Search failed:', e);
-        } finally {
-            setSearching(false);
         }
     }, []);
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (requestSearch.length >= 2) {
+            if (requestSearch.length >= 2 && !selectedRequester) {
                 searchUsers(requestSearch);
                 setShowRequestResults(true);
             } else {
@@ -67,7 +77,7 @@ export default function Receive({ balance, recentReceives = [] }) {
             }
         }, 300);
         return () => clearTimeout(timer);
-    }, [requestSearch, searchUsers]);
+    }, [requestSearch, searchUsers, selectedRequester]);
 
     const selectRequester = (user) => {
         setSelectedRequester(user);
@@ -91,12 +101,11 @@ export default function Receive({ balance, recentReceives = [] }) {
         }, {
             onSuccess: () => {
                 setRequestSuccess(true);
-                setShowRequestModal(false);
                 setRequestAmount('');
                 setRequestSearch('');
                 setSelectedRequester(null);
                 setRequestNote('');
-                setTimeout(() => setRequestSuccess(false), 4000);
+                setTimeout(() => setRequestSuccess(false), TIMEOUTS.successMessage);
             },
             onFinish: () => setRequestSending(false),
         });
@@ -111,112 +120,205 @@ export default function Receive({ balance, recentReceives = [] }) {
             <Head title="OSCORP | Receive Money" />
             <Sidebar active="receive" />
 
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 <Topbar />
 
-                <div className="flex-1 overflow-y-auto px-6 py-8">
-                    <div className="max-w-4xl mx-auto space-y-8">
+                <div className="flex-1 overflow-y-auto p-4 lg:p-8 pb-32 lg:pb-8">
+                    <div className="max-w-5xl mx-auto space-y-6">
 
                         {/* Header */}
-                        <div className="flex items-end justify-between">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                             <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: '#10B98118', border: '1px solid #10B98130' }}>
-                                        <ArrowDownToLine className="w-6 h-6" style={{ color: '#10B981' }} />
-                                    </div>
-                                    <h1 className="text-[32px] font-bold" style={{ color: 'var(--color-text-main)' }}>{t('receive.title')}</h1>
-                                </div>
-                                <p className="text-[14px]" style={{ color: 'var(--color-text-muted)' }}>{t('receive.subtitle')}</p>
+                                <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--color-text-main)' }}>{t('receive_page.title')}</h1>
+                                <p className="text-sm font-medium opacity-50 mt-1" style={{ color: 'var(--color-text-main)' }}>{t('receive_page.subtitle')}</p>
                             </div>
-                            <div className="text-right">
-                                <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--color-text-muted)' }}>{t('receive.balance')}</div>
-                                <div className="text-[24px] font-bold" style={{ color: 'var(--color-gold)' }}>{format(balance)} <span className="text-[12px] opacity-60">{code}</span></div>
+                            <div className="md:text-right">
+                                <div className="text-[11px] font-bold uppercase tracking-widest opacity-40 mb-1" style={{ color: 'var(--color-text-main)' }}>{t('receive_page.balance')}</div>
+                                <div className="text-2xl font-black" style={{ color: 'var(--color-text-main)' }}>
+                                    {format(balance)} <span className="text-sm opacity-50 ml-1">{code}</span>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Success */}
+                        {/* Success Message */}
                         <AnimatePresence>
                             {requestSuccess && (
-                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                                    className="p-6 rounded-2xl flex items-center gap-4" style={{ background: '#10B9810D', border: '1px solid #10B98130' }}>
-                                    <CheckCircle className="w-8 h-8" style={{ color: '#10B981' }} />
-                                    <div>
-                                        <h3 className="text-[16px] font-bold" style={{ color: '#10B981' }}>{t('receive.request_sent')}</h3>
-                                        <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>{t('receive.request_sent_desc')}</p>
-                                    </div>
+                                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                                    className="p-4 rounded-xl bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] text-sm font-bold flex items-center gap-3">
+                                    <CheckCircle className="w-5 h-5" />
+                                    {t('receive_page.request_sent')}
                                 </motion.div>
                             )}
                         </AnimatePresence>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Left: RIB Card */}
-                            <div className="space-y-6">
-                                {/* RIB Card */}
-                                <div className="p-8 rounded-[32px] space-y-6 relative overflow-hidden" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-                                    <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#10B981] to-transparent opacity-40" />
-                                    <div className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--color-text-muted)' }}>{t('receive.your_rib')}</div>
-                                    <div className="p-5 rounded-2xl font-mono text-[18px] tracking-wider text-center" style={{ background: 'black/40', border: '1px solid var(--color-border)', color: 'var(--color-gold)' }}>
-                                        {myRIB}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                            
+                            {/* Left Section (Details & Request) */}
+                            <div className="lg:col-span-2 space-y-5">
+                                
+                                {/* RIB Display */}
+                                <div className="bg-white/[0.02] border border-white/5 rounded-[24px] p-6" style={{ background: 'var(--color-bg-card)', borderColor: 'var(--color-border)' }}>
+                                    <div className="flex items-center justify-between mb-6">
+                                        <div className="flex items-center gap-2">
+                                            <ShieldCheck className="w-5 h-5 text-[#10B981]" />
+                                            <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--color-text-main)' }}>Your Bank Details</h2>
+                                        </div>
                                     </div>
-                                    <button onClick={copyRIB}
-                                        className="w-full py-3 rounded-xl text-[13px] font-bold transition-all flex items-center justify-center gap-2"
-                                        style={{ background: 'var(--color-gold-bg)', border: '1px solid var(--color-gold)', color: 'var(--color-gold)' }}>
-                                        {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                                        {copied ? t('receive.copied') : t('receive.copy_rib')}
-                                    </button>
+                                    
+                                    <div className="mb-8">
+                                        <div className="text-[11px] font-bold uppercase tracking-widest opacity-50 mb-2" style={{ color: 'var(--color-text-main)' }}>{t('receive_page.your_rib')}</div>
+                                        <div className="font-mono text-2xl lg:text-3xl tracking-widest font-bold" style={{ color: 'var(--color-text-main)' }}>
+                                            {myRIB.match(/.{1,4}/g).join(' ')}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row gap-4">
+                                        <button onClick={copyRIB} className="flex-1 py-4 rounded-xl font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-colors border text-white"
+                                            style={{ background: copied ? '#10B981' : 'transparent', borderColor: copied ? '#10B981' : 'var(--color-border)', color: copied ? '#FFF' : 'var(--color-text-main)' }}>
+                                            {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                                            {copied ? t('receive_page.copied') : t('receive_page.copy_rib')}
+                                        </button>
+                                        <button onClick={copyLink} className="flex-1 py-4 rounded-xl font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-colors border hover:bg-white/5"
+                                            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-main)' }}>
+                                            <Share2 className="w-4 h-4" />
+                                            {t('receive_page.copy_link')}
+                                        </button>
+                                    </div>
                                 </div>
 
-                                {/* Share Link */}
-                                <div className="p-8 rounded-[32px] space-y-6 relative overflow-hidden" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-                                    <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#3B82F6] to-transparent opacity-40" />
-                                    <div className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--color-text-muted)' }}>{t('receive.share_link')}</div>
-                                    <div className="flex items-center gap-3 p-4 rounded-xl" style={{ background: 'var(--color-bg-elevated)' }}>
-                                        <Share2 className="w-5 h-5 shrink-0" style={{ color: '#3B82F6' }} />
-                                        <span className="text-[12px] truncate flex-1" style={{ color: 'var(--color-text-muted)' }}>{t('receive.share_link_desc')}</span>
+                                {/* Request Payment Form */}
+                                <div className="bg-white/[0.02] border border-white/5 rounded-[24px] p-6 space-y-5" style={{ background: 'var(--color-bg-card)', borderColor: 'var(--color-border)' }}>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <ArrowDownToLine className="w-5 h-5 text-purple-500" />
+                                        <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--color-text-main)' }}>{t('receive_page.request_title')}</h2>
                                     </div>
-                                    <button onClick={copyLink}
-                                        className="w-full py-3 rounded-xl text-[13px] font-bold transition-all flex items-center justify-center gap-2"
-                                        style={{ background: '#3B82F618', border: '1px solid #3B82F640', color: '#3B82F6' }}>
-                                        {copied ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
-                                        {t('receive.copy_link')}
-                                    </button>
+                                    <p className="text-sm font-medium opacity-50" style={{ color: 'var(--color-text-main)' }}>Send a payment request directly to an Oscorp user.</p>
+
+                                    <div className="space-y-6 pt-4 border-t border-white/5" style={{ borderColor: 'var(--color-border)' }}>
+                                        {/* From Field */}
+                                        <div className="space-y-3">
+                                            <label className="text-[11px] font-bold uppercase tracking-widest opacity-50" style={{ color: 'var(--color-text-main)' }}>{t('receive_page.from')}</label>
+                                            <div className="relative">
+                                                <div className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${selectedRequester ? 'border-purple-500 bg-purple-500/5' : 'bg-black/20 hover:border-white/20'}`} style={!selectedRequester ? { borderColor: 'var(--color-border)', background: 'var(--color-bg-elevated)' } : {}}>
+                                                    <Search className={`w-5 h-5 ${selectedRequester ? 'text-purple-500' : 'opacity-30'}`} style={!selectedRequester ? { color: 'var(--color-text-main)' } : {}} />
+                                                    <input type="text" value={requestSearch} onChange={e => setRequestSearch(e.target.value)}
+                                                        onFocus={() => requestResults.length > 0 && setShowRequestResults(true)}
+                                                        placeholder={t('receive_page.search_from')}
+                                                        className="flex-1 bg-transparent text-base font-bold outline-none placeholder:opacity-30 placeholder:font-medium" style={{ color: 'var(--color-text-main)' }} />
+                                                    {selectedRequester && (
+                                                        <button onClick={clearRequester} className="p-1 rounded-lg hover:bg-white/10 transition-colors">
+                                                            <X className="w-5 h-5 opacity-50" style={{ color: 'var(--color-text-main)' }} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                
+                                                <AnimatePresence>
+                                                    {showRequestResults && requestResults.length > 0 && (
+                                                        <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
+                                                            className="absolute top-[calc(100%+8px)] left-0 right-0 z-50 rounded-xl border border-white/10 shadow-2xl overflow-hidden backdrop-blur-xl" style={{ background: 'var(--color-bg-card)' }}>
+                                                            <div className="max-h-[250px] overflow-y-auto custom-scrollbar">
+                                                                {requestResults.map(user => (
+                                                                    <button key={user.id} onClick={() => selectRequester(user)}
+                                                                        className="w-full flex items-center gap-4 px-4 py-3 hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 text-left">
+                                                                        <div className="w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 bg-purple-500/10 text-purple-500">
+                                                                            {getInitials(user.name)}
+                                                                        </div>
+                                                                        <div>
+                                                                            <div className="text-sm font-bold" style={{ color: 'var(--color-text-main)' }}>{user.name}</div>
+                                                                            <div className="text-xs opacity-50" style={{ color: 'var(--color-text-main)' }}>{user.email}</div>
+                                                                        </div>
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </div>
+                                        </div>
+
+                                        {/* Amount Field */}
+                                        <div className="space-y-3">
+                                            <label className="text-[11px] font-bold uppercase tracking-widest opacity-50" style={{ color: 'var(--color-text-main)' }}>{t('receive_page.request_amount')}</label>
+                                            <div className="flex items-center gap-3 w-full py-3 px-5 rounded-xl border transition-all hover:border-white/20 focus-within:border-purple-500 bg-black/20" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-elevated)' }}>
+                                                <span className="text-xl font-black opacity-30 shrink-0" style={{ color: 'var(--color-text-main)' }}>{code}</span>
+                                                <input type="number" placeholder="0.00" value={requestAmount} onChange={e => setRequestAmount(e.target.value)}
+                                                    className="flex-1 bg-transparent text-3xl font-black outline-none placeholder:opacity-20" 
+                                                    style={{ color: 'var(--color-text-main)' }} />
+                                            </div>
+                                        </div>
+
+                                        {/* Note Field */}
+                                        <div className="space-y-3">
+                                            <label className="text-[11px] font-bold uppercase tracking-widest opacity-50" style={{ color: 'var(--color-text-main)' }}>{t('send_page.note_label')}</label>
+                                            <input type="text" value={requestNote} onChange={e => setRequestNote(e.target.value)}
+                                                placeholder={t('send_page.note_placeholder')}
+                                                className="w-full py-4 px-5 rounded-xl text-sm font-medium outline-none border transition-all bg-black/20 hover:border-white/20 focus:border-purple-500 placeholder:opacity-30"
+                                                style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-main)', background: 'var(--color-bg-elevated)' }} />
+                                        </div>
+
+                                        {/* Submit Request */}
+                                        <div className="pt-2">
+                                            <button onClick={sendRequest} disabled={requestSending || !selectedRequester || !requestAmount}
+                                                className="w-full h-14 rounded-xl font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-3 transition-all disabled:opacity-30 text-white"
+                                                style={{ background: '#8B5CF6' }}>
+                                                {requestSending ? (
+                                                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                                                        className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" />
+                                                ) : (
+                                                    <>{t('receive_page.send_request')} <ArrowDownToLine className="w-4 h-4" /></>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Right: Request Money */}
-                            <div className="space-y-6">
-                                <div className="p-8 rounded-[32px] space-y-6 relative overflow-hidden" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-                                    <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#8B5CF6] to-transparent opacity-40" />
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <QrCode className="w-5 h-5" style={{ color: '#8B5CF6' }} />
-                                        <h3 className="text-[18px] font-bold" style={{ color: 'var(--color-text-main)' }}>{t('receive.request_title')}</h3>
+                            {/* Right Section (QR & History) */}
+                            <div className="space-y-5">
+                                
+                                {/* QR Code Display */}
+                                <div className="bg-white/[0.02] border border-white/5 rounded-[24px] p-8 flex flex-col items-center text-center" style={{ background: 'var(--color-bg-card)', borderColor: 'var(--color-border)' }}>
+                                    <h3 className="text-[11px] font-bold uppercase tracking-widest opacity-50 mb-2" style={{ color: 'var(--color-text-main)' }}>{t('receive_page.asset_qr')}</h3>
+                                    <p className="text-xs font-medium opacity-50 mb-6" style={{ color: 'var(--color-text-main)' }}>{t('receive_page.qr_desc')}</p>
+                                    
+                                    <div className="bg-white p-4 rounded-2xl mb-6">
+                                        <QRCodeCanvas
+                                            id="receive-qr"
+                                            value={`${window.location.origin}/send?to=${encodeURIComponent(myRIB)}`}
+                                            size={160}
+                                            level="H"
+                                            includeMargin={false}
+                                            imageSettings={{ src: "/logo_premium.png", height: 36, width: 36, excavate: true }}
+                                        />
                                     </div>
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                                        onClick={() => setShowRequestModal(true)}
-                                        className="w-full py-4 rounded-2xl text-[15px] font-bold transition-all shadow-lg"
-                                        style={{ background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)', color: '#FFF' }}>
-                                        {t('receive.request_btn')}
-                                    </motion.button>
+                                    
+                                    <button onClick={downloadQR} className="w-full py-3 rounded-xl border font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-colors hover:bg-white/5"
+                                        style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-main)' }}>
+                                        <Download className="w-4 h-4" />
+                                        {t('receive_page.download_qr')}
+                                    </button>
                                 </div>
 
-                                {/* Recent Receives */}
+                                {/* Recent History */}
                                 {recentReceives.length > 0 && (
-                                    <div className="p-6 rounded-[28px] space-y-4" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-                                        <div className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--color-text-muted)' }}>{t('receive.recent_receives')}</div>
-                                        <div className="space-y-2">
+                                    <div className="bg-white/[0.02] border border-white/5 rounded-[24px] p-6" style={{ background: 'var(--color-bg-card)', borderColor: 'var(--color-border)' }}>
+                                        <div className="flex items-center gap-2 mb-6">
+                                            <Clock className="w-4 h-4 opacity-40" style={{ color: 'var(--color-text-main)' }} />
+                                            <h3 className="text-[11px] font-bold uppercase tracking-widest opacity-50" style={{ color: 'var(--color-text-main)' }}>{t('receive_page.incoming_log')}</h3>
+                                        </div>
+                                        <div className="space-y-4">
                                             {recentReceives.slice(0, 5).map((r, i) => (
-                                                <div key={i} className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-colors">
+                                                <div key={i} className="flex items-center justify-between">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold" style={{ background: '#10B98118', color: '#10B981' }}>
-                                                            {getInitials(r.merchant || '?')}
+                                                        <div className="w-10 h-10 rounded-full bg-[#10B981]/10 text-[#10B981] flex items-center justify-center text-xs font-bold">
+                                                            {getInitials(r.merchant?.replace('Received from ', '') || '?')}
                                                         </div>
                                                         <div>
-                                                            <div className="text-[13px] font-semibold" style={{ color: 'var(--color-text-main)' }}>{r.merchant}</div>
-                                                            <div className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>{new Date(r.transacted_at).toLocaleDateString()}</div>
+                                                            <div className="text-sm font-bold" style={{ color: 'var(--color-text-main)' }}>{r.merchant?.replace('Received from ', '')}</div>
+                                                            <div className="text-[10px] font-medium opacity-50 mt-0.5" style={{ color: 'var(--color-text-main)' }}>{new Date(r.transacted_at).toLocaleDateString()}</div>
                                                         </div>
                                                     </div>
-                                                    <div className="text-[14px] font-bold" style={{ color: '#10B981' }}>+{format(r.amount)}</div>
+                                                    <div className="text-sm font-bold text-[#10B981]">+{format(r.amount)}</div>
                                                 </div>
                                             ))}
                                         </div>
@@ -228,106 +330,14 @@ export default function Receive({ balance, recentReceives = [] }) {
                 </div>
             </div>
 
-            {/* Request Money Modal */}
-            <AnimatePresence>
-                {showRequestModal && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm">
-                        <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
-                            className="w-full max-w-md p-8 rounded-[32px] shadow-2xl relative overflow-hidden" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-                            <div className="absolute top-0 inset-x-0 h-[4px] bg-gradient-to-r from-transparent via-[#8B5CF6] to-transparent" />
-                            <h2 className="text-[24px] font-bold text-center mb-6" style={{ color: 'var(--color-text-main)' }}>{t('receive.request_title')}</h2>
-
-                            {/* Search Person */}
-                            <div className="space-y-3 mb-6">
-                                <label className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--color-text-muted)' }}>{t('receive.from')}</label>
-                                <div className="relative">
-                                    <div className="flex items-center gap-3 p-3 rounded-xl border" style={{ background: 'var(--color-bg-elevated)', borderColor: 'var(--color-border)' }}>
-                                        <Search className="w-4 h-4 shrink-0" style={{ color: 'var(--color-text-muted)' }} />
-                                        <input type="text" value={requestSearch} onChange={e => setRequestSearch(e.target.value)}
-                                            onFocus={() => requestResults.length > 0 && setShowRequestResults(true)}
-                                            placeholder={t('receive.search_from')}
-                                            className="flex-1 bg-transparent text-[14px] outline-none" style={{ color: 'var(--color-text-main)' }} />
-                                        {selectedRequester && (
-                                            <button onClick={clearRequester} className="p-1 rounded-lg hover:opacity-80">
-                                                <X className="w-4 h-4" style={{ color: 'var(--color-text-muted)' }} />
-                                            </button>
-                                        )}
-                                    </div>
-                                    <AnimatePresence>
-                                        {showRequestResults && requestResults.length > 0 && (
-                                            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                                                className="absolute top-full left-0 right-0 z-10 mt-2 rounded-2xl shadow-2xl overflow-hidden" style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }}>
-                                                {requestResults.map(user => (
-                                                    <button key={user.id} onClick={() => selectRequester(user)}
-                                                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
-                                                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold shrink-0" style={{ background: '#8B5CF622', color: '#8B5CF6', border: '1.5px solid #8B5CF640' }}>
-                                                            {getInitials(user.name)}
-                                                        </div>
-                                                        <div className="text-left">
-                                                            <div className="text-[13px] font-semibold" style={{ color: 'var(--color-text-main)' }}>{user.name}</div>
-                                                            <div className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>{user.email}</div>
-                                                        </div>
-                                                    </button>
-                                                ))}
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-                                {selectedRequester && (
-                                    <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: '#8B5CF610', border: '1px solid #8B5CF630' }}>
-                                        <User className="w-5 h-5 shrink-0" style={{ color: '#8B5CF6' }} />
-                                        <span className="text-[13px] font-semibold" style={{ color: '#8B5CF6' }}>{selectedRequester.name}</span>
-                                        <CheckCircle className="w-4 h-4 ml-auto" style={{ color: '#8B5CF6' }} />
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Amount */}
-                            <div className="space-y-4 mb-6">
-                                <label className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--color-text-muted)' }}>{t('receive.request_amount')}</label>
-                                <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[16px] font-bold" style={{ color: 'var(--color-text-muted)' }}>{code}</span>
-                                    <input type="number" placeholder="0.00" value={requestAmount} onChange={e => setRequestAmount(e.target.value)}
-                                        className="w-full py-3 pl-14 pr-4 rounded-xl text-[24px] font-bold outline-none border bg-[var(--color-bg-elevated)] text-[var(--color-text-main)] focus:border-[#8B5CF6]" style={{ borderColor: 'var(--color-border)' }} />
-                                </div>
-                                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                                    {QUICK_AMOUNTS.map(amt => (
-                                        <motion.button key={amt} type="button"
-                                            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                                            onClick={() => setRequestAmount(String(amt))}
-                                            className={`py-2 rounded-xl text-[12px] font-bold transition-all border ${requestAmount === String(amt) ? 'text-black' : ''}`}
-                                            style={requestAmount === String(amt) ? { background: '#8B5CF6', borderColor: '#8B5CF6', color: '#FFF' } : { background: 'var(--color-bg-elevated)', borderColor: 'var(--color-border)', color: 'var(--color-text-main)' }}>
-                                            {amt}
-                                        </motion.button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Note */}
-                            <div className="space-y-3 mb-8">
-                                <label className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--color-text-muted)' }}>{t('receive.request_note')} <span className="font-normal lowercase opacity-50">{t('common.optional')}</span></label>
-                                <input type="text" value={requestNote} onChange={e => setRequestNote(e.target.value)}
-                                    placeholder={t('receive.request_note_placeholder')}
-                                    className="w-full py-3 px-4 rounded-xl text-[14px] outline-none border bg-[var(--color-bg-elevated)] text-[var(--color-text-main)] focus:border-[#8B5CF6]" style={{ borderColor: 'var(--color-border)' }} />
-                            </div>
-
-                            <div className="flex flex-col gap-3">
-                                <button onClick={sendRequest} disabled={requestSending || !selectedRequester || !requestAmount}
-                                    className="w-full h-14 rounded-2xl font-bold text-[16px] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                                    style={{ background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)', color: '#FFF' }}>
-                                    {requestSending ? t('common.processing') : t('receive.send_request')}
-                                </button>
-                                <button onClick={() => setShowRequestModal(false)}
-                                    className="w-full h-12 rounded-2xl border font-bold text-[14px] transition-all hover:opacity-80"
-                                    style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)', background: 'transparent' }}>
-                                    {t('common.cancel')}
-                                </button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            <style dangerouslySetInnerHTML={{ __html: `
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+                input[type=number]::-webkit-inner-spin-button, 
+                input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+            `}} />
         </div>
     );
 }
