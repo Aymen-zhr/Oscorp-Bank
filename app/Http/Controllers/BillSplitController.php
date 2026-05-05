@@ -343,7 +343,7 @@ class BillSplitController extends Controller
             }
         });
 
-        return redirect()->route('split-bills')->with('success', $validated['partial_amount'] ? 'Partial payment recorded.' : 'Payment recorded successfully.');
+        return redirect()->route('split-bills')->with('success', ($validated['partial_amount'] ?? null) ? 'Partial payment recorded.' : 'Payment recorded successfully.');
     }
 
     public function respond(Request $request, $id)

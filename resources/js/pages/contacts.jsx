@@ -92,13 +92,15 @@ export default function Contacts({ balance, contacts = [], pendingRequests = [],
         router.post(`/contacts/${requestId}/deny`);
     };
 
-    const saveNickname = (contactId, nickname) => {
-        post('/contacts', {
-            data: {
-                contact_user_id: contactId,
-                nickname: nickname || null,
+    const saveNickname = (contactUserId, nickname) => {
+        router.post('/contacts', {
+            contact_user_id: contactUserId,
+            nickname: nickname || null,
+        }, {
+            onSuccess: () => {
+                setEditingContact(null);
+                reset();
             },
-            onSuccess: () => setEditingContact(null),
         });
     };
 
@@ -296,11 +298,11 @@ export default function Contacts({ balance, contacts = [], pendingRequests = [],
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-2">
                                                             {isEditing ? (
-                                                                <input type="text" value={contact.nickname || ''}
+                                                                <input type="text" value={data.name}
                                                                     onChange={e => setData('name', e.target.value)}
                                                                     placeholder={t('contacts.nickname_placeholder')}
-                                                                    className="bg-transparent text-[14px] font-semibold outline-none"
-                                                                    style={{ color: 'var(--color-text-main)' }} />
+                                                                    className="bg-transparent text-[14px] font-semibold outline-none border-b border-gold/30"
+                                                                    style={{ color: 'var(--color-text-main)' }} autoFocus />
                                                             ) : (
                                                                 <span className="text-[14px] font-semibold" style={{ color: 'var(--color-text-main)' }}>
                                                                     {contact.name}
@@ -324,7 +326,7 @@ export default function Contacts({ balance, contacts = [], pendingRequests = [],
                                                     <div className="flex items-center gap-1">
                                                         {isEditing ? (
                                                             <>
-                                                                <button onClick={() => saveNickname(contact.id, data.name)}
+                                                                <button onClick={() => saveNickname(contact.user_id, data.name)}
                                                                     className="p-2 rounded-lg hover:opacity-80" style={{ background: 'rgba(16,185,129,0.1)' }}>
                                                                     <Check className="w-4 h-4" style={{ color: '#10B981' }} />
                                                                 </button>

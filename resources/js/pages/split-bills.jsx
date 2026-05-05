@@ -328,7 +328,7 @@ export default function SplitBills({ balance, userId, splits = [], summary = {},
                                         <div>
                                             <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--color-text-muted)' }}>{t(label)}</div>
                                              <div className="text-[20px] font-bold leading-none" style={{ color }}>
-                                                 {format(Math.abs(value))} {code}
+                                                 {format(Math.abs(value))}
                                             </div>
                                         </div>
                                     </div>
@@ -363,7 +363,7 @@ export default function SplitBills({ balance, userId, splits = [], summary = {},
                                                             </span>
                                                         </div>
                                                         <div className="text-[11px] mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                                                            {t('split_bills.accepted_count', { accepted: acceptedCount, total: split.participant_count })} &middot;                                                                  {t('split_bills.your_share', { amount: format(split.your_share) })}
+                                                            {t('split_bills.accepted_count', { accepted: acceptedCount, total: split.participant_count })} &middot; {t('split_bills.your_share', { amount: format(split.your_share) })}
                                                         </div>
                                                     </div>
                                                     {isPendingForYou && (
@@ -451,10 +451,10 @@ export default function SplitBills({ balance, userId, splits = [], summary = {},
                                                     <div className="flex items-center gap-3">
                                                         <div className="text-right">
                                                             <div className="text-[16px] font-bold" style={{ color: split.you_owe ? '#EF4444' : '#10B981' }}>
-                                                                 {format(split.your_share)} {code}
+                                                                 {format(split.your_share)}
                                                             </div>
                                                             <div className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
-                                                                 {t('common.total_amount')}: {format(split.total_amount)} {code}
+                                                                 {t('common.total_amount')}: {format(split.total_amount)}
                                                             </div>
                                                         </div>
                                                         {isExpanded ? <ChevronUp className="w-4 h-4 shrink-0" style={{ color: 'var(--color-text-muted)' }} /> : <ChevronDown className="w-4 h-4 shrink-0" style={{ color: 'var(--color-text-muted)' }} />}
@@ -491,7 +491,7 @@ export default function SplitBills({ balance, userId, splits = [], summary = {},
                                                                                     </div>
                                                                                     <div className="text-right">
                                                                                         <span className="text-[13px] font-semibold block" style={{ color: 'var(--color-text-main)' }}>
-                                                                                            {format(p.share_amount)} {code}
+                                                                                            {format(p.share_amount)}
                                                                                         </span>
                                                                                         {p.has_paid ? (
                                                                                             <span className="text-[10px] font-medium" style={{ color: '#10B981' }}>{t('split_bills.paid')}</span>
@@ -575,7 +575,7 @@ export default function SplitBills({ balance, userId, splits = [], summary = {},
                                                         <div className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>{t('split_bills.people_count', { count: split.participant_count })} &middot; {t('split_bills.settled')}</div>
                                                     </div>
                                                 <div className="text-right">
-                                                    <div className="text-[14px] font-bold" style={{ color: '#10B981' }}>{format(split.your_share)} {code}</div>
+                                                    <div className="text-[14px] font-bold" style={{ color: '#10B981' }}>{format(split.your_share)}</div>
                                                 </div>
                                                 <CheckCircle2 className="w-4 h-4" style={{ color: '#10B981' }} />
                                             </div>

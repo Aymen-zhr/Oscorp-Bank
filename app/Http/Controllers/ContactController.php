@@ -123,7 +123,7 @@ class ContactController extends Controller
         ]);
 
         if ($validated['contact_user_id'] == Auth::id()) {
-            return response()->json(['success' => false, 'message' => 'Cannot add yourself.']);
+            return back()->withErrors(['contact_user_id' => 'Cannot add yourself.']);
         }
 
         $contact = Contact::updateOrCreate(
@@ -149,11 +149,7 @@ class ContactController extends Controller
             'user_name' => Auth::user()->name,
         ]));
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Request sent successfully.',
-            'contact' => $contact,
-        ]);
+        return back()->with('success', 'Request sent successfully.');
     }
 
     public function acceptRequest($id)
@@ -208,6 +204,6 @@ class ContactController extends Controller
 
         $contact->delete();
 
-        return response()->json(['success' => true]);
+        return back()->with('success', 'Contact removed.');
     }
 }
