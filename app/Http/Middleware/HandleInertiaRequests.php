@@ -53,7 +53,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user ? array_merge($user->toArray(), [
                     'unreadNotificationsCount' => $user->unreadNotifications()->count(),
-                    'recentNotifications' => $user->unreadNotifications()->limit(config('oscorp.limits.notifications_recent', 5))->get(),
+                    'recentNotifications' => $user->unreadNotifications()->limit(5)->get(),
                 ]) : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',

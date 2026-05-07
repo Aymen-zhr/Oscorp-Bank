@@ -20,10 +20,6 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state', 'locale']);
 
-        $middleware->web(prepend: [
-            TrustProxies::class,
-        ]);
-
         $middleware->web(append: [
             SetLocale::class,
             HandleAppearance::class,

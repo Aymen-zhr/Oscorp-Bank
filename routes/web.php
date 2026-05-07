@@ -68,6 +68,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('settings/password', [\App\Http\Controllers\SettingsController::class, 'updatePassword'])->name('settings.password.update');
     Route::post('settings/preferences', [\App\Http\Controllers\SettingsController::class, 'updatePreferences'])->name('settings.preferences.update');
 
+    // Admin Panel
+    Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\AdminController::class, 'index'])->name('dashboard');
+    });
+
     // Contacts
     Route::get('contacts', [\App\Http\Controllers\ContactController::class, 'page'])->name('contacts.page');
     Route::get('contacts/api', [\App\Http\Controllers\ContactController::class, 'index'])->name('contacts.index');

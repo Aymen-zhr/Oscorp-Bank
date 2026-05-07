@@ -27,6 +27,7 @@ import {
     ArrowUpFromLine,
     PieChart,
     Users,
+    ShieldCheck,
 } from 'lucide-react';
 
 const now = new Date();
@@ -57,6 +58,7 @@ const navItems = [
     { icon: Receipt, label: 'common.taxes', href: '/taxes' },
     { icon: Package, label: 'common.subscriptions', href: '/subscriptions' },
     { icon: Bell, label: 'common.notifications', href: '/notifications' },
+    { icon: ShieldCheck, label: 'common.admin_panel', href: '/admin', adminOnly: true },
 ];
 
 const bottomItems = [
@@ -186,7 +188,7 @@ function SidebarContent({
                 className="custom-scrollbar flex-1 space-y-1 overflow-y-auto px-3"
             >
                 <div className="mb-2 px-3 text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)] uppercase">{t('common.menu')}</div>
-                {navItems.map((item, index) => {
+                {navItems.filter(item => !item.adminOnly || user?.role === 'admin').map((item, index) => {
                     const isActive = index === activeItem;
                     return (
                         <Link
