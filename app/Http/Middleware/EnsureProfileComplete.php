@@ -13,7 +13,7 @@ class EnsureProfileComplete
     {
         $user = Auth::user();
 
-        if (!$user || $user->is_admin) {
+        if (!$user || $user->isAdmin()) {
             return $next($request);
         }
 

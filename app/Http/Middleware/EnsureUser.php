@@ -13,7 +13,7 @@ class EnsureUser
     {
         $user = Auth::user();
 
-        if ($user && $user->is_admin) {
+        if ($user && $user->isAdmin()) {
             return Inertia::location(route('admin.dashboard'));
         }
 

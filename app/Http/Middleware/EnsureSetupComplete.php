@@ -12,7 +12,7 @@ class EnsureSetupComplete
     {
         $user = Auth::user();
 
-        if ($user && !$user->is_admin) {
+        if ($user && !$user->isAdmin()) {
             $requiredFields = ['phone', 'job_title', 'address', 'cin', 'date_of_birth', 'place_of_birth', 'nationality', 'gender'];
             $isComplete = true;
             foreach ($requiredFields as $field) {

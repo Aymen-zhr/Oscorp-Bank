@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
 
         Inertia::share([
             'adminRecentNotifications' => function () {
-                if (Auth::check() && Auth::user()->is_admin) {
+                if (Auth::check() && Auth::user()->isAdmin()) {
                     return DatabaseNotification::latest()->take(5)->get();
                 }
                 return [];
