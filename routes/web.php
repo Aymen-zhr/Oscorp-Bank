@@ -24,9 +24,6 @@ use App\Http\Controllers\SubscriptionsController;
 use App\Http\Controllers\TaxesController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransferController;
-use App\Http\Middleware\EnsureAdmin;
-use App\Http\Middleware\EnsureSetupComplete;
-use App\Http\Middleware\EnsureUser;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -37,6 +34,12 @@ Route::inertia('/', 'home', [
 Route::prefix('auth')->group(function () {
     Route::get('{provider}/redirect', [OAuthController::class, 'redirect'])->name('oauth.redirect');
     Route::get('{provider}/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
+});
+
+// Setup Account (auth required, but NOT verified - user needs to complete profile first)
+Route::middleware('auth')->group(function () {
+    Route::get('setup-account', [SetupAccountController::class, 'page'])->name('setup-account');
+    Route::post('setup-account', [SetupAccountController::class, 'store'])->name('setup-account.store');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -92,7 +95,42 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Admin Panel
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\AdminController::class, 'index'])->name('dashboard');
+        Route::get('/', [\App\Http\Controllers\Admin\AdminController::class, 'dashboard'])->name('dashboard');
+
+        Route::get('/users', [\App\Http\Controllers\Admin\AdminController::class, 'users'])->name('users');
+        Route::get('/users/{user}', [\App\Http\Controllers\Admin\AdminController::class, 'showUser'])->name('users.show');
+        Route::put('/users/{user}', [\App\Http\Controllers\Admin\AdminController::class, 'updateUser'])->name('users.update');
+        Route::post('/users/{user}/toggle-admin', [\App\Http\Controllers\Admin\AdminController::class, 'toggleAdmin'])->name('users.toggle-admin');
+
+        Route::get('/accounts', [\App\Http\Controllers\Admin\AccountController::class, 'index'])->name('accounts');
+        Route::post('/accounts/{user}/toggle-status', [\App\Http\Controllers\Admin\AccountController::class, 'toggleStatus'])->name('accounts.toggle-status');
+
+        Route::get('/transactions', [\App\Http\Controllers\Admin\TransactionController::class, 'index'])->name('transactions');
+        Route::get('/transactions/search-users', [\App\Http\Controllers\Admin\TransactionController::class, 'searchUsers'])->name('transactions.search-users');
+        Route::get('/transactions/{transaction}', [\App\Http\Controllers\Admin\TransactionController::class, 'show'])->name('transactions.show');
+        Route::post('/transactions/{transaction}/status', [\App\Http\Controllers\Admin\TransactionController::class, 'updateStatus'])->name('transactions.update-status');
+        Route::post('/transactions/{transaction}/flag', [\App\Http\Controllers\Admin\TransactionController::class, 'flag'])->name('transactions.flag');
+
+        Route::get('/loans', [\App\Http\Controllers\Admin\LoanController::class, 'index'])->name('loans');
+        Route::get('/loans/search-users', [\App\Http\Controllers\Admin\LoanController::class, 'searchUsers'])->name('loans.search-users');
+        Route::get('/loans/{loan}', [\App\Http\Controllers\Admin\LoanController::class, 'show'])->name('loans.show');
+        Route::post('/loans/{loan}/approve', [\App\Http\Controllers\Admin\LoanController::class, 'approve'])->name('loans.approve');
+        Route::post('/loans/{loan}/reject', [\App\Http\Controllers\Admin\LoanController::class, 'reject'])->name('loans.reject');
+
+        Route::get('/bill-splits', [\App\Http\Controllers\Admin\BillSplitController::class, 'index'])->name('bill-splits');
+        Route::get('/bill-splits/search-users', [\App\Http\Controllers\Admin\BillSplitController::class, 'searchUsers'])->name('bill-splits.search-users');
+        Route::delete('/bill-splits/{id}', [\App\Http\Controllers\Admin\BillSplitController::class, 'destroy'])->name('bill-splits.destroy');
+
+        Route::get('/notifications', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications');
+        Route::post('/notifications/{id}/read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::post('/notifications/mark-all-read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+
+        Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports');
+
+        Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings');
+        Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+
+        Route::get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])->name('audit-logs');
     });
 
     // Contacts

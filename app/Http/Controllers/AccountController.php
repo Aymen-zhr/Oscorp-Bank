@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -90,7 +91,7 @@ class AccountController extends Controller
                 'phone' => $user->phone ?? 'Not provided',
                 'avatar' => $user->avatar,
                 'created_at' => $user->created_at->format('M Y'),
-                'last_login' => $user->last_login_at ? \Carbon\Carbon::parse($user->last_login_at)->format('d M Y, H:i') : 'First login',
+                'last_login' => $user->last_login_at ? Carbon::parse($user->last_login_at)->format('d M Y, H:i') : 'First login',
                 'preferences' => $preferences,
                 'job_title' => $user->job_title ?? 'Not provided',
                 'address' => $user->address ?? 'Not provided',
