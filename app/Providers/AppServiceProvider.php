@@ -46,6 +46,18 @@ class AppServiceProvider extends ServiceProvider
     protected function ensureDatabaseReady(): void
     {
         try {
+            $dirs = [
+                storage_path('framework/sessions'),
+                storage_path('framework/cache/data'),
+                storage_path('framework/views'),
+                storage_path('logs'),
+            ];
+            foreach ($dirs as $dir) {
+                if (!is_dir($dir)) {
+                    @mkdir($dir, 0755, true);
+                }
+            }
+
             $dbPath = config('database.connections.sqlite.database');
             if ($dbPath && !file_exists($dbPath)) {
                 $dir = dirname($dbPath);
