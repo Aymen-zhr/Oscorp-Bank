@@ -1,7 +1,17 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Head, useForm, Link } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Mail, Lock, ArrowRight, Eye, EyeOff, Check, X, ShieldCheck, Phone, Briefcase, MapPin } from 'lucide-react';
+import {
+    User,
+    Mail,
+    Lock,
+    ArrowRight,
+    Eye,
+    EyeOff,
+    Check,
+    X,
+    ShieldCheck,
+} from 'lucide-react';
 import AuthLayout from '@/components/auth/AuthLayout';
 
 function PasswordStrength({ password }) {
@@ -17,8 +27,22 @@ function PasswordStrength({ password }) {
 
     const strength = checks.filter((c) => c.met).length;
     const strengthPercent = (strength / checks.length) * 100;
-    const strengthColor = strength <= 1 ? '#ef4444' : strength <= 2 ? '#f59e0b' : strength <= 4 ? '#3b82f6' : '#10b981';
-    const strengthLabel = strength <= 1 ? 'Vulnerable' : strength <= 2 ? 'Weak' : strength <= 4 ? 'Moderate' : 'Secure';
+    const strengthColor =
+        strength <= 1
+            ? '#ef4444'
+            : strength <= 2
+              ? '#f59e0b'
+              : strength <= 4
+                ? '#3b82f6'
+                : '#10b981';
+    const strengthLabel =
+        strength <= 1
+            ? 'Vulnerable'
+            : strength <= 2
+              ? 'Weak'
+              : strength <= 4
+                ? 'Moderate'
+                : 'Secure';
 
     if (!password) return null;
 
@@ -27,15 +51,18 @@ function PasswordStrength({ password }) {
             initial={{ opacity: 0, height: 0, marginTop: 0 }}
             animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
             exit={{ opacity: 0, height: 0, marginTop: 0 }}
-            className="p-3.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-base)]"
+            className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-base)] p-3.5"
         >
-            <div className="flex items-center justify-between mb-3">
-                <span className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-[1px] flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5" /> Security Level
+            <div className="mb-3 flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-[11px] font-bold tracking-[1px] text-[var(--color-text-muted)] uppercase">
+                    <ShieldCheck className="h-3.5 w-3.5" /> Security Level
                 </span>
                 <motion.span
-                    className="text-[11px] font-bold uppercase tracking-[1px] px-2 py-0.5 rounded-md"
-                    style={{ color: strengthColor, backgroundColor: `${strengthColor}15` }}
+                    className="rounded-md px-2 py-0.5 text-[11px] font-bold tracking-[1px] uppercase"
+                    style={{
+                        color: strengthColor,
+                        backgroundColor: `${strengthColor}15`,
+                    }}
                     animate={{ scale: [1, 1.1, 1] }}
                     transition={{ duration: 0.3 }}
                     key={strengthLabel}
@@ -43,17 +70,20 @@ function PasswordStrength({ password }) {
                     {strengthLabel}
                 </motion.span>
             </div>
-            
-            <div className="h-1.5 rounded-full bg-[var(--color-border)] overflow-hidden relative mb-4">
+
+            <div className="relative mb-4 h-1.5 overflow-hidden rounded-full bg-[var(--color-border)]">
                 <motion.div
                     className="absolute inset-y-0 left-0 rounded-full"
-                    style={{ backgroundColor: strengthColor, boxShadow: `0 0 10px ${strengthColor}` }}
+                    style={{
+                        backgroundColor: strengthColor,
+                        boxShadow: `0 0 10px ${strengthColor}`,
+                    }}
                     initial={{ width: 0 }}
                     animate={{ width: `${strengthPercent}%` }}
                     transition={{ duration: 0.5, ease: 'easeOut' }}
                 />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-2">
                 {checks.map((check, i) => (
                     <motion.div
@@ -61,20 +91,26 @@ function PasswordStrength({ password }) {
                         initial={{ opacity: 0, x: -5 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.05 }}
-                        className="flex items-center gap-2 group/check cursor-default"
+                        className="group/check flex cursor-default items-center gap-2"
                     >
                         <motion.div
                             animate={{
-                                backgroundColor: check.met ? 'rgba(16,185,129,0.1)' : 'transparent',
-                                borderColor: check.met ? 'rgba(16,185,129,0.3)' : 'var(--color-border)',
+                                backgroundColor: check.met
+                                    ? 'rgba(16,185,129,0.1)'
+                                    : 'transparent',
+                                borderColor: check.met
+                                    ? 'rgba(16,185,129,0.3)'
+                                    : 'var(--color-border)',
                             }}
-                            className="w-3.5 h-3.5 rounded-full flex items-center justify-center border transition-colors"
+                            className="flex h-3.5 w-3.5 items-center justify-center rounded-full border transition-colors"
                         >
                             {check.met ? (
-                                <Check className="w-2.5 h-2.5 text-emerald-500" />
+                                <Check className="h-2.5 w-2.5 text-emerald-500" />
                             ) : null}
                         </motion.div>
-                        <span className={`text-[10px] font-bold tracking-[0.5px] uppercase transition-colors ${check.met ? 'text-[var(--color-text-main)]' : 'text-[var(--color-text-muted)]'}`}>
+                        <span
+                            className={`text-[10px] font-bold tracking-[0.5px] uppercase transition-colors ${check.met ? 'text-[var(--color-text-main)]' : 'text-[var(--color-text-muted)]'}`}
+                        >
                             {check.label}
                         </span>
                     </motion.div>
@@ -92,9 +128,6 @@ export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
-        phone: '',
-        job_title: '',
-        address: '',
         password: '',
         password_confirmation: '',
     });
@@ -110,20 +143,28 @@ export default function Register() {
         post('/register');
     };
 
-    const inputClasses = (field) => `peer w-full bg-[var(--color-bg-base)] border rounded-xl px-12 pt-7 pb-3 text-[15px] font-medium text-[var(--color-text-main)] outline-none transition-all duration-300 placeholder-transparent ${
-        errors[field]
-            ? 'border-red-500/50 focus:border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]'
-            : 'border-[var(--color-border)] focus:border-[var(--color-gold)] focus:shadow-[0_0_0_1px_rgba(212,175,55,0.2)] hover:border-[var(--color-border-hover)]'
-    }`;
+    const inputClasses = (field) =>
+        `peer w-full bg-[var(--color-bg-base)] border rounded-xl px-12 pt-7 pb-3 text-[15px] font-medium text-[var(--color-text-main)] outline-none transition-all duration-300 placeholder-transparent ${
+            errors[field]
+                ? 'border-red-500/50 focus:border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,0.1)]'
+                : 'border-[var(--color-border)] focus:border-[var(--color-gold)] focus:shadow-[0_0_0_1px_rgba(212,175,55,0.2)] hover:border-[var(--color-border-hover)]'
+        }`;
 
-    const labelClasses = (field) => `absolute left-12 text-[var(--color-text-muted)] transition-all duration-300 pointer-events-none 
+    const labelClasses = (
+        field,
+    ) => `absolute left-12 text-[var(--color-text-muted)] transition-all duration-300 pointer-events-none 
         peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-[14px] 
         peer-focus:top-2.5 peer-focus:translate-y-0 peer-focus:text-[9px] peer-focus:uppercase peer-focus:tracking-[1px] peer-focus:font-bold peer-focus:text-[var(--color-gold)]
         ${data[field] ? 'top-2.5 translate-y-0 text-[9px] uppercase tracking-[1px] font-bold' : ''}
     `;
 
-    const passwordsMatch = data.password && data.password_confirmation && data.password === data.password_confirmation;
-    const passwordsMismatch = data.password_confirmation && data.password !== data.password_confirmation;
+    const passwordsMatch =
+        data.password &&
+        data.password_confirmation &&
+        data.password === data.password_confirmation;
+    const passwordsMismatch =
+        data.password_confirmation &&
+        data.password !== data.password_confirmation;
 
     const fieldVariants = {
         hidden: { opacity: 0, y: 15 },
@@ -139,14 +180,25 @@ export default function Register() {
             <Head title="OSCORP | Deployment Phase" />
 
             <form onSubmit={submit} className="flex flex-col gap-4">
-                <motion.div custom={0} variants={fieldVariants} initial="hidden" animate="visible">
-                    <div className="relative group">
+                <motion.div
+                    custom={0}
+                    variants={fieldVariants}
+                    initial="hidden"
+                    animate="visible"
+                >
+                    <div className="group relative">
                         <motion.div
-                            className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
-                            animate={{ color: focusedField === 'name' || data.name ? 'var(--color-gold)' : 'var(--color-text-muted)', scale: focusedField === 'name' ? 1.1 : 1 }}
+                            className="absolute top-1/2 left-4 z-10 -translate-y-1/2"
+                            animate={{
+                                color:
+                                    focusedField === 'name' || data.name
+                                        ? 'var(--color-gold)'
+                                        : 'var(--color-text-muted)',
+                                scale: focusedField === 'name' ? 1.1 : 1,
+                            }}
                             transition={{ duration: 0.2 }}
                         >
-                            <User className="w-5 h-5" />
+                            <User className="h-5 w-5" />
                         </motion.div>
                         <input
                             id="name"
@@ -168,29 +220,44 @@ export default function Register() {
                             <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
-                                className="absolute right-4 top-1/2 -translate-y-1/2"
+                                className="absolute top-1/2 right-4 -translate-y-1/2"
                             >
-                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20">
+                                    <div className="h-2 w-2 rounded-full bg-emerald-500" />
                                 </div>
                             </motion.div>
                         )}
                     </div>
                     {errors.name && (
-                        <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="mt-1 pl-2 text-[12px] text-red-500 font-medium">
+                        <motion.p
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mt-1 pl-2 text-[12px] font-medium text-red-500"
+                        >
                             {errors.name}
                         </motion.p>
                     )}
                 </motion.div>
 
-                <motion.div custom={1} variants={fieldVariants} initial="hidden" animate="visible">
-                    <div className="relative group">
+                <motion.div
+                    custom={1}
+                    variants={fieldVariants}
+                    initial="hidden"
+                    animate="visible"
+                >
+                    <div className="group relative">
                         <motion.div
-                            className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
-                            animate={{ color: focusedField === 'email' || data.email ? 'var(--color-gold)' : 'var(--color-text-muted)', scale: focusedField === 'email' ? 1.1 : 1 }}
+                            className="absolute top-1/2 left-4 z-10 -translate-y-1/2"
+                            animate={{
+                                color:
+                                    focusedField === 'email' || data.email
+                                        ? 'var(--color-gold)'
+                                        : 'var(--color-text-muted)',
+                                scale: focusedField === 'email' ? 1.1 : 1,
+                            }}
                             transition={{ duration: 0.2 }}
                         >
-                            <Mail className="w-5 h-5" />
+                            <Mail className="h-5 w-5" />
                         </motion.div>
                         <input
                             id="email"
@@ -204,165 +271,54 @@ export default function Register() {
                             onBlur={() => setFocusedField(null)}
                             onChange={(e) => setData('email', e.target.value)}
                         />
-                        <label htmlFor="email" className={labelClasses('email')}>
+                        <label
+                            htmlFor="email"
+                            className={labelClasses('email')}
+                        >
                             Communications Uplink (Email)
                         </label>
                         {data.email && !errors.email && (
                             <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
-                                className="absolute right-4 top-1/2 -translate-y-1/2"
+                                className="absolute top-1/2 right-4 -translate-y-1/2"
                             >
-                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20">
+                                    <div className="h-2 w-2 rounded-full bg-emerald-500" />
                                 </div>
                             </motion.div>
                         )}
                     </div>
                     {errors.email && (
-                        <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="mt-1 pl-2 text-[12px] text-red-500 font-medium">
+                        <motion.p
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mt-1 pl-2 text-[12px] font-medium text-red-500"
+                        >
                             {errors.email}
                         </motion.p>
                     )}
                 </motion.div>
 
-                <motion.div custom={2} variants={fieldVariants} initial="hidden" animate="visible">
-                    <div className="relative group">
+                <motion.div
+                    custom={2}
+                    variants={fieldVariants}
+                    initial="hidden"
+                    animate="visible"
+                >
+                    <div className="group relative">
                         <motion.div
-                            className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
-                            animate={{ color: focusedField === 'phone' || data.phone ? 'var(--color-gold)' : 'var(--color-text-muted)', scale: focusedField === 'phone' ? 1.1 : 1 }}
+                            className="absolute top-1/2 left-4 z-10 -translate-y-1/2"
+                            animate={{
+                                color:
+                                    focusedField === 'password' || data.password
+                                        ? 'var(--color-gold)'
+                                        : 'var(--color-text-muted)',
+                                scale: focusedField === 'password' ? 1.1 : 1,
+                            }}
                             transition={{ duration: 0.2 }}
                         >
-                            <Phone className="w-5 h-5" />
-                        </motion.div>
-                        <input
-                            id="phone"
-                            type="tel"
-                            name="phone"
-                            value={data.phone}
-                            className={inputClasses('phone')}
-                            placeholder="Primary Contact Number"
-                            required
-                            onFocus={() => setFocusedField('phone')}
-                            onBlur={() => setFocusedField(null)}
-                            onChange={(e) => setData('phone', e.target.value)}
-                        />
-                        <label htmlFor="phone" className={labelClasses('phone')}>
-                            Primary Contact Number
-                        </label>
-                        {data.phone && !errors.phone && (
-                            <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                className="absolute right-4 top-1/2 -translate-y-1/2"
-                            >
-                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                </div>
-                            </motion.div>
-                        )}
-                    </div>
-                    {errors.phone && (
-                        <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="mt-1 pl-2 text-[12px] text-red-500 font-medium">
-                            {errors.phone}
-                        </motion.p>
-                    )}
-                </motion.div>
-
-                <motion.div custom={3} variants={fieldVariants} initial="hidden" animate="visible">
-                    <div className="relative group">
-                        <motion.div
-                            className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
-                            animate={{ color: focusedField === 'job_title' || data.job_title ? 'var(--color-gold)' : 'var(--color-text-muted)', scale: focusedField === 'job_title' ? 1.1 : 1 }}
-                            transition={{ duration: 0.2 }}
-                        >
-                            <Briefcase className="w-5 h-5" />
-                        </motion.div>
-                        <input
-                            id="job_title"
-                            type="text"
-                            name="job_title"
-                            value={data.job_title}
-                            className={inputClasses('job_title')}
-                            placeholder="Professional Title"
-                            required
-                            onFocus={() => setFocusedField('job_title')}
-                            onBlur={() => setFocusedField(null)}
-                            onChange={(e) => setData('job_title', e.target.value)}
-                        />
-                        <label htmlFor="job_title" className={labelClasses('job_title')}>
-                            Professional Title
-                        </label>
-                        {data.job_title && !errors.job_title && (
-                            <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                className="absolute right-4 top-1/2 -translate-y-1/2"
-                            >
-                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                </div>
-                            </motion.div>
-                        )}
-                    </div>
-                    {errors.job_title && (
-                        <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="mt-1 pl-2 text-[12px] text-red-500 font-medium">
-                            {errors.job_title}
-                        </motion.p>
-                    )}
-                </motion.div>
-
-                <motion.div custom={4} variants={fieldVariants} initial="hidden" animate="visible">
-                    <div className="relative group">
-                        <motion.div
-                            className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
-                            animate={{ color: focusedField === 'address' || data.address ? 'var(--color-gold)' : 'var(--color-text-muted)', scale: focusedField === 'address' ? 1.1 : 1 }}
-                            transition={{ duration: 0.2 }}
-                        >
-                            <MapPin className="w-5 h-5" />
-                        </motion.div>
-                        <input
-                            id="address"
-                            type="text"
-                            name="address"
-                            value={data.address}
-                            className={inputClasses('address')}
-                            placeholder="Residential Address"
-                            required
-                            onFocus={() => setFocusedField('address')}
-                            onBlur={() => setFocusedField(null)}
-                            onChange={(e) => setData('address', e.target.value)}
-                        />
-                        <label htmlFor="address" className={labelClasses('address')}>
-                            Residential Address
-                        </label>
-                        {data.address && !errors.address && (
-                            <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                className="absolute right-4 top-1/2 -translate-y-1/2"
-                            >
-                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                </div>
-                            </motion.div>
-                        )}
-                    </div>
-                    {errors.address && (
-                        <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="mt-1 pl-2 text-[12px] text-red-500 font-medium">
-                            {errors.address}
-                        </motion.p>
-                    )}
-                </motion.div>
-
-                <motion.div custom={5} variants={fieldVariants} initial="hidden" animate="visible">
-                    <div className="relative group">
-                        <motion.div
-                            className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
-                            animate={{ color: focusedField === 'password' || data.password ? 'var(--color-gold)' : 'var(--color-text-muted)', scale: focusedField === 'password' ? 1.1 : 1 }}
-                            transition={{ duration: 0.2 }}
-                        >
-                            <Lock className="w-5 h-5" />
+                            <Lock className="h-5 w-5" />
                         </motion.div>
                         <input
                             id="password"
@@ -374,22 +330,39 @@ export default function Register() {
                             required
                             onFocus={() => setFocusedField('password')}
                             onBlur={() => setFocusedField(null)}
-                            onChange={(e) => setData('password', e.target.value)}
+                            onChange={(e) =>
+                                setData('password', e.target.value)
+                            }
                         />
-                        <label htmlFor="password" className={labelClasses('password')}>
+                        <label
+                            htmlFor="password"
+                            className={labelClasses('password')}
+                        >
                             Encryption Key (Password)
                         </label>
                         <motion.button
                             type="button"
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors z-10 p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5"
+                            className="absolute top-1/2 right-4 z-10 -translate-y-1/2 rounded-md p-1 text-[var(--color-text-muted)] transition-colors hover:bg-black/5 hover:text-[var(--color-text-main)] dark:hover:bg-white/5"
                             whileTap={{ scale: 0.9 }}
                             onClick={() => setShowPassword(!showPassword)}
                         >
                             <motion.div
-                                animate={{ rotate: showPassword ? 180 : 0 }}
+                                animate={{
+                                    scale: showPassword ? 1.2 : 1,
+                                    opacity: showPassword ? 1 : 0.7,
+                                }}
+                                transition={{
+                                    type: 'spring',
+                                    stiffness: 400,
+                                    damping: 17,
+                                }}
                                 transition={{ duration: 0.3 }}
                             >
-                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                {showPassword ? (
+                                    <EyeOff className="h-4 w-4" />
+                                ) : (
+                                    <Eye className="h-4 w-4" />
+                                )}
                             </motion.div>
                         </motion.button>
                     </div>
@@ -399,20 +372,39 @@ export default function Register() {
                         )}
                     </AnimatePresence>
                     {errors.password && (
-                        <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="mt-1 pl-2 text-[12px] text-red-500 font-medium">
+                        <motion.p
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mt-1 pl-2 text-[12px] font-medium text-red-500"
+                        >
                             {errors.password}
                         </motion.p>
                     )}
                 </motion.div>
 
-                <motion.div custom={6} variants={fieldVariants} initial="hidden" animate="visible">
-                    <div className="relative group">
+                <motion.div
+                    custom={3}
+                    variants={fieldVariants}
+                    initial="hidden"
+                    animate="visible"
+                >
+                    <div className="group relative">
                         <motion.div
-                            className="absolute left-4 top-1/2 -translate-y-1/2 z-10"
-                            animate={{ color: focusedField === 'password_confirmation' || data.password_confirmation ? 'var(--color-gold)' : 'var(--color-text-muted)', scale: focusedField === 'password_confirmation' ? 1.1 : 1 }}
+                            className="absolute top-1/2 left-4 z-10 -translate-y-1/2"
+                            animate={{
+                                color:
+                                    focusedField === 'password_confirmation' ||
+                                    data.password_confirmation
+                                        ? 'var(--color-gold)'
+                                        : 'var(--color-text-muted)',
+                                scale:
+                                    focusedField === 'password_confirmation'
+                                        ? 1.1
+                                        : 1,
+                            }}
                             transition={{ duration: 0.2 }}
                         >
-                            <Lock className="w-5 h-5" />
+                            <Lock className="h-5 w-5" />
                         </motion.div>
                         <input
                             id="password_confirmation"
@@ -422,78 +414,159 @@ export default function Register() {
                             className={inputClasses('password_confirmation')}
                             placeholder="Verify Encryption Key"
                             required
-                            onFocus={() => setFocusedField('password_confirmation')}
+                            onFocus={() =>
+                                setFocusedField('password_confirmation')
+                            }
                             onBlur={() => setFocusedField(null)}
-                            onChange={(e) => setData('password_confirmation', e.target.value)}
+                            onChange={(e) =>
+                                setData('password_confirmation', e.target.value)
+                            }
                         />
-                        <label htmlFor="password_confirmation" className={labelClasses('password_confirmation')}>
+                        <label
+                            htmlFor="password_confirmation"
+                            className={labelClasses('password_confirmation')}
+                        >
                             Verify Encryption Key
                         </label>
                         <motion.button
                             type="button"
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors z-10 p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5"
+                            className="absolute top-1/2 right-4 z-10 -translate-y-1/2 rounded-md p-1 text-[var(--color-text-muted)] transition-colors hover:bg-black/5 hover:text-[var(--color-text-main)] dark:hover:bg-white/5"
                             whileTap={{ scale: 0.9 }}
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            onClick={() =>
+                                setShowConfirmPassword(!showConfirmPassword)
+                            }
                         >
                             <motion.div
-                                animate={{ rotate: showConfirmPassword ? 180 : 0 }}
+                                animate={{
+                                    scale: showConfirmPassword ? 1.2 : 1,
+                                    opacity: showConfirmPassword ? 1 : 0.7,
+                                }}
                                 transition={{ duration: 0.3 }}
                             >
-                                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                {showConfirmPassword ? (
+                                    <EyeOff className="h-4 w-4" />
+                                ) : (
+                                    <Eye className="h-4 w-4" />
+                                )}
                             </motion.div>
                         </motion.button>
                     </div>
                     {errors.password_confirmation && (
-                        <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="mt-1 pl-2 text-[12px] text-red-500 font-medium">
+                        <motion.p
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="mt-1 pl-2 text-[12px] font-medium text-red-500"
+                        >
                             {errors.password_confirmation}
                         </motion.p>
                     )}
                     <AnimatePresence>
                         {passwordsMatch && (
                             <motion.p
-                                initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                                animate={{ opacity: 1, height: 'auto', marginTop: 8 }}
+                                initial={{
+                                    opacity: 0,
+                                    height: 0,
+                                    marginTop: 0,
+                                }}
+                                animate={{
+                                    opacity: 1,
+                                    height: 'auto',
+                                    marginTop: 8,
+                                }}
                                 exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                                className="pl-2 text-[12px] text-emerald-500 font-bold flex items-center gap-1.5"
+                                className="flex items-center gap-1.5 pl-2 text-[12px] font-bold text-emerald-500"
                             >
-                                <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 0.3 }}>
-                                    <Check className="w-4 h-4" />
+                                <motion.div
+                                    animate={{ scale: [1, 1.3, 1] }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <Check className="h-4 w-4" />
                                 </motion.div>
                                 Keys Match
                             </motion.p>
                         )}
                         {passwordsMismatch && (
                             <motion.p
-                                initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                                animate={{ opacity: 1, height: 'auto', marginTop: 8 }}
+                                initial={{
+                                    opacity: 0,
+                                    height: 0,
+                                    marginTop: 0,
+                                }}
+                                animate={{
+                                    opacity: 1,
+                                    height: 'auto',
+                                    marginTop: 8,
+                                }}
                                 exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                                className="pl-2 text-[12px] text-red-500 font-bold flex items-center gap-1.5"
+                                className="flex items-center gap-1.5 pl-2 text-[12px] font-bold text-red-500"
                             >
-                                <X className="w-4 h-4" />
+                                <X className="h-4 w-4" />
                                 Keys do not match
                             </motion.p>
                         )}
                     </AnimatePresence>
                 </motion.div>
 
-                <motion.div custom={7} variants={fieldVariants} initial="hidden" animate="visible" className="mt-2">
+                <motion.div
+                    custom={4}
+                    variants={fieldVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="mt-2"
+                >
                     <motion.button
                         type="submit"
                         disabled={processing}
                         whileHover={{ scale: processing ? 1 : 1.01 }}
                         whileTap={{ scale: processing ? 1 : 0.98 }}
-                        className="w-full bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] hover:brightness-110 text-black font-bold text-[15px] py-4 rounded-xl transition-all shadow-[0_4px_20px_rgba(212,175,55,0.3)] hover:shadow-[0_8px_30px_rgba(212,175,55,0.5)] flex items-center justify-center gap-2 group disabled:opacity-50 relative overflow-hidden"
+                        className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] py-4 text-[15px] font-bold text-[var(--color-gold-fg)] shadow-[0_4px_20px_rgba(212,175,55,0.3)] transition-all hover:shadow-[0_8px_30px_rgba(212,175,55,0.5)] hover:brightness-110 disabled:opacity-50"
                     >
                         <motion.div
-                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full"
+                            className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent"
                             animate={{ x: ['0%', '200%'] }}
-                            transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 4 }}
+                            transition={{
+                                duration: 2.5,
+                                repeat: Infinity,
+                                repeatDelay: 4,
+                            }}
                         />
-                        {processing ? 'Processing Deployment...' : 'Establish Secure Account'}
-                        {!processing && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
+                        {processing
+                            ? 'Processing Deployment...'
+                            : 'Establish Secure Account'}
+                        {!processing && (
+                            <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                        )}
                     </motion.button>
                 </motion.div>
             </form>
+
+            <motion.div
+                className="mt-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.45 }}
+            >
+                <div className="relative flex items-center gap-4">
+                    <div className="h-px flex-1 bg-[var(--color-border)]" />
+                    <span className="text-[11px] font-bold tracking-[1px] text-[var(--color-text-muted)] uppercase">
+                        or sign up with
+                    </span>
+                    <div className="h-px flex-1 bg-[var(--color-border)]" />
+                </div>
+
+                <a
+                    href="/auth/google/redirect"
+                    className="mt-4 flex w-full items-center justify-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-card)] px-6 py-3.5 text-[14px] font-bold text-[var(--color-text-main)] transition-all hover:border-[var(--color-gold)] hover:shadow-[0_0_0_1px_rgba(212,175,55,0.2)]"
+                >
+                    <svg className="h-5 w-5" viewBox="0 0 24 24">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                    </svg>
+                    Google
+                </a>
+            </motion.div>
 
             <motion.div
                 className="mt-10 text-center lg:hidden"
@@ -501,10 +574,15 @@ export default function Register() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
             >
-                <p className="text-[13px] text-[var(--color-text-muted)] font-medium">
+                <p className="text-[13px] font-medium text-[var(--color-text-muted)]">
                     Already part of the network?{' '}
-                    <Link href="/login" className="text-[var(--color-gold)] hover:text-[var(--color-gold-dark)] transition-colors font-bold group">
-                        <span className="group-hover:underline">Re-authenticate</span>
+                    <Link
+                        href="/login"
+                        className="group font-bold text-[var(--color-gold)] transition-colors hover:text-[var(--color-gold-dark)]"
+                    >
+                        <span className="group-hover:underline">
+                            Re-authenticate
+                        </span>
                     </Link>
                 </p>
             </motion.div>
@@ -512,11 +590,11 @@ export default function Register() {
     );
 }
 
-Register.layout = page => (
-    <AuthLayout 
-        children={page} 
-        activeTab="register" 
-        title="Open Your Account" 
-        subtitle="Join the private banking network" 
+Register.layout = (page) => (
+    <AuthLayout
+        children={page}
+        activeTab="register"
+        title="Open Your Account"
+        subtitle="Join the private banking network"
     />
 );

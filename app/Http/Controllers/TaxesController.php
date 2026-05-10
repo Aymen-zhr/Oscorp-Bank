@@ -112,7 +112,7 @@ class TaxesController extends Controller
             ->get();
 
         $totalCategorized = $categoryTotals->sum('total');
-        $taxColors = ['var(--color-gold)', '#6366F1', '#10B981', '#F59E0B', '#8B5CF6'];
+        $taxColors = config('taxes.colors.category_colors', ['var(--color-gold)', '#6366F1', '#10B981', '#F59E0B', '#8B5CF6']);
 
         $taxCategories = [];
         foreach ($categoryTotals as $i => $cat) {
@@ -125,27 +125,34 @@ class TaxesController extends Controller
         }
 
         // Upcoming deadlines based on Moroccan tax calendar
-        $currentMonth = Carbon::now()->month;
-        $currentYear = Carbon::now()->year;
-        $upcomingDeadlines = [];
+        $now = Carbon::now();
+        $currentYear = $now->year;
 
-        if ($currentMonth <= 3) {
-            $upcomingDeadlines[] = ['deadline' => "$currentYear-03-31", 'description' => 'Annual Tax Filing Deadline', 'daysLeft' => Carbon::parse("$currentYear-03-31")->diffInDays(Carbon::now())];
-        }
-        if ($currentMonth <= 4) {
-            $upcomingDeadlines[] = ['deadline' => "$currentYear-04-30", 'description' => 'Q1 Quarterly Tax Payment', 'daysLeft' => Carbon::parse("$currentYear-04-30")->diffInDays(Carbon::now())];
-        }
-        if ($currentMonth <= 7) {
-            $upcomingDeadlines[] = ['deadline' => "$currentYear-07-31", 'description' => 'Q2 Quarterly Tax Payment', 'daysLeft' => Carbon::parse("$currentYear-07-31")->diffInDays(Carbon::now())];
-        }
-        if ($currentMonth <= 10) {
-            $upcomingDeadlines[] = ['deadline' => "$currentYear-10-31", 'description' => 'Q3 Quarterly Tax Payment', 'daysLeft' => Carbon::parse("$currentYear-10-31")->diffInDays(Carbon::now())];
+        $deadlineDefs = [
+            ['month' => 3, 'day' => 31, 'description' => 'Annual Tax Filing Deadline'],
+            ['month' => 4, 'day' => 30, 'description' => 'Q1 Quarterly Tax Payment'],
+            ['month' => 7, 'day' => 31, 'description' => 'Q2 Quarterly Tax Payment'],
+            ['month' => 10, 'day' => 31, 'description' => 'Q3 Quarterly Tax Payment'],
+        ];
+
+        $candidates = [];
+        foreach ($deadlineDefs as $def) {
+            $dateThisYear = Carbon::create($currentYear, $def['month'], $def['day'], 23, 59, 59);
+            $date = $dateThisYear->isPast() && $def['month'] <= 3
+                ? Carbon::create($currentYear + 1, $def['month'], $def['day'], 23, 59, 59)
+                : $dateThisYear;
+            $daysLeft = $now->diffInDays($date, false);
+            if ($daysLeft >= 0) {
+                $candidates[] = [
+                    'deadline' => $date->format('Y-m-d'),
+                    'description' => $date->year > $currentYear ? 'Next ' . lcfirst($def['description']) : $def['description'],
+                    'daysLeft' => (int) ceil($daysLeft),
+                ];
+            }
         }
 
-        // Ensure at least 2 deadlines
-        if (count($upcomingDeadlines) < 2) {
-            $upcomingDeadlines[] = ['deadline' => ($currentYear + 1) . '-03-31', 'description' => 'Next Annual Tax Filing', 'daysLeft' => Carbon::parse(($currentYear + 1) . '-03-31')->diffInDays(Carbon::now())];
-        }
+        usort($candidates, fn($a, $b) => $a['daysLeft'] <=> $b['daysLeft']);
+        $upcomingDeadlines = array_slice($candidates, 0, 3);
 
         $pendingPayment = max(0, round($estimatedAnnualTax - $taxPaidThisYear));
 
@@ -179,12 +186,6 @@ class TaxesController extends Controller
                 $tax = $bracket['cumulative'] + ($annualIncome - $prevThreshold) * $bracket['rate'];
                 break;
             }
-        }
-
-        if ($annualIncome > end($brackets)['threshold'] && end($brackets)['threshold'] !== PHP_INT_MAX) {
-            $lastBracket = end($brackets);
-            $prevThreshold = $brackets[count($brackets) - 2]['threshold'];
-            $tax = $lastBracket['cumulative'] + ($annualIncome - $prevThreshold) * $lastBracket['rate'];
         }
 
         return $tax;

@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 use App\Traits\HasOscorpBalance;
 use Illuminate\Support\Facades\Response;
 use Inertia\Inertia;
+use App\Models\Transaction;
 
 class TransactionController extends Controller
 {
@@ -99,28 +99,28 @@ class TransactionController extends Controller
             $query->where('merchant', 'like', "%{$request->search}%");
         }
 
-        $transactions = $query->get();
+        $transactions = $query->limit(5000)->get();
 
         // Build CSV
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="transactions_' . date('Y-m-d') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="transactions_' . date(config('oscorp.date_formats.default', 'Y-m-d')) . '.csv"',
         ];
 
         $callback = function() use ($transactions) {
             $file = fopen('php://output', 'w');
 
             // Header row
-            fputcsv($file, ['Date', 'Merchant', 'Category', 'Type', 'Amount (MAD)', 'Card']);
+            fputcsv($file, ['Date', 'Merchant', 'Category', 'Type', 'Amount (' . config('oscorp.currency', 'MAD') . ')', 'Card']);
 
             // Data rows
             foreach ($transactions as $tx) {
                 fputcsv($file, [
-                    Carbon::parse($tx->transacted_at)->format('Y-m-d H:i'),
+                    Carbon::parse($tx->transacted_at)->format(config('oscorp.date_formats.datetime', 'Y-m-d H:i')),
                     $tx->merchant,
                     $tx->category ?? '',
                     ucfirst($tx->type),
-                    $tx->type === 'credit' ? $tx->amount : -$tx->amount,
+                    $tx->type === Transaction::TYPE_CREDIT ? $tx->amount : -$tx->amount,
                     $tx->card_last4 ?? '',
                 ]);
             }

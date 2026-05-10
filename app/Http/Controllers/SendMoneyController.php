@@ -10,6 +10,7 @@ use App\Services\TransactionService;
 use App\Services\NotificationService;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Transaction;
 
 class SendMoneyController extends Controller
 {
@@ -30,7 +31,7 @@ class SendMoneyController extends Controller
             ->where('type', 'debit')
             ->where('category', 'Sent')
             ->orderBy('transacted_at', 'desc')
-            ->take(10)
+            ->take(config('oscorp.limits.recent_sends', 10))
             ->get();
 
         $contacts = \App\Models\Contact::where('user_id', $userId)
@@ -56,7 +57,7 @@ class SendMoneyController extends Controller
             'amount' => ['required', 'numeric', 'min:0.01'],
             'send_mode' => ['required', 'in:contact,rib'],
             'recipient_id' => ['required_if:send_mode,contact', 'nullable', 'exists:users,id'],
-            'rib' => ['required_if:send_mode,rib', 'nullable', 'string', 'min:16', 'max:30'],
+            'rib' => ['required_if:send_mode,rib', 'nullable', 'string', 'min:24', 'max:30'],
             'beneficiary_name' => ['required_if:send_mode,rib', 'nullable', 'string', 'max:255'],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
@@ -64,7 +65,7 @@ class SendMoneyController extends Controller
         $stats = $this->getFinancialStats();
         if ($validated['amount'] > $stats['live_balance']) {
             return back()->withErrors([
-                'amount' => 'Insufficient balance. Available: ' . number_format($stats['live_balance'], 2) . ' MAD',
+                'amount' => 'Insufficient balance. Available: ' . number_format($stats['live_balance'], 2) . ' ' . config('oscorp.currency', 'MAD'),
             ]);
         }
 
@@ -90,13 +91,13 @@ class SendMoneyController extends Controller
             DB::table('transactions')->insert([
                 'user_id' => $sender->id,
                 'merchant' => $merchantName,
-                'type' => 'debit',
+                'type' => Transaction::TYPE_DEBIT,
                 'category' => 'Sent',
                 'amount' => $validated['amount'],
                 'source' => 'Transfer',
                 'note' => $validated['note'] ?? null,
-                'status' => 'completed',
-                'logo_color' => '#EF4444',
+                'status' => Transaction::STATUS_COMPLETED,
+                'logo_color' => config('oscorp.colors.debit', '#EF4444'),
                 'transacted_at' => now(),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -107,13 +108,13 @@ class SendMoneyController extends Controller
                 DB::table('transactions')->insert([
                     'user_id' => $recipient->id,
                     'merchant' => 'Received from ' . $sender->name,
-                    'type' => 'credit',
+                    'type' => Transaction::TYPE_CREDIT,
                     'category' => 'Received',
                     'amount' => $validated['amount'],
                     'source' => 'Transfer',
                     'note' => $validated['note'] ?? null,
-                    'status' => 'completed',
-                    'logo_color' => '#10B981',
+                    'status' => Transaction::STATUS_COMPLETED,
+                    'logo_color' => config('oscorp.colors.credit', '#10B981'),
                     'transacted_at' => now(),
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -123,7 +124,7 @@ class SendMoneyController extends Controller
                 $recipient->notify(new \App\Notifications\SystemNotification([
                     'type' => 'success',
                     'title' => 'Money Received',
-                    'message' => $sender->name . ' sent you ' . number_format($validated['amount'], 2) . ' MAD',
+                    'message' => $sender->name . ' sent you ' . number_format($validated['amount'], 2) . ' ' . config('oscorp.currency', 'MAD'),
                     'action_type' => 'receive',
                     'user_name' => $sender->name,
                 ]));
@@ -134,13 +135,13 @@ class SendMoneyController extends Controller
             $sender->notify(new \App\Notifications\SystemNotification([
                 'type' => 'info',
                 'title' => 'Money Sent',
-                'message' => 'You sent ' . number_format($validated['amount'], 2) . ' MAD to ' . $recipientName,
+                'message' => 'You sent ' . number_format($validated['amount'], 2) . ' ' . config('oscorp.currency', 'MAD') . ' to ' . $recipientName,
                 'action_type' => 'send',
                 'user_name' => $sender->name,
             ]));
         });
 
         $recipientName = $isRib ? $validated['beneficiary_name'] : $recipient->name;
-        return redirect()->route('send')->with('success', 'Sent ' . number_format($validated['amount'], 2) . ' MAD to ' . $recipientName);
+        return redirect()->route('send')->with('success', 'Sent ' . number_format($validated['amount'], 2) . ' ' . config('oscorp.currency', 'MAD') . ' to ' . $recipientName);
     }
 }

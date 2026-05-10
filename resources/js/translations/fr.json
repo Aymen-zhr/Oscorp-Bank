@@ -1,4 +1,4 @@
-{
+﻿{
     "common": {
         "dashboard": "Tableau de bord",
         "account": "Compte",
@@ -77,7 +77,7 @@
         "pending_approval": "En attente d'approbation",
         "awaiting_approval_badge": "En attente",
         "accepted_count": "{accepted}/{total} acceptés",
-        "your_share": "Votre part : MAD {amount}",
+        "your_share": "Votre part : {amount}",
         "accept": "Accepter",
         "decline": "Refuser",
         "active_splits": "Partages actifs",
@@ -91,9 +91,9 @@
         "participants": "Participants ({count})",
         "you_label": "(Vous)",
         "paid": "Payé",
-        "partial_paid": "Partiel : MAD {amount}",
+        "partial_paid": "Partiel : {amount}",
         "pending_status": "En attente",
-        "pay_amount": "Payer MAD {amount}",
+        "pay_amount": "Payer {amount}",
         "pay_half": "Payer la moitié",
         "mark_settled": "Marquer comme réglé",
         "completed": "Terminé",
@@ -104,10 +104,10 @@
         "bill_type": "Type de facture",
         "title_label": "Titre",
         "title_placeholder": "ex. Netflix Famille",
-        "total_amount": "Montant total (MAD)",
+        "total_amount": "Montant total",
         "amount_placeholder": "0.00",
         "name_placeholder": "Nom",
-        "amount_mad_placeholder": "MAD",
+        "amount_mad_placeholder": "Montant",
         "description": "Description (optionnel)",
         "description_placeholder": "Abonnement mensuel",
         "due_date_label": "Date d'échéance",
@@ -121,7 +121,7 @@
         "monthly": "Mensuel",
         "yearly": "Annuel",
         "add_people": "Ajouter des personnes",
-        "each_pays": "Chaque personne paie : MAD {amount}",
+        "each_pays": "Chaque personne paie : {amount}",
         "creating": "Création en cours...",
         "create_split_submit": "Créer le partage",
         "add_people_title": "Ajouter des personnes",
@@ -207,7 +207,7 @@
         "deposit": "Déposer",
         "goal_reached": "Objectif atteint !",
         "available_to_unlock": "Disponible à débloquer",
-        "unlock_amount": "Débloquer MAD {amount}",
+        "unlock_amount": "D�bloquer {amount}",
         "unlocked_goals": "Objectifs débloqués",
         "funds_unlocked": "Fonds débloqués",
         "goal_name": "Nom de l'objectif",
@@ -222,12 +222,12 @@
         "auto_save_desc": "Le système allouera automatiquement des fonds mensuellement",
         "you_need_save": "Vous devez économiser",
         "per_month_label": "/mois",
-        "save_for_months": "pendant {months} mois pour atteindre MAD {amount}",
+        "save_for_months": "pendant {months} mois pour atteindre {amount}",
         "creating": "Création en cours...",
         "deposit_to_goal": "Déposer sur l'objectif",
         "amount": "Montant ($)",
         "unlock_funds": "Débloquer les fonds ?",
-        "unlock_description": "Vous avez atteint votre objectif ! Débloquez MAD {amount} vers votre balance principale.",
+        "unlock_description": "Vous avez atteint votre objectif ! D�bloquez {amount} vers votre balance principale.",
         "unlock_funds_btn": "Débloquer les fonds",
         "categories": {
             "car": "Voiture",
@@ -263,7 +263,7 @@
         "account_placeholder": "MA00...",
         "bank": "Banque (optionnel)",
         "bank_placeholder": "ex. Attijariwafa",
-        "amount": "Montant (MAD)",
+        "amount": "Montant",
         "amount_placeholder": "0.00",
         "quick_amounts": "Montants rapides",
         "note": "Note (optionnel)",
@@ -360,7 +360,9 @@
         "verify_btn": "Vérifier l'identité",
         "verifying": "Vérification...",
         "use_auth_link": "Utiliser le code d'authentification",
-        "use_recovery_link": "Utiliser un code de récupération"
+        "use_recovery_link": "Utiliser un code de récupération",
+        "recovery_placeholder": "Code de récupération",
+        "password_placeholder": "Clé d'accès"
     },
     "languages": {
         "english": "English",
@@ -383,7 +385,7 @@
         "rib_desc": "Utilisez ce RIB pour alimenter votre compte depuis n'importe quelle banque marocaine. Le traitement est quasi instantané via virement immédiat.",
         "deposit_agency_label": "Agence de dépôt",
         "agency_desc": "Visitez l'agence {agency} avec votre carte d'identité. Le montant sera crédité après validation de l'agent.",
-        "amount_label": "Montant du dépôt (MAD)",
+        "amount_label": "Montant du d�p�t",
         "amount_placeholder": "0.00",
         "continue": "Continuer",
         "balance_summary": "RÉSUMÉ DU SOLDE",
@@ -492,11 +494,6 @@
             "new_password_placeholder": "Nouveau mot de passe",
             "confirm_password_placeholder": "Confirmer le mot de passe"
         }
-    },
-    "auth": {
-        "code_placeholder": "Code à 6 chiffres",
-        "recovery_placeholder": "Code de récupération",
-        "password_placeholder": "Clé d'accès"
     },
     "taxes": {
         "search_placeholder": "Rechercher des documents..."

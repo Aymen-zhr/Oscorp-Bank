@@ -28,10 +28,11 @@ class NotificationService
 
     public function createDepositNotification(int $userId, float $amount, string $source): void
     {
+        $currency = config('oscorp.currency', 'MAD');
         $this->createFinancialNotification(
             userId: $userId,
             title: 'Deposit Confirmed',
-            message: number_format($amount, 2) . ' MAD deposited via ' . $source,
+            message: number_format($amount, 2) . ' ' . $currency . ' deposited via ' . $source,
             type: 'deposit',
             amount: $amount,
             icon: 'credit'
@@ -40,10 +41,11 @@ class NotificationService
 
     public function createWithdrawalNotification(int $userId, float $amount, string $source): void
     {
+        $currency = config('oscorp.currency', 'MAD');
         $this->createFinancialNotification(
             userId: $userId,
             title: 'Withdrawal Processed',
-            message: number_format($amount, 2) . ' MAD withdrawn via ' . $source,
+            message: number_format($amount, 2) . ' ' . $currency . ' withdrawn via ' . $source,
             type: 'withdrawal',
             amount: $amount,
             icon: 'debit'
@@ -52,10 +54,11 @@ class NotificationService
 
     public function createTransferNotification(int $userId, float $amount, string $recipient): void
     {
+        $currency = config('oscorp.currency', 'MAD');
         $this->createFinancialNotification(
             userId: $userId,
             title: 'Transfer Completed',
-            message: number_format($amount, 2) . ' MAD sent to ' . $recipient,
+            message: number_format($amount, 2) . ' ' . $currency . ' sent to ' . $recipient,
             type: 'transfer',
             amount: $amount,
             icon: 'debit'

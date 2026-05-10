@@ -30,7 +30,7 @@ class ReportsController extends Controller
         $monthlyAgg = [];
         foreach ($transactions as $tx) {
             $dt = Carbon::parse($tx->transacted_at);
-            $key = $dt->format('Y-m');
+            $key = $dt->format(config('oscorp.date_formats.year_month', 'Y-m'));
             if (!isset($monthlyAgg[$key])) {
                 $monthlyAgg[$key] = ['income' => 0, 'expenses' => 0, 'year' => $dt->year, 'month_num' => $dt->month, 'month' => $dt->format('M')];
             }
@@ -89,14 +89,17 @@ class ReportsController extends Controller
         foreach ($categoriesData as $cat) {
             $spendingCategories[] = [
                 'category' => $cat->category,
-                'amount' => 'MAD ' . number_format($cat->amount, 0),
+                'amount' => $cat->amount,
+                'formatted_amount' => number_format($cat->amount, 0) . ' ' . config('oscorp.currency', 'MAD'),
                 'percentage' => $totalExpenses > 0 ? round(($cat->amount / $totalExpenses) * 100) : 0,
             ];
         }
 
         // Stat calculations
         $netSavings = $stats['total_credits'] - $stats['total_debits'];
-        $netSavingsChange = $netSavings > 0 ? '+5.2%' : '-1.4%';
+        $netSavingsChange = $netSavings > 0
+            ? '+' . round(($netSavings / max(1, $stats['total_debits'])) * 100, 1) . '%'
+            : round(($netSavings / max(1, $stats['total_debits'])) * 100, 1) . '%';
 
         $reportCategories = [
             ['name' => 'Income Summary', 'type' => 'Income', 'period' => 'Monthly', 'status' => 'Ready', 'date' => date('Y-m-d'), 'icon' => 'TrendingUp', 'color' => '#34D399'],

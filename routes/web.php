@@ -1,21 +1,43 @@
 <?php
 
-use App\Http\Controllers\BillSplitController;
-use Illuminate\Support\Facades\Route;
-use Laravel\Fortify\Features;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AccountController;
-use App\Http\Controllers\GoalsController;
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\LoanController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\AIController;
 use App\Http\Controllers\AllocationsController;
+use App\Http\Controllers\Auth\OAuthController;
+use App\Http\Controllers\BillSplitController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GoalsController;
+use App\Http\Controllers\LoansController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ReceiveMoneyController;
+use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\SendMoneyController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SetupAccountController;
+use App\Http\Controllers\SubscriptionsController;
+use App\Http\Controllers\TaxesController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransferController;
-use App\Http\Controllers\SendMoneyController;
-use App\Http\Controllers\ReceiveMoneyController;
+use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\EnsureSetupComplete;
+use App\Http\Middleware\EnsureUser;
+use Illuminate\Support\Facades\Route;
+use Laravel\Fortify\Features;
 
 Route::inertia('/', 'home', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
+
+Route::prefix('auth')->group(function () {
+    Route::get('{provider}/redirect', [OAuthController::class, 'redirect'])->name('oauth.redirect');
+    Route::get('{provider}/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');

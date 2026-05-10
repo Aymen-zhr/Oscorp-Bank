@@ -1,38 +1,118 @@
 import { useState, useRef, useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    Send, Paperclip, BrainCircuit, Plus, Trash2, MessageSquare,
-    PieChart, TrendingUp, Target, BarChart3, Wallet, Activity,
-    X, Menu, ChevronRight
+import {
+    Send,
+    Paperclip,
+    BrainCircuit,
+    Plus,
+    Trash2,
+    MessageSquare,
+    PieChart,
+    TrendingUp,
+    Target,
+    BarChart3,
+    Wallet,
+    Activity,
+    X,
+    Menu,
+    ChevronRight,
 } from 'lucide-react';
-import { 
-    LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart as RePieChart, Pie, 
-    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend 
+import {
+    LineChart,
+    Line,
+    AreaChart,
+    Area,
+    BarChart,
+    Bar,
+    PieChart as RePieChart,
+    Pie,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    Cell,
+    Legend,
 } from 'recharts';
 import Sidebar from '@/components/dashboard/Sidebar';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useCurrency } from '@/hooks/useCurrency';
 import { STATUS_COLORS, ROUTES } from '@/constants';
 
-const CHART_COLORS = [STATUS_COLORS.gold, STATUS_COLORS.credit, '#6366F1', '#F59E0B', '#EC4899', '#8B5CF6'];
+const CHART_COLORS = [
+    STATUS_COLORS.gold,
+    STATUS_COLORS.credit,
+    '#6366F1',
+    '#F59E0B',
+    '#EC4899',
+    '#8B5CF6',
+];
 
 export default function AIChat({ auth }) {
     const userName = auth?.user?.name || 'User';
-    
+
     const quickActions = [
-        { id: 'spending', label: 'Spending Analysis', icon: PieChart, color: STATUS_COLORS.gold, prompt: 'Analyze my spending patterns and provide recommendations' },
-        { id: 'income', label: 'Income Overview', icon: TrendingUp, color: STATUS_COLORS.credit, prompt: 'Show me my income versus expenses breakdown' },
-        { id: 'budget', label: 'Budget Strategy', icon: Target, color: '#6366F1', prompt: 'Create an optimized monthly budget for my lifestyle' },
-        { id: 'forecast', label: 'Future Projection', icon: BarChart3, color: '#F59E0B', prompt: 'Forecast my financial trajectory for the coming months' },
-        { id: 'savings', label: 'Wealth Building', icon: Wallet, color: '#EC4899', prompt: 'Create a strategic savings plan for me' },
-        { id: 'investment', label: 'Investment Ideas', icon: Activity, color: '#8B5CF6', prompt: 'Suggest an investment strategy aligned with my profile' },
+        {
+            id: 'spending',
+            label: 'Spending Analysis',
+            icon: PieChart,
+            color: STATUS_COLORS.gold,
+            prompt: 'Analyze my spending patterns and provide recommendations',
+        },
+        {
+            id: 'income',
+            label: 'Income Overview',
+            icon: TrendingUp,
+            color: STATUS_COLORS.credit,
+            prompt: 'Show me my income versus expenses breakdown',
+        },
+        {
+            id: 'budget',
+            label: 'Budget Strategy',
+            icon: Target,
+            color: '#6366F1',
+            prompt: 'Create an optimized monthly budget for my lifestyle',
+        },
+        {
+            id: 'forecast',
+            label: 'Future Projection',
+            icon: BarChart3,
+            color: '#F59E0B',
+            prompt: 'Forecast my financial trajectory for the coming months',
+        },
+        {
+            id: 'savings',
+            label: 'Wealth Building',
+            icon: Wallet,
+            color: '#EC4899',
+            prompt: 'Create a strategic savings plan for me',
+        },
+        {
+            id: 'investment',
+            label: 'Investment Ideas',
+            icon: Activity,
+            color: '#8B5CF6',
+            prompt: 'Suggest an investment strategy aligned with my profile',
+        },
     ];
 
     const [chatHistory, setChatHistory] = useState([
-        { id: 1, title: 'Welcome to Oscar', timestamp: new Date(), messages: [] }
+        {
+            id: 1,
+            title: 'Welcome to Oscar',
+            timestamp: new Date(),
+            messages: [],
+        },
     ]);
     const [activeChatId, setActiveChatId] = useState(1);
     const [messages, setMessages] = useState([
-        { id: 'init', role: 'ai', text: 'Greetings, Executive. I am Oscar, your OSCORP financial intelligence. How may I serve your wealth today?', timestamp: new Date() }
+        {
+            id: 'init',
+            role: 'ai',
+            text: 'Greetings, Executive. I am Oscar, your OSCORP financial intelligence. How may I serve your wealth today?',
+            timestamp: new Date(),
+        },
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -48,11 +128,18 @@ export default function AIChat({ auth }) {
             id: Date.now(),
             title: 'New Conversation',
             timestamp: new Date(),
-            messages: []
+            messages: [],
         };
-        setChatHistory(prev => [newChat, ...prev]);
+        setChatHistory((prev) => [newChat, ...prev]);
         setActiveChatId(newChat.id);
-        setMessages([{ id: 'init', role: 'ai', text: 'Greetings, Executive. A fresh conversation awaits. What shall we discuss regarding your finances?', timestamp: new Date() }]);
+        setMessages([
+            {
+                id: 'init',
+                role: 'ai',
+                text: 'Greetings, Executive. A fresh conversation awaits. What shall we discuss regarding your finances?',
+                timestamp: new Date(),
+            },
+        ]);
     };
 
     const selectChat = (chat) => {
@@ -60,15 +147,22 @@ export default function AIChat({ auth }) {
         if (chat.messages.length > 0) {
             setMessages(chat.messages);
         } else {
-            setMessages([{ id: 'init', role: 'ai', text: 'Greetings, Executive. A fresh conversation awaits. What shall we discuss regarding your finances?', timestamp: new Date() }]);
+            setMessages([
+                {
+                    id: 'init',
+                    role: 'ai',
+                    text: 'Greetings, Executive. A fresh conversation awaits. What shall we discuss regarding your finances?',
+                    timestamp: new Date(),
+                },
+            ]);
         }
     };
 
     const deleteChat = (e, chatId) => {
         e.stopPropagation();
-        setChatHistory(prev => prev.filter(c => c.id !== chatId));
+        setChatHistory((prev) => prev.filter((c) => c.id !== chatId));
         if (activeChatId === chatId && chatHistory.length > 1) {
-            const remaining = chatHistory.filter(c => c.id !== chatId);
+            const remaining = chatHistory.filter((c) => c.id !== chatId);
             selectChat(remaining[0]);
         }
     };
@@ -80,41 +174,65 @@ export default function AIChat({ auth }) {
     const handleSend = async (messageText) => {
         if (!messageText?.trim() || isLoading) return;
 
-        const userMsg = { id: Date.now(), role: 'user', text: messageText, timestamp: new Date() };
+        const userMsg = {
+            id: Date.now(),
+            role: 'user',
+            text: messageText,
+            timestamp: new Date(),
+        };
         const updatedMessages = [...messages, userMsg];
         setMessages(updatedMessages);
         setInput('');
         setIsLoading(true);
 
         // Update chat title if first message
-        setChatHistory(prev => prev.map(chat => 
-            chat.id === activeChatId && chat.title === 'New Chat'
-                ? { ...chat, title: messageText.slice(0, 30) + (messageText.length > 30 ? '...' : ''), messages: updatedMessages }
-                : { ...chat, messages: updatedMessages }
-        ));
+        setChatHistory((prev) =>
+            prev.map((chat) =>
+                chat.id === activeChatId && chat.title === 'New Chat'
+                    ? {
+                          ...chat,
+                          title:
+                              messageText.slice(0, 30) +
+                              (messageText.length > 30 ? '...' : ''),
+                          messages: updatedMessages,
+                      }
+                    : { ...chat, messages: updatedMessages },
+            ),
+        );
 
         try {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content 
-                || document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=')[1];
-            
+            const csrfToken =
+                document.querySelector('meta[name="csrf-token"]')?.content ||
+                document.cookie
+                    .split('; ')
+                    .find((row) => row.startsWith('XSRF-TOKEN='))
+                    ?.split('=')[1];
+
             const response = await fetch(ROUTES.ai + '/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-XSRF-TOKEN': csrfToken ? decodeURIComponent(csrfToken) : ''
+                    Accept: 'application/json',
+                    'X-XSRF-TOKEN': csrfToken
+                        ? decodeURIComponent(csrfToken)
+                        : '',
                 },
-                body: JSON.stringify({ messages: updatedMessages })
+                body: JSON.stringify({ messages: updatedMessages }),
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ reply: 'Apologies — systems indicate an issue. (Please retry)' }));
-                setMessages(prev => [...prev, {
-                    id: Date.now(),
-                    role: 'ai',
-                    text: errorData.reply || `Error: ${response.status}`,
-                    timestamp: new Date()
-                }]);
+                const errorData = await response.json().catch(() => ({
+                    reply: 'Apologies — systems indicate an issue. (Please retry)',
+                }));
+                setMessages((prev) => [
+                    ...prev,
+                    {
+                        id: Date.now(),
+                        role: 'ai',
+                        text: errorData.reply || `Error: ${response.status}`,
+                        timestamp: new Date(),
+                    },
+                ]);
                 setIsLoading(false);
                 return;
             }
@@ -130,22 +248,29 @@ export default function AIChat({ auth }) {
                 chartTitle: data.chartTitle || 'Financial Overview',
                 chartData: data.chartData || null,
                 hasPlan: data.hasPlan || false,
-                planData: data.planData || null
+                planData: data.planData || null,
             };
-            
+
             const finalMessages = [...updatedMessages, aiMsg];
             setMessages(finalMessages);
-            
-            setChatHistory(prev => prev.map(chat => 
-                chat.id === activeChatId ? { ...chat, messages: finalMessages } : chat
-            ));
+
+            setChatHistory((prev) =>
+                prev.map((chat) =>
+                    chat.id === activeChatId
+                        ? { ...chat, messages: finalMessages }
+                        : chat,
+                ),
+            );
         } catch (error) {
-            setMessages(prev => [...prev, { 
-                id: Date.now(), 
-                role: 'ai', 
-                text: 'Apologies, Executive — a momentary systems hiccup. (Do retry your query)',
-                timestamp: new Date()
-            }]);
+            setMessages((prev) => [
+                ...prev,
+                {
+                    id: Date.now(),
+                    role: 'ai',
+                    text: 'Apologies, Executive — a momentary systems hiccup. (Do retry your query)',
+                    timestamp: new Date(),
+                },
+            ]);
         } finally {
             setIsLoading(false);
         }
@@ -159,26 +284,47 @@ export default function AIChat({ auth }) {
     };
 
     const formatTime = (date) => {
-        return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return new Date(date).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+        });
     };
 
     const renderChart = (chartType, chartData) => {
         if (!chartData) return null;
         const { labels, datasets } = chartData;
-        
+
         if (chartType === 'pie') {
             const pieData = labels.map((label, i) => ({
                 name: label,
                 value: datasets[0]?.data[i] || 0,
-                color: CHART_COLORS[i % CHART_COLORS.length]
+                color: CHART_COLORS[i % CHART_COLORS.length],
             }));
             return (
                 <ResponsiveContainer width="100%" height={260}>
                     <RePieChart>
-                        <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={90} paddingAngle={3} dataKey="value" labelLine={false}>
-                            {pieData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
+                        <Pie
+                            data={pieData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={50}
+                            outerRadius={90}
+                            paddingAngle={3}
+                            dataKey="value"
+                            labelLine={false}
+                        >
+                            {pieData.map((entry, index) => (
+                                <Cell key={index} fill={entry.color} />
+                            ))}
                         </Pie>
-                        <Tooltip contentStyle={{ background: '#0A0A0B', border: '1px solid #D4AF37/20', borderRadius: '8px' }} formatter={(v) => `${v.toLocaleString()} MAD`} />
+                        <Tooltip
+                            contentStyle={{
+                                background: '#0A0A0B',
+                                border: '1px solid #D4AF37/20',
+                                borderRadius: '8px',
+                            }}
+                            formatter={(v) => `${v?.toLocaleString()} ${code}`}
+                        />
                         <Legend />
                     </RePieChart>
                 </ResponsiveContainer>
@@ -188,7 +334,9 @@ export default function AIChat({ auth }) {
         if (chartType === 'area' || chartType === 'line') {
             const chartDataFormatted = labels.map((label, i) => {
                 const point = { name: label };
-                datasets.forEach(ds => { point[ds.name] = ds.data[i]; });
+                datasets.forEach((ds) => {
+                    point[ds.name] = ds.data[i];
+                });
                 return point;
             });
             const ChartComponent = chartType === 'area' ? AreaChart : LineChart;
@@ -197,24 +345,72 @@ export default function AIChat({ auth }) {
                     <ChartComponent data={chartDataFormatted}>
                         <defs>
                             {datasets.map((ds, i) => (
-                                <linearGradient key={i} id={`grad${i}`} x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={ds.color || CHART_COLORS[i]} stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor={ds.color || CHART_COLORS[i]} stopOpacity={0}/>
+                                <linearGradient
+                                    key={i}
+                                    id={`grad${i}`}
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1"
+                                >
+                                    <stop
+                                        offset="5%"
+                                        stopColor={ds.color || CHART_COLORS[i]}
+                                        stopOpacity={0.3}
+                                    />
+                                    <stop
+                                        offset="95%"
+                                        stopColor={ds.color || CHART_COLORS[i]}
+                                        stopOpacity={0}
+                                    />
                                 </linearGradient>
                             ))}
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                        <CartesianGrid
+                            strokeDasharray="3 3"
+                            stroke="#374151"
+                            opacity={0.3}
+                        />
                         <XAxis dataKey="name" stroke="#6B7280" fontSize={11} />
-                        <YAxis stroke="#6B7280" fontSize={11} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
-                        <Tooltip contentStyle={{ background: '#0A0A0B', border: '1px solid #D4AF37/20', borderRadius: '8px' }} formatter={(v) => `${v?.toLocaleString()} MAD`} />
+                        <YAxis
+                            stroke="#6B7280"
+                            fontSize={11}
+                            tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                        />
+                        <Tooltip
+                            contentStyle={{
+                                background: '#0A0A0B',
+                                border: '1px solid #D4AF37/20',
+                                borderRadius: '8px',
+                            }}
+                            formatter={(v) => `${v?.toLocaleString()} ${code}`}
+                        />
                         <Legend />
-                        {datasets.map((ds, i) => (
+                        {datasets.map((ds, i) =>
                             chartType === 'area' ? (
-                                <Area key={i} type="monotone" dataKey={ds.name} stroke={ds.color || CHART_COLORS[i]} fillOpacity={1} fill={`url(#grad${i})`} strokeWidth={2} />
+                                <Area
+                                    key={i}
+                                    type="monotone"
+                                    dataKey={ds.name}
+                                    stroke={ds.color || CHART_COLORS[i]}
+                                    fillOpacity={1}
+                                    fill={`url(#grad${i})`}
+                                    strokeWidth={2}
+                                />
                             ) : (
-                                <Line key={i} type="monotone" dataKey={ds.name} stroke={ds.color || CHART_COLORS[i]} strokeWidth={2} dot={{ fill: ds.color || CHART_COLORS[i], r: 4 }} />
-                            )
-                        ))}
+                                <Line
+                                    key={i}
+                                    type="monotone"
+                                    dataKey={ds.name}
+                                    stroke={ds.color || CHART_COLORS[i]}
+                                    strokeWidth={2}
+                                    dot={{
+                                        fill: ds.color || CHART_COLORS[i],
+                                        r: 4,
+                                    }}
+                                />
+                            ),
+                        )}
                     </ChartComponent>
                 </ResponsiveContainer>
             );
@@ -223,19 +419,41 @@ export default function AIChat({ auth }) {
         if (chartType === 'bar') {
             const chartDataFormatted = labels.map((label, i) => {
                 const point = { name: label };
-                datasets.forEach(ds => { point[ds.name] = ds.data[i]; });
+                datasets.forEach((ds) => {
+                    point[ds.name] = ds.data[i];
+                });
                 return point;
             });
             return (
                 <ResponsiveContainer width="100%" height={260}>
                     <BarChart data={chartDataFormatted}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                        <CartesianGrid
+                            strokeDasharray="3 3"
+                            stroke="#374151"
+                            opacity={0.3}
+                        />
                         <XAxis dataKey="name" stroke="#6B7280" fontSize={11} />
-                        <YAxis stroke="#6B7280" fontSize={11} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
-                        <Tooltip contentStyle={{ background: '#0A0A0B', border: '1px solid #D4AF37/20', borderRadius: '8px' }} formatter={(v) => `${v?.toLocaleString()} MAD`} />
+                        <YAxis
+                            stroke="#6B7280"
+                            fontSize={11}
+                            tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                        />
+                        <Tooltip
+                            contentStyle={{
+                                background: '#0A0A0B',
+                                border: '1px solid #D4AF37/20',
+                                borderRadius: '8px',
+                            }}
+                            formatter={(v) => `${v?.toLocaleString()} ${code}`}
+                        />
                         <Legend />
                         {datasets.map((ds, i) => (
-                            <Bar key={i} dataKey={ds.name} fill={ds.color || CHART_COLORS[i]} radius={[4, 4, 0, 0]} />
+                            <Bar
+                                key={i}
+                                dataKey={ds.name}
+                                fill={ds.color || CHART_COLORS[i]}
+                                radius={[4, 4, 0, 0]}
+                            />
                         ))}
                     </BarChart>
                 </ResponsiveContainer>
@@ -248,17 +466,29 @@ export default function AIChat({ auth }) {
         if (!planData) return null;
         return (
             <div className="mt-4 space-y-3">
-                <div className="flex items-center gap-2 pb-2 border-b border-[#D4AF37]/20">
-                    <Target className="w-4 h-4 text-[#D4AF37]" />
-                    <span className="text-[14px] font-semibold text-[#D4AF37]">{planData.title}</span>
+                <div className="flex items-center gap-2 border-b border-[#D4AF37]/20 pb-2">
+                    <Target className="h-4 w-4 text-[#D4AF37]" />
+                    <span className="text-[14px] font-semibold text-[#D4AF37]">
+                        {planData.title}
+                    </span>
                 </div>
 
                 {planData.summary && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
                         {Object.entries(planData.summary).map(([key, val]) => (
-                            <div key={key} className="bg-[#0A0A0B] rounded-lg p-2 border border-white/5">
-                                <div className="text-[9px] text-[#64748B] uppercase">{key.replace('_', ' ')}</div>
-                                <div className="text-[14px] font-bold text-[#F8FAFC]">{typeof val === 'number' ? val.toLocaleString() : val} MAD</div>
+                            <div
+                                key={key}
+                                className="rounded-lg border border-white/5 bg-[#0A0A0B] p-2"
+                            >
+                                <div className="text-[9px] text-[#64748B] uppercase">
+                                    {key.replace('_', ' ')}
+                                </div>
+                                <div className="text-[14px] font-bold text-[#F8FAFC]">
+                                    {typeof val === 'number'
+                                        ? val.toLocaleString()
+                                        : val}{' '}
+                                    {code}
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -267,12 +497,22 @@ export default function AIChat({ auth }) {
                 {planData.goals && (
                     <div className="space-y-2">
                         {planData.goals.map((goal, i) => (
-                            <div key={i} className="flex items-center justify-between bg-[#0A0A0B] rounded-lg p-2 border border-white/5">
+                            <div
+                                key={i}
+                                className="flex items-center justify-between rounded-lg border border-white/5 bg-[#0A0A0B] p-2"
+                            >
                                 <div className="flex items-center gap-2">
-                                    <div className="w-2 h-6 rounded-full" style={{ backgroundColor: goal.color }}></div>
-                                    <span className="text-[12px] text-[#CBD5E1]">{goal.category}</span>
+                                    <div
+                                        className="h-6 w-2 rounded-full"
+                                        style={{ backgroundColor: goal.color }}
+                                    ></div>
+                                    <span className="text-[12px] text-[#CBD5E1]">
+                                        {goal.category}
+                                    </span>
                                 </div>
-                                <span className="text-[12px] font-bold text-[#F8FAFC]">{goal.amount?.toLocaleString()} MAD</span>
+                                <span className="text-[12px] font-bold text-[#F8FAFC]">
+                                    {goal.amount?.toLocaleString()} {code}
+                                </span>
                             </div>
                         ))}
                     </div>
@@ -281,9 +521,19 @@ export default function AIChat({ auth }) {
                 {planData.allocation && (
                     <div className="flex gap-2">
                         {planData.allocation.map((alloc, i) => (
-                            <div key={i} className="flex-1 bg-[#0A0A0B] rounded-lg p-3 border border-white/5 text-center">
-                                <div className="text-[20px] font-bold" style={{ color: alloc.color }}>{alloc.percentage}%</div>
-                                <div className="text-[10px] text-[#94A3B8]">{alloc.asset}</div>
+                            <div
+                                key={i}
+                                className="flex-1 rounded-lg border border-white/5 bg-[#0A0A0B] p-3 text-center"
+                            >
+                                <div
+                                    className="text-[20px] font-bold"
+                                    style={{ color: alloc.color }}
+                                >
+                                    {alloc.percentage}%
+                                </div>
+                                <div className="text-[10px] text-[#94A3B8]">
+                                    {alloc.asset}
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -291,9 +541,15 @@ export default function AIChat({ auth }) {
 
                 {(planData.recommendations || planData.recommended_actions) && (
                     <div className="space-y-1">
-                        {(planData.recommendations || planData.recommended_actions).map((rec, i) => (
-                            <div key={i} className="flex items-start gap-2 text-[11px] text-[#CBD5E1]">
-                                <ChevronRight className="w-3 h-3 text-[#D4AF37] shrink-0 mt-0.5" />
+                        {(
+                            planData.recommendations ||
+                            planData.recommended_actions
+                        ).map((rec, i) => (
+                            <div
+                                key={i}
+                                className="flex items-start gap-2 text-[11px] text-[#CBD5E1]"
+                            >
+                                <ChevronRight className="mt-0.5 h-3 w-3 shrink-0 text-[#D4AF37]" />
                                 <span>{rec}</span>
                             </div>
                         ))}
@@ -303,9 +559,16 @@ export default function AIChat({ auth }) {
                 {planData.milestones && (
                     <div className="space-y-1">
                         {planData.milestones.map((m, i) => (
-                            <div key={i} className={`flex items-center justify-between p-2 rounded-lg border ${m.completed ? 'border-[#10B981]/30 bg-[#10B981]/5' : 'border-white/5 bg-[#0A0A0B]'}`}>
-                                <span className="text-[11px] text-[#CBD5E1]">{m.name}</span>
-                                <span className="text-[11px] font-bold text-[#F8FAFC]">{m.amount?.toLocaleString()} MAD</span>
+                            <div
+                                key={i}
+                                className={`flex items-center justify-between rounded-lg border p-2 ${m.completed ? 'border-[#10B981]/30 bg-[#10B981]/5' : 'border-white/5 bg-[#0A0A0B]'}`}
+                            >
+                                <span className="text-[11px] text-[#CBD5E1]">
+                                    {m.name}
+                                </span>
+                                <span className="text-[11px] font-bold text-[#F8FAFC]">
+                                    {m.amount?.toLocaleString()} ${code}
+                                </span>
                             </div>
                         ))}
                     </div>
@@ -315,31 +578,47 @@ export default function AIChat({ auth }) {
     };
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-[var(--color-bg-base)] text-[var(--color-text-main)] font-sans antialiased">
+        <div className="flex h-screen w-full overflow-hidden bg-[var(--color-bg-base)] font-sans text-[var(--color-text-main)] antialiased">
             <Head title="OSCORP AI | Intelligence System" />
             <Sidebar active="ai" />
 
-            <div className="flex-1 flex min-w-0">
+            <div className="flex min-w-0 flex-1">
                 {/* Chat History Sidebar */}
-                <div className={`${showHistory ? 'w-64' : 'w-0'} transition-all duration-300 bg-[var(--color-bg-card)] border-r border-[var(--color-border)] flex flex-col overflow-hidden`}>
-                    <div className="p-4 border-b border-[var(--color-border)]">
-                        <motion.button 
+                <div
+                    className={`${showHistory ? 'w-64' : 'w-0'} flex flex-col overflow-hidden border-r border-[var(--color-border)] bg-[var(--color-bg-card)] transition-all duration-300`}
+                >
+                    <div className="border-b border-[var(--color-border)] p-4">
+                        <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={createNewChat} 
-                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-[13px] hover:brightness-110 transition-all shadow-[0_0_15px_rgba(212,175,55,0.15)]" 
-                            style={{ background: 'var(--color-gold)', color: '#0A0A0B' }}
+                            onClick={createNewChat}
+                            className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-semibold shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all hover:brightness-110"
+                            style={{
+                                background: 'var(--color-gold)',
+                                color: '#0A0A0B',
+                            }}
                         >
-                            <Plus className="w-4 h-4" /> New Chat
+                            <Plus className="h-4 w-4" /> New Chat
                         </motion.button>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                        {chatHistory.map(chat => (
-                            <div key={chat.id} onClick={() => selectChat(chat)} className={`group flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition-colors ${activeChatId === chat.id ? 'bg-[var(--color-gold-bg)] border border-[var(--color-gold)]/20' : 'hover:bg-[var(--color-bg-elevated)] border border-transparent'}`}>
-                                <MessageSquare className={`w-4 h-4 shrink-0 ${activeChatId === chat.id ? 'text-[var(--color-gold)]' : 'text-[var(--color-text-muted)]'}`} />
-                                <span className="text-[12px] text-[var(--color-text-main)] truncate flex-1">{chat.title}</span>
-                                <button onClick={(e) => deleteChat(e, chat.id)} className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[var(--color-bg-base)] rounded transition-all">
-                                    <Trash2 className="w-3 h-3 text-[var(--color-text-muted)]" />
+                    <div className="flex-1 space-y-1 overflow-y-auto p-2">
+                        {chatHistory.map((chat) => (
+                            <div
+                                key={chat.id}
+                                onClick={() => selectChat(chat)}
+                                className={`group flex cursor-pointer items-center gap-2 rounded-lg p-2.5 transition-colors ${activeChatId === chat.id ? 'border border-[var(--color-gold)]/20 bg-[var(--color-gold-bg)]' : 'border border-transparent hover:bg-[var(--color-bg-elevated)]'}`}
+                            >
+                                <MessageSquare
+                                    className={`h-4 w-4 shrink-0 ${activeChatId === chat.id ? 'text-[var(--color-gold)]' : 'text-[var(--color-text-muted)]'}`}
+                                />
+                                <span className="flex-1 truncate text-[12px] text-[var(--color-text-main)]">
+                                    {chat.title}
+                                </span>
+                                <button
+                                    onClick={(e) => deleteChat(e, chat.id)}
+                                    className="rounded p-1 opacity-0 transition-all group-hover:opacity-100 hover:bg-[var(--color-bg-base)]"
+                                >
+                                    <Trash2 className="h-3 w-3 text-[var(--color-text-muted)]" />
                                 </button>
                             </div>
                         ))}
@@ -347,25 +626,43 @@ export default function AIChat({ auth }) {
                 </div>
 
                 {/* Main Chat Area */}
-                <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden bg-[var(--color-bg-base)]">
+                <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-[var(--color-bg-base)]">
                     {/* Background Ambient Glows (Stabilized) */}
-                    <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[var(--color-gold)] opacity-[0.03] rounded-full blur-[120px] pointer-events-none z-0" />
-                    <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-blue-500 opacity-[0.02] rounded-full blur-[100px] pointer-events-none z-0" />
+                    <div className="pointer-events-none fixed top-0 right-0 z-0 h-[500px] w-[500px] rounded-full bg-[var(--color-gold)] opacity-[0.03] blur-[120px]" />
+                    <div className="pointer-events-none fixed bottom-0 left-0 z-0 h-[400px] w-[400px] rounded-full bg-blue-500 opacity-[0.02] blur-[100px]" />
                     {/* Header */}
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-bg-card)]/50 backdrop-blur-sm">
+                    <div className="flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-bg-card)]/50 px-4 py-3 backdrop-blur-sm">
                         <div className="flex items-center gap-3">
-                            <button onClick={() => setShowHistory(!showHistory)} className="p-2 hover:bg-[var(--color-bg-elevated)] rounded-lg transition-colors">
-                                <Menu className="w-5 h-5 text-[var(--color-text-muted)]" />
+                            <button
+                                onClick={() => setShowHistory(!showHistory)}
+                                className="rounded-lg p-2 transition-colors hover:bg-[var(--color-bg-elevated)]"
+                            >
+                                <Menu className="h-5 w-5 text-[var(--color-text-muted)]" />
                             </button>
                             <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-lg p-[1px] shadow-[0_0_10px_var(--color-glow-primary)]" style={{ background: 'linear-gradient(to bottom right, var(--color-gold), transparent)' }}>
-                                    <div className="w-full h-full bg-[var(--color-bg-card)] rounded-md flex items-center justify-center">
-                                        <BrainCircuit className="w-4 h-4" style={{ color: 'var(--color-gold)' }} />
+                                <div
+                                    className="h-8 w-8 rounded-lg p-[1px] shadow-[0_0_10px_var(--color-glow-primary)]"
+                                    style={{
+                                        background:
+                                            'linear-gradient(to bottom right, var(--color-gold), transparent)',
+                                    }}
+                                >
+                                    <div className="flex h-full w-full items-center justify-center rounded-md bg-[var(--color-bg-card)]">
+                                        <BrainCircuit
+                                            className="h-4 w-4"
+                                            style={{
+                                                color: 'var(--color-gold)',
+                                            }}
+                                        />
                                     </div>
                                 </div>
                                 <div>
-                                    <div className="text-[14px] font-semibold text-[var(--color-text-main)]">Oscar</div>
-                                    <div className="text-[10px] text-[var(--color-text-muted)]">Financial Intelligence</div>
+                                    <div className="text-[14px] font-semibold text-[var(--color-text-main)]">
+                                        Oscar
+                                    </div>
+                                    <div className="text-[10px] text-[var(--color-text-muted)]">
+                                        Financial Intelligence
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -373,37 +670,84 @@ export default function AIChat({ auth }) {
 
                     {/* Messages */}
                     <div className="flex-1 overflow-y-auto px-4 py-4">
-                        <div className="max-w-3xl mx-auto space-y-4">
+                        <div className="mx-auto max-w-3xl space-y-4">
                             <AnimatePresence>
                                 {messages.map((msg) => (
-                                    <motion.div key={msg.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                                    <motion.div
+                                        key={msg.id}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                                    >
                                         {msg.role === 'ai' && (
-                                            <div className="w-8 h-8 rounded-lg p-[1px] shrink-0 mt-1 shadow-[0_0_10px_var(--color-glow-primary)]" style={{ background: 'linear-gradient(to bottom right, var(--color-gold), transparent)' }}>
-                                                <div className="w-full h-full bg-[var(--color-bg-card)] rounded-md flex items-center justify-center">
-                                                    <BrainCircuit className="w-4 h-4" style={{ color: 'var(--color-gold)' }} />
+                                            <div
+                                                className="mt-1 h-8 w-8 shrink-0 rounded-lg p-[1px] shadow-[0_0_10px_var(--color-glow-primary)]"
+                                                style={{
+                                                    background:
+                                                        'linear-gradient(to bottom right, var(--color-gold), transparent)',
+                                                }}
+                                            >
+                                                <div className="flex h-full w-full items-center justify-center rounded-md bg-[var(--color-bg-card)]">
+                                                    <BrainCircuit
+                                                        className="h-4 w-4"
+                                                        style={{
+                                                            color: 'var(--color-gold)',
+                                                        }}
+                                                    />
                                                 </div>
                                             </div>
                                         )}
-                                        <div className={`max-w-[75%] ${msg.role === 'user' ? 'text-right' : ''}`}>
-                                            <div className={`px-4 py-3 rounded-2xl text-[13px] leading-relaxed ${msg.role === 'user' ? 'bg-[var(--color-bg-elevated)] text-[var(--color-text-main)] rounded-tr-sm border border-[var(--color-border)]' : 'bg-[var(--color-bg-card)] text-[var(--color-text-main)] rounded-tl-sm border border-[var(--color-gold)]/10'}`}>
-                                                <div dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong class="text-[var(--color-gold)]">$1</strong>').replace(/\n/g, '<br/>') }} />
-                                                
-                                                {msg.hasChart && msg.chartData && (
-                                                    <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
-                                                        <div className="flex items-center gap-2 mb-3">
-                                                            <BarChart3 className="w-4 h-4 text-[var(--color-gold)]" />
-                                                            <span className="text-[12px] font-semibold text-[var(--color-gold)]">{msg.chartTitle}</span>
+                                        <div
+                                            className={`max-w-[75%] ${msg.role === 'user' ? 'text-right' : ''}`}
+                                        >
+                                            <div
+                                                className={`rounded-2xl px-4 py-3 text-[13px] leading-relaxed ${msg.role === 'user' ? 'rounded-tr-sm border border-[var(--color-border)] bg-[var(--color-bg-elevated)] text-[var(--color-text-main)]' : 'rounded-tl-sm border border-[var(--color-gold)]/10 bg-[var(--color-bg-card)] text-[var(--color-text-main)]'}`}
+                                            >
+                                                <div
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: msg.text
+                                                            .replace(
+                                                                /\*\*(.*?)\*\*/g,
+                                                                '<strong class="text-[var(--color-gold)]">$1</strong>',
+                                                            )
+                                                            .replace(
+                                                                /\n/g,
+                                                                '<br/>',
+                                                            ),
+                                                    }}
+                                                />
+
+                                                {msg.hasChart &&
+                                                    msg.chartData && (
+                                                        <div className="mt-4 border-t border-[var(--color-border)] pt-4">
+                                                            <div className="mb-3 flex items-center gap-2">
+                                                                <BarChart3 className="h-4 w-4 text-[var(--color-gold)]" />
+                                                                <span className="text-[12px] font-semibold text-[var(--color-gold)]">
+                                                                    {
+                                                                        msg.chartTitle
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                            {renderChart(
+                                                                msg.chartType,
+                                                                msg.chartData,
+                                                            )}
                                                         </div>
-                                                        {renderChart(msg.chartType, msg.chartData)}
-                                                    </div>
-                                                )}
-                                                {msg.hasPlan && msg.planData && renderPlan(msg.planData)}
+                                                    )}
+                                                {msg.hasPlan &&
+                                                    msg.planData &&
+                                                    renderPlan(msg.planData)}
                                             </div>
-                                            <div className="text-[10px] text-[var(--color-text-muted)] mt-1 px-1">{formatTime(msg.timestamp)}</div>
+                                            <div className="mt-1 px-1 text-[10px] text-[var(--color-text-muted)]">
+                                                {formatTime(msg.timestamp)}
+                                            </div>
                                         </div>
                                         {msg.role === 'user' && (
-                                            <div className="w-8 h-8 rounded-full overflow-hidden border border-[var(--color-gold)]/30 shrink-0">
-                                                <img src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${userName}&backgroundColor=${document.documentElement.classList.contains('dark') ? '111827' : 'F3F4F6'}`} alt="User" />
+                                            <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-[var(--color-gold)]/30">
+                                                <img
+                                                    src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${userName}&backgroundColor=${document.documentElement.classList.contains('dark') ? '111827' : 'F3F4F6'}`}
+                                                    alt="User"
+                                                />
                                             </div>
                                         )}
                                     </motion.div>
@@ -411,15 +755,45 @@ export default function AIChat({ auth }) {
                             </AnimatePresence>
 
                             {isLoading && (
-                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
-                                    <div className="w-8 h-8 rounded-lg p-[1px] shrink-0 shadow-[0_0_10px_var(--color-glow-primary)]" style={{ background: 'linear-gradient(to bottom right, var(--color-gold), transparent)' }}>
-                                        <div className="w-full h-full bg-[var(--color-bg-card)] rounded-md flex items-center justify-center">
-                                            <BrainCircuit className="w-4 h-4 animate-pulse" style={{ color: 'var(--color-gold)' }} />
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="flex gap-3"
+                                >
+                                    <div
+                                        className="h-8 w-8 shrink-0 rounded-lg p-[1px] shadow-[0_0_10px_var(--color-glow-primary)]"
+                                        style={{
+                                            background:
+                                                'linear-gradient(to bottom right, var(--color-gold), transparent)',
+                                        }}
+                                    >
+                                        <div className="flex h-full w-full items-center justify-center rounded-md bg-[var(--color-bg-card)]">
+                                            <BrainCircuit
+                                                className="h-4 w-4 animate-pulse"
+                                                style={{
+                                                    color: 'var(--color-gold)',
+                                                }}
+                                            />
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1 px-4 py-3 rounded-2xl rounded-tl-sm border" style={{ background: 'var(--color-bg-elevated)', borderColor: 'var(--color-gold-bg)' }}>
-                                        {[0, 150, 300].map(delay => (
-                                            <span key={delay} className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: 'var(--color-gold)', animationDelay: `${delay}ms` }}></span>
+                                    <div
+                                        className="flex items-center gap-1 rounded-2xl rounded-tl-sm border px-4 py-3"
+                                        style={{
+                                            background:
+                                                'var(--color-bg-elevated)',
+                                            borderColor: 'var(--color-gold-bg)',
+                                        }}
+                                    >
+                                        {[0, 150, 300].map((delay) => (
+                                            <span
+                                                key={delay}
+                                                className="h-1.5 w-1.5 animate-bounce rounded-full"
+                                                style={{
+                                                    background:
+                                                        'var(--color-gold)',
+                                                    animationDelay: `${delay}ms`,
+                                                }}
+                                            ></span>
                                         ))}
                                     </div>
                                 </motion.div>
@@ -430,22 +804,31 @@ export default function AIChat({ auth }) {
 
                     {/* Quick Actions */}
                     <div className="px-4 pb-2">
-                        <div className="max-w-3xl mx-auto">
-                            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+                        <div className="mx-auto max-w-3xl">
+                            <div className="scrollbar-none flex gap-2 overflow-x-auto pb-2">
                                 {quickActions.map((action, i) => (
-                                    <motion.button 
-                                        key={action.id} 
-                                        initial={{ opacity: 0, y: 10 }} 
-                                        animate={{ opacity: 1, y: 0 }} 
+                                    <motion.button
+                                        key={action.id}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: i * 0.05 }}
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
-                                        onClick={() => handleQuickAction(action)} 
-                                        disabled={isLoading} 
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-[11px] text-[var(--color-text-muted)] whitespace-nowrap disabled:opacity-50 hover:bg-[var(--color-bg-base)] hover:border-[var(--color-gold)]/30"
-                                        style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }}
+                                        onClick={() =>
+                                            handleQuickAction(action)
+                                        }
+                                        disabled={isLoading}
+                                        className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] whitespace-nowrap text-[var(--color-text-muted)] transition-all hover:border-[var(--color-gold)]/30 hover:bg-[var(--color-bg-base)] disabled:opacity-50"
+                                        style={{
+                                            background:
+                                                'var(--color-bg-elevated)',
+                                            border: '1px solid var(--color-border)',
+                                        }}
                                     >
-                                        <action.icon className="w-3.5 h-3.5" style={{ color: action.color }} />
+                                        <action.icon
+                                            className="h-3.5 w-3.5"
+                                            style={{ color: action.color }}
+                                        />
                                         {action.label}
                                     </motion.button>
                                 ))}
@@ -455,19 +838,47 @@ export default function AIChat({ auth }) {
 
                     {/* Input */}
                     <div className="px-4 pb-4">
-                        <div className="max-w-3xl mx-auto relative group">
-                            <div className="absolute -inset-0.5 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-500" style={{ background: 'linear-gradient(to right, transparent, var(--color-gold-bg), transparent)' }} />
-                            <div className="relative flex items-center bg-[var(--color-bg-card)] border rounded-2xl px-4 py-3 transition-all focus-within:border-[var(--color-gold)] shadow-xl" style={{ borderColor: 'var(--color-border)' }}>
-                                <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Ask anything about your finances..." className="flex-1 bg-transparent text-[14px] text-[var(--color-text-main)] placeholder-[var(--color-text-muted)] outline-none" disabled={isLoading} />
-                                <motion.button 
-                                    whileHover={!input.trim() || isLoading ? {} : { scale: 1.1 }}
-                                    whileTap={!input.trim() || isLoading ? {} : { scale: 0.9 }}
-                                    onClick={() => handleSend(input)} 
-                                    disabled={!input.trim() || isLoading} 
-                                    className="p-2 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:brightness-110 shadow-[0_0_10px_var(--color-glow-primary)]" 
-                                    style={{ background: 'var(--color-gold)', color: '#0A0A0B' }}
+                        <div className="group relative mx-auto max-w-3xl">
+                            <div
+                                className="absolute -inset-0.5 rounded-2xl opacity-0 blur transition duration-500 group-hover:opacity-100"
+                                style={{
+                                    background:
+                                        'linear-gradient(to right, transparent, var(--color-gold-bg), transparent)',
+                                }}
+                            />
+                            <div
+                                className="relative flex items-center rounded-2xl border bg-[var(--color-bg-card)] px-4 py-3 shadow-xl transition-all focus-within:border-[var(--color-gold)]"
+                                style={{ borderColor: 'var(--color-border)' }}
+                            >
+                                <input
+                                    type="text"
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    placeholder="Ask anything about your finances..."
+                                    className="flex-1 bg-transparent text-[14px] text-[var(--color-text-main)] placeholder-[var(--color-text-muted)] outline-none"
+                                    disabled={isLoading}
+                                />
+                                <motion.button
+                                    whileHover={
+                                        !input.trim() || isLoading
+                                            ? {}
+                                            : { scale: 1.1 }
+                                    }
+                                    whileTap={
+                                        !input.trim() || isLoading
+                                            ? {}
+                                            : { scale: 0.9 }
+                                    }
+                                    onClick={() => handleSend(input)}
+                                    disabled={!input.trim() || isLoading}
+                                    className="rounded-xl p-2 shadow-[0_0_10px_var(--color-glow-primary)] transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-30"
+                                    style={{
+                                        background: 'var(--color-gold)',
+                                        color: '#0A0A0B',
+                                    }}
                                 >
-                                    <Send className="w-4 h-4" />
+                                    <Send className="h-4 w-4" />
                                 </motion.button>
                             </div>
                         </div>

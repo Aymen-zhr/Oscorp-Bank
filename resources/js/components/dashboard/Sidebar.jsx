@@ -28,6 +28,7 @@ import {
     PieChart,
     Users,
     ShieldCheck,
+    Shield,
 } from 'lucide-react';
 
 const now = new Date();
@@ -66,10 +67,21 @@ const bottomItems = [
     { icon: HelpCircle, label: 'common.help_support', href: '#' },
 ];
 
-function SidebarContent({ 
-    user, userName, isDark, toggleTheme, setIsOpen, 
-    hoveredItem, setHoveredItem, userCardHover, setUserCardHover, 
-    activeItem, activeBottomItem, dateStr, t
+function SidebarContent({
+    user,
+    userName,
+    isDark,
+    toggleTheme,
+    setIsOpen,
+    hoveredItem,
+    setHoveredItem,
+    userCardHover,
+    setUserCardHover,
+    activeItem,
+    activeBottomItem,
+    dateStr,
+    t,
+    currentUrl,
 }) {
     const sidebarNavRef = useRef(null);
 
@@ -91,29 +103,57 @@ function SidebarContent({
                     <motion.div
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="flex h-10 w-10 items-center justify-center rounded-xl shadow-lg cursor-pointer relative group overflow-hidden"
+                        className="group relative flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-xl shadow-lg"
                         style={{
                             background: 'var(--color-bg-elevated)',
                             border: '1px solid var(--color-border)',
                             boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                         }}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-gold)]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M50 10L15 32V68L50 90L85 68V32L50 10Z" stroke="url(#goldGradSidebar)" strokeWidth="6" strokeLinejoin="round"/>
-                            <path d="M50 30L35 39V61L50 70L65 61V39L50 30Z" fill="url(#goldGradSidebar)" fillOpacity="0.2" stroke="url(#goldGradSidebar)" strokeWidth="2"/>
+                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-gold)]/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                        <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 100 100"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                d="M50 10L15 32V68L50 90L85 68V32L50 10Z"
+                                stroke="url(#goldGradSidebar)"
+                                strokeWidth="6"
+                                strokeLinejoin="round"
+                            />
+                            <path
+                                d="M50 30L35 39V61L50 70L65 61V39L50 30Z"
+                                fill="url(#goldGradSidebar)"
+                                fillOpacity="0.2"
+                                stroke="url(#goldGradSidebar)"
+                                strokeWidth="2"
+                            />
                             <defs>
-                                <linearGradient id="goldGradSidebar" x1="15" y1="10" x2="85" y2="90" gradientUnits="userSpaceOnUse">
-                                    <stop stopColor="#D4AF37"/>
-                                    <stop offset="0.5" stopColor="#FFD700"/>
-                                    <stop offset="1" stopColor="#B8860B"/>
+                                <linearGradient
+                                    id="goldGradSidebar"
+                                    x1="15"
+                                    y1="10"
+                                    x2="85"
+                                    y2="90"
+                                    gradientUnits="userSpaceOnUse"
+                                >
+                                    <stop stopColor="#D4AF37" />
+                                    <stop offset="0.5" stopColor="#FFD700" />
+                                    <stop offset="1" stopColor="#B8860B" />
                                 </linearGradient>
                             </defs>
                         </svg>
                     </motion.div>
                     <div>
-                        <span className="text-[18px] font-bold tracking-wide text-[var(--color-text-main)]">{t('common.oscorp')}</span>
-                        <div className="text-[9px] font-semibold tracking-[0.2em] text-[var(--color-gold)] uppercase">{t('common.private_bank')}</div>
+                        <span className="text-[18px] font-bold tracking-wide text-[var(--color-text-main)]">
+                            {t('common.oscorp')}
+                        </span>
+                        <div className="text-[9px] font-semibold tracking-[0.2em] text-[var(--color-gold)] uppercase">
+                            {t('common.private_bank')}
+                        </div>
                     </div>
                 </div>
                 <motion.button
@@ -127,9 +167,10 @@ function SidebarContent({
 
             <Link href="/account">
                 <motion.div
-                    className="mx-4 mb-4 rounded-2xl p-4 backdrop-blur-sm cursor-pointer relative overflow-hidden"
+                    className="relative mx-4 mb-4 cursor-pointer overflow-hidden rounded-2xl p-4 backdrop-blur-sm"
                     style={{
-                        background: 'linear-gradient(135deg, var(--color-bg-card), var(--color-bg-elevated))',
+                        background:
+                            'linear-gradient(135deg, var(--color-bg-card), var(--color-bg-elevated))',
                         border: '1px solid var(--color-border)',
                     }}
                     onHoverStart={() => setUserCardHover(true)}
@@ -137,35 +178,64 @@ function SidebarContent({
                     whileHover={{ scale: 1.01 }}
                 >
                     <motion.div
-                        className="absolute inset-0 pointer-events-none"
+                        className="pointer-events-none absolute inset-0"
                         animate={{ opacity: userCardHover ? 0.1 : 0 }}
-                        style={{ background: 'radial-gradient(circle at 30% 30%, var(--color-gold), transparent 60%)' }}
+                        style={{
+                            background:
+                                'radial-gradient(circle at 30% 30%, var(--color-gold), transparent 60%)',
+                        }}
                     />
-                    <div className="mb-3 flex items-center justify-between relative z-10">
-                        <motion.div
-                            whileHover={{ scale: 1.1 }}
-                        >
-                            <UserAvatar 
-                                user={user} 
-                                size="h-12 w-12" 
-                                isDark={isDark} 
+                    <div className="relative z-10 mb-3 flex items-center justify-between">
+                        <motion.div whileHover={{ scale: 1.1 }}>
+                            <UserAvatar
+                                user={user}
+                                size="h-12 w-12"
+                                isDark={isDark}
                             />
                         </motion.div>
 
-                        <div className="flex items-center rounded-full p-1" style={{ background: 'var(--color-bg-base)', border: '1px solid var(--color-border)' }}>
+                        <div
+                            className="flex items-center rounded-full p-1"
+                            style={{
+                                background: 'var(--color-bg-base)',
+                                border: '1px solid var(--color-border)',
+                            }}
+                        >
                             <motion.button
-                                onClick={(e) => { e.preventDefault(); toggleTheme(e); }}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    toggleTheme(e);
+                                }}
                                 className="rounded-full p-2 transition-all"
-                                style={isDark ? { background: 'var(--color-gold-bg)', color: 'var(--color-gold)' } : {}}
+                                style={
+                                    isDark
+                                        ? {
+                                              backgroundColor:
+                                                  'var(--color-gold-bg)',
+                                              color: 'var(--color-gold)',
+                                          }
+                                        : {}
+                                }
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                             >
                                 <Moon className="h-4 w-4" />
                             </motion.button>
                             <motion.button
-                                onClick={(e) => { e.preventDefault(); toggleTheme(e); }}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    toggleTheme(e);
+                                }}
                                 className="rounded-full p-2 transition-all"
-                                style={!isDark ? { background: 'var(--color-gold-bg)', color: 'var(--color-gold)' } : {}}
+                                style={
+                                    !isDark
+                                        ? {
+                                              backgroundColor:
+                                                  'var(--color-gold-bg)',
+                                              color: 'var(--color-gold)',
+                                          }
+                                        : {}
+                                }
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                             >
@@ -174,15 +244,19 @@ function SidebarContent({
                         </div>
                     </div>
 
-                    <div className="mb-1 text-[10px] font-semibold tracking-[2px] text-[var(--color-text-muted)] uppercase relative z-10">{dateStr}</div>
-                    <div className="text-[16px] leading-tight font-bold text-[var(--color-text-main)] relative z-10">
+                    <div className="relative z-10 mb-1 text-[10px] font-semibold tracking-[2px] text-[var(--color-text-muted)] uppercase">
+                        {dateStr}
+                    </div>
+                    <div className="relative z-10 text-[16px] leading-tight font-bold text-[var(--color-text-main)]">
                         {t('common.welcome_back')},<br />
-                        <span style={{ color: 'var(--color-gold)' }}>{userName}</span>
+                        <span style={{ color: 'var(--color-gold)' }}>
+                            {userName}
+                        </span>
                     </div>
                 </motion.div>
             </Link>
 
-            <nav 
+            <nav
                 ref={sidebarNavRef}
                 onScroll={handleSidebarScroll}
                 className="custom-scrollbar flex-1 space-y-1 overflow-y-auto px-3"
@@ -199,9 +273,19 @@ function SidebarContent({
                             onMouseEnter={() => setHoveredItem(index)}
                             onMouseLeave={() => setHoveredItem(null)}
                             className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-all ${
-                                isActive ? 'text-[var(--color-text-main)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                                isActive
+                                    ? 'text-[var(--color-text-main)]'
+                                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
                             }`}
-                            style={isActive ? { background: 'var(--color-gold-bg)', color: 'var(--color-gold)' } : {}}
+                            style={
+                                isActive
+                                    ? {
+                                          backgroundColor:
+                                              'var(--color-gold-bg)',
+                                          color: 'var(--color-gold)',
+                                      }
+                                    : {}
+                            }
                         >
                             {isActive && (
                                 <motion.div
@@ -212,8 +296,15 @@ function SidebarContent({
                             )}
                             <motion.div
                                 animate={{
-                                    scale: hoveredItem === index || isActive ? 1.15 : 1,
-                                    color: isActive ? 'var(--color-gold)' : hoveredItem === index ? 'var(--color-text-main)' : 'var(--color-text-muted)',
+                                    scale:
+                                        hoveredItem === index || isActive
+                                            ? 1.15
+                                            : 1,
+                                    color: isActive
+                                        ? 'var(--color-gold)'
+                                        : hoveredItem === index
+                                          ? 'var(--color-text-main)'
+                                          : 'var(--color-text-muted)',
                                 }}
                                 transition={{ duration: 0.2 }}
                             >
@@ -224,23 +315,54 @@ function SidebarContent({
                     );
                 })}
 
-                <div className="mt-6 mb-2 px-3 text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)] uppercase">{t('common.support')}</div>
+                {user?.role === 'admin' && (
+                    <>
+                        <div className="mt-6 mb-2 px-3 text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)] uppercase">
+                            Administration
+                        </div>
+                        <motion.div whileHover={{ x: 4 }}>
+                            <Link
+                                href="/admin"
+                                preserveScroll
+                                onClick={() => setIsOpen(false)}
+                                className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-all ${
+                                    currentUrl.startsWith('/admin')
+                                        ? 'bg-[var(--color-gold-bg)] text-[var(--color-gold)]'
+                                        : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                                }`}
+                            >
+                                <Shield
+                                    className={`h-5 w-5 transition-transform ${currentUrl.startsWith('/admin') ? 'scale-110' : 'group-hover:scale-110'}`}
+                                />
+                                Admin Panel
+                            </Link>
+                        </motion.div>
+                    </>
+                )}
+
+                <div className="mt-6 mb-2 px-3 text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)] uppercase">
+                    {t('common.support')}
+                </div>
                 {bottomItems.map((item, index) => {
                     const isActive = index === activeBottomItem;
                     return (
-                        <Link
-                            key={index}
-                            href={item.href}
-                            preserveScroll
-                            onClick={() => setIsOpen(false)}
-                            className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-all ${
-                                isActive ? 'text-[var(--color-gold)] bg-[var(--color-gold-bg)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
-                            }`}
-                            whileHover={{ x: 4 }}
-                        >
-                            <item.icon className={`h-5 w-5 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
-                            {t(item.label)}
-                        </Link>
+                        <motion.div key={index} whileHover={{ x: 4 }}>
+                            <Link
+                                href={item.href}
+                                preserveScroll
+                                onClick={() => setIsOpen(false)}
+                                className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-all ${
+                                    isActive
+                                        ? 'bg-[var(--color-gold-bg)] text-[var(--color-gold)]'
+                                        : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                                }`}
+                            >
+                                <item.icon
+                                    className={`h-5 w-5 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}
+                                />
+                                {t(item.label)}
+                            </Link>
+                        </motion.div>
                     );
                 })}
 
@@ -281,50 +403,86 @@ export default function Sidebar({ active }) {
 
     const activeItem = useMemo(() => {
         if (active) {
-            const index = navItems.findIndex(item => item.label.includes(active) || item.href.includes(active));
+            const index = navItems.findIndex(
+                (item) =>
+                    item.label.includes(active) || item.href.includes(active),
+            );
             if (index !== -1) return index;
         }
-        
+
         // Find all matches
         const matches = navItems
             .map((item, index) => ({ item, index }))
-            .filter(({ item }) => item.href !== '#' && (currentUrl === item.href || currentUrl.startsWith(item.href + '/')));
-            
+            .filter(
+                ({ item }) =>
+                    item.href !== '#' &&
+                    (currentUrl === item.href ||
+                        currentUrl.startsWith(item.href + '/')),
+            );
+
         // If no matches with slash, try exact or startsWith for root-level
         if (matches.length === 0) {
-            return navItems.findIndex(item => item.href !== '#' && currentUrl === item.href);
+            return navItems.findIndex(
+                (item) => item.href !== '#' && currentUrl === item.href,
+            );
         }
 
         // Return the most specific match (longest href)
-        return matches.reduce((prev, curr) => 
-            curr.item.href.length > prev.item.href.length ? curr : prev
+        return matches.reduce((prev, curr) =>
+            curr.item.href.length > prev.item.href.length ? curr : prev,
         ).index;
     }, [currentUrl, active]);
 
     const activeBottomItem = useMemo(() => {
         if (active) {
-            const index = bottomItems.findIndex(item => item.label.includes(active) || item.href.includes(active));
+            const index = bottomItems.findIndex(
+                (item) =>
+                    item.label.includes(active) || item.href.includes(active),
+            );
             if (index !== -1) return index;
         }
-        return bottomItems.findIndex((item) =>
-            item.href !== '#' && (currentUrl === item.href || currentUrl.startsWith(item.href + '/'))
+        return bottomItems.findIndex(
+            (item) =>
+                item.href !== '#' &&
+                (currentUrl === item.href ||
+                    currentUrl.startsWith(item.href + '/')),
         );
     }, [currentUrl, active]);
 
     const commonProps = {
-        user, userName, isDark, toggleTheme, setIsOpen,
-        hoveredItem, setHoveredItem, userCardHover, setUserCardHover,
-        activeItem, activeBottomItem, dateStr, t
+        user,
+        userName,
+        isDark,
+        toggleTheme,
+        setIsOpen,
+        hoveredItem,
+        setHoveredItem,
+        userCardHover,
+        setUserCardHover,
+        activeItem,
+        activeBottomItem,
+        dateStr,
+        t,
+        currentUrl,
     };
 
     return (
         <>
             <aside
                 className="relative hidden h-full w-[280px] min-w-[280px] flex-col border-r md:flex"
-                style={{ background: 'var(--color-bg-base)', borderColor: 'var(--color-border)' }}
+                style={{
+                    background: 'var(--color-bg-base)',
+                    borderColor: 'var(--color-border)',
+                }}
             >
                 <div className="pointer-events-none absolute inset-0">
-                    <div className="absolute top-0 left-0 h-[400px] w-full opacity-[0.03]" style={{ background: 'radial-gradient(ellipse at 20% 0%, var(--color-gold), transparent 60%)' }} />
+                    <div
+                        className="absolute top-0 left-0 h-[400px] w-full opacity-[0.03]"
+                        style={{
+                            background:
+                                'radial-gradient(ellipse at 20% 0%, var(--color-gold), transparent 60%)',
+                        }}
+                    />
                 </div>
                 <SidebarContent {...commonProps} />
             </aside>
@@ -343,9 +501,16 @@ export default function Sidebar({ active }) {
                             initial={{ x: -280 }}
                             animate={{ x: 0 }}
                             exit={{ x: -280 }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            transition={{
+                                type: 'spring',
+                                damping: 25,
+                                stiffness: 200,
+                            }}
                             className="fixed inset-y-0 left-0 z-[101] flex w-[280px] flex-col md:hidden"
-                            style={{ background: 'var(--color-bg-base)', borderRight: '1px solid var(--color-border)' }}
+                            style={{
+                                background: 'var(--color-bg-base)',
+                                borderRight: '1px solid var(--color-border)',
+                            }}
                         >
                             <SidebarContent {...commonProps} />
                         </motion.aside>

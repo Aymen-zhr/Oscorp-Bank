@@ -44,9 +44,12 @@ return [
     |--------------------------------------------------------------------------
     */
     'offers' => [
-        ['type' => 'Personal Loan', 'max_amount' => env('LOAN_PERSONAL_MAX', 500000), 'rate' => env('LOAN_PERSONAL_RATE', 5.5), 'term' => '1-5 years', 'featured' => false, 'icon' => 'User', 'pre_approved' => true],
-        ['type' => 'Business Loan', 'max_amount' => env('LOAN_BUSINESS_MAX', 2000000), 'rate' => env('LOAN_BUSINESS_RATE', 4.8), 'term' => '1-10 years', 'featured' => true, 'icon' => 'Briefcase', 'pre_approved' => false],
-        ['type' => 'Education Loan', 'max_amount' => env('LOAN_EDUCATION_MAX', 300000), 'rate' => env('LOAN_EDUCATION_RATE', 3.2), 'term' => '1-7 years', 'featured' => false, 'icon' => 'GraduationCap', 'pre_approved' => true],
+        ['type' => 'Personal Loan', 'max_amount' => env('LOAN_PERSONAL_MAX', 500000), 'rate' => env('LOAN_PERSONAL_RATE', 6.5), 'term' => '1-5 years', 'featured' => true, 'icon' => 'User', 'pre_approved' => true],
+        ['type' => 'Home Mortgage', 'max_amount' => env('LOAN_MORTGAGE_MAX', 5000000), 'rate' => env('LOAN_MORTGAGE_RATE', 4.2), 'term' => '15-30 years', 'featured' => true, 'icon' => 'Home', 'pre_approved' => false],
+        ['type' => 'Auto Loan', 'max_amount' => env('LOAN_AUTO_MAX', 800000), 'rate' => env('LOAN_AUTO_RATE', 5.8), 'term' => '1-7 years', 'featured' => true, 'icon' => 'Car', 'pre_approved' => true],
+        ['type' => 'Education Loan', 'max_amount' => env('LOAN_EDUCATION_MAX', 300000), 'rate' => env('LOAN_EDUCATION_RATE', 3.5), 'term' => '1-7 years', 'featured' => false, 'icon' => 'GraduationCap', 'pre_approved' => true],
+        ['type' => 'Business Loan', 'max_amount' => env('LOAN_BUSINESS_MAX', 2000000), 'rate' => env('LOAN_BUSINESS_RATE', 5.2), 'term' => '1-10 years', 'featured' => false, 'icon' => 'Briefcase', 'pre_approved' => false],
+        ['type' => 'Investment Loan', 'max_amount' => env('LOAN_INVESTMENT_MAX', 1000000), 'rate' => env('LOAN_INVESTMENT_RATE', 7.2), 'term' => '1-10 years', 'featured' => false, 'icon' => 'Landmark', 'pre_approved' => false],
     ],
 
     /*
@@ -63,3 +66,4 @@ return [
     */
     'amortization_months' => env('LOAN_AMORTIZATION_MONTHS', 12),
 ];
+

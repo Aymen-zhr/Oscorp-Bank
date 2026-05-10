@@ -1,4 +1,4 @@
-{
+﻿{
     "common": {
         "dashboard": "لوحة التحكم",
         "account": "الحساب",
@@ -77,7 +77,7 @@
         "pending_approval": "بانتظار الموافقة",
         "awaiting_approval_badge": "بانتظار الموافقة",
         "accepted_count": "{accepted}/{total} مقبول",
-        "your_share": "حصتك: MAD {amount}",
+        "your_share": "????: {amount}",
         "accept": "قبول",
         "decline": "رفض",
         "active_splits": "التقسيمات النشطة",
@@ -91,9 +91,9 @@
         "participants": "المشاركون ({count})",
         "you_label": "(أنت)",
         "paid": "مدفوع",
-        "partial_paid": "جزئي: MAD {amount}",
+        "partial_paid": "????: {amount}",
         "pending_status": "قيد الانتظار",
-        "pay_amount": "ادفع MAD {amount}",
+        "pay_amount": "???? {amount}",
         "pay_half": "ادفع النصف",
         "mark_settled": "تحديد كمُسوّى",
         "completed": "مكتمل",
@@ -104,10 +104,10 @@
         "bill_type": "نوع الفاتورة",
         "title_label": "العنوان",
         "title_placeholder": "مثال: Netflix عائلي",
-        "total_amount": "المبلغ الإجمالي (MAD)",
+        "total_amount": "?????? ????????",
         "amount_placeholder": "0.00",
         "name_placeholder": "الاسم",
-        "amount_mad_placeholder": "MAD",
+        "amount_mad_placeholder": "??????",
         "description": "الوصف (اختياري)",
         "description_placeholder": "اشتراك شهري",
         "due_date_label": "تاريخ الاستحقاق",
@@ -121,7 +121,7 @@
         "monthly": "شهري",
         "yearly": "سنوي",
         "add_people": "إضافة أشخاص",
-        "each_pays": "كل شخص يدفع: MAD {amount}",
+        "each_pays": "?? ??? ????: {amount}",
         "creating": "جار الإنشاء...",
         "create_split_submit": "إنشاء التقسيم",
         "add_people_title": "إضافة أشخاص",
@@ -207,7 +207,7 @@
         "deposit": "إيداع",
         "goal_reached": "تم تحقيق الهدف!",
         "available_to_unlock": "متاح للفتح",
-        "unlock_amount": "فتح MAD {amount}",
+        "unlock_amount": "??? {amount}",
         "unlocked_goals": "الأهداف المفتوحة",
         "funds_unlocked": "الأموال مفتوحة",
         "goal_name": "اسم الهدف",
@@ -222,12 +222,12 @@
         "auto_save_desc": "سيقوم النظام بتخصيص الأموال تلقائياً شهرياً",
         "you_need_save": "تحتاج إلى توفير",
         "per_month_label": "/شهرياً",
-        "save_for_months": "لمدة {months} أشهر للوصول إلى MAD {amount}",
+        "save_for_months": "???? {months} ???? ?????? ??? {amount}",
         "creating": "جار الإنشاء...",
         "deposit_to_goal": "إيداع في الهدف",
         "amount": "المبلغ ($)",
         "unlock_funds": "فتح الأموال؟",
-        "unlock_description": "لقد حققت هدفك! افتح MAD {amount} إلى رصيدك الرئيسي.",
+        "unlock_description": "??? ???? ????! ???? {amount} ??? ????? ???????.",
         "unlock_funds_btn": "فتح الأموال",
         "categories": {
             "car": "سيارة",
@@ -263,7 +263,7 @@
         "account_placeholder": "MA00...",
         "bank": "البنك (اختياري)",
         "bank_placeholder": "مثال: التجاري وفا",
-        "amount": "المبلغ (MAD)",
+        "amount": "??????",
         "amount_placeholder": "0.00",
         "quick_amounts": "مبالغ سريعة",
         "note": "ملاحظة (اختياري)",
@@ -360,7 +360,9 @@
         "verify_btn": "تحقق من الهوية",
         "verifying": "جار التحقق...",
         "use_auth_link": "استخدم رمز المصادقة",
-        "use_recovery_link": "استخدم رمز الاستعادة"
+        "use_recovery_link": "استخدم رمز الاستعادة",
+        "recovery_placeholder": "رمز الاستعادة",
+        "password_placeholder": "كلمة المرور"
     },
     "languages": {
         "english": "English",
@@ -383,7 +385,7 @@
         "rib_desc": "استخدم هذا الرقم لإيداع الأموال من أي بنك مغربي. المعالجة فورية عبر التحويل الفوري.",
         "deposit_agency_label": "وكالة الإيداع",
         "agency_desc": "توجه إلى وكالة {agency} مع بطاقة الهوية. سيتم إضافة المبلغ بعد تأكيد الوكيل.",
-        "amount_label": "مبلغ الإيداع (MAD)",
+        "amount_label": "???? ???????",
         "amount_placeholder": "0.00",
         "continue": "متابعة",
         "balance_summary": "ملخص الرصيد",
@@ -492,11 +494,6 @@
             "new_password_placeholder": "كلمة المرور الجديدة",
             "confirm_password_placeholder": "تأكيد كلمة المرور"
         }
-    },
-    "auth": {
-        "code_placeholder": "رمز من 6 أرقام",
-        "recovery_placeholder": "رمز الاستعادة",
-        "password_placeholder": "كلمة المرور"
     },
     "taxes": {
         "search_placeholder": "بحث في المستندات..."

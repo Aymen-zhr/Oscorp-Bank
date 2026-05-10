@@ -62,48 +62,48 @@
 }
 
 :root {
-    --background: #FFFFFF;
+    --background: #ffffff;
     --foreground: #000000;
-    --card: #FAFAFA;
+    --card: #fafafa;
     --card-foreground: #000000;
-    --popover: #FFFFFF;
+    --popover: #ffffff;
     --popover-foreground: #000000;
-    --primary: #D4AF37;
+    --primary: #d4af37;
     --primary-foreground: #000000;
-    --secondary: #F0F0F0;
+    --secondary: #f0f0f0;
     --secondary-foreground: #000000;
-    --muted: #F0F0F0;
+    --muted: #f0f0f0;
     --muted-foreground: #888888;
-    --accent: #F7E7CE;
+    --accent: #f7e7ce;
     --accent-foreground: #000000;
-    --destructive: #EF4444;
-    --destructive-foreground: #FFFFFF;
-    --border: #E5E5E5;
-    --input: #E5E5E5;
-    --ring: #D4AF37;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #e5e5e5;
+    --input: #e5e5e5;
+    --ring: #d4af37;
     --radius: 1rem;
 }
- 
+
 .dark {
     --background: #000000;
-    --foreground: #FFFFFF;
-    --card: #0A0A0A;
-    --card-foreground: #FFFFFF;
-    --popover: #0A0A0A;
-    --popover-foreground: #FFFFFF;
-    --primary: #D4AF37;
+    --foreground: #ffffff;
+    --card: #0a0a0a;
+    --card-foreground: #ffffff;
+    --popover: #0a0a0a;
+    --popover-foreground: #ffffff;
+    --primary: #d4af37;
     --primary-foreground: #000000;
     --secondary: #141414;
-    --secondary-foreground: #FFFFFF;
+    --secondary-foreground: #ffffff;
     --muted: #141414;
     --muted-foreground: #888888;
-    --accent: #1A1A1A;
-    --accent-foreground: #FFFFFF;
-    --destructive: #EF4444;
-    --destructive-foreground: #FFFFFF;
+    --accent: #1a1a1a;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
     --border: #222222;
     --input: #222222;
-    --ring: #D4AF37;
+    --ring: #d4af37;
 }
 
 html {
@@ -124,40 +124,37 @@ html {
 /* Base Theme Variables (Light Mode: Ivory & Gold) */
 :root {
     /* Stark Minimalist Light Theme */
-    --color-bg-base: #FFFFFF;          /* Pure white */
-    --color-bg-card: #FAFAFA;          /* Subtle off-white for cards */
-    --color-bg-elevated: #F0F0F0;      /* Slightly darker for elevated elements */
-    
-    --color-text-main: #000000;        /* Pure black */
-    --color-text-muted: #888888;       /* Neutral gray */
-    
-    --color-border: #E5E5E5;           /* Clean, neutral gray border */
-    --color-border-hover: #000000;     /* Stark black on hover */
-    
+    --color-bg-base: #ffffff; /* Pure white */
+    --color-bg-card: #fafafa; /* Subtle off-white for cards */
+    --color-bg-elevated: #f0f0f0; /* Slightly darker for elevated elements */
+
+    --color-text-main: #000000; /* Pure black */
+    --color-text-muted: #888888; /* Neutral gray */
+
+    --color-border: #e5e5e5; /* Clean, neutral gray border */
+    --color-border-hover: #000000; /* Stark black on hover */
+
     /* Shared Luxury Accents (Used minimally for highlights) */
-    --color-gold: #D4AF37;
-    --color-gold-dark: #B8860B;
-    --color-bronze: #CD7F32;
-    --color-champagne: #F7E7CE;
-    
+    --color-gold: #d4af37;
+    --color-gold-dark: #b8860b;
+    --color-bronze: #cd7f32;
+    --color-champagne: #f7e7ce;
+
     /* Contextual background for gold text */
     --color-gold-bg: rgba(212, 175, 55, 0.1);
+
+    /* Card Gradients */
+    --color-card-gradient-from: #fafafa;
+    --color-card-gradient-to: #f5f5f5;
+    --color-card-gradient-ai-from: #fafafa;
+    --color-card-gradient-ai-to: #f0f0f0;
 }
 
-/* Dark Mode Variables (Stark Black & White) */
+/* Dark mode overrides removed - now handled by ThemeContext.jsx */
+
+/* Dark mode class kept for Tailwind compatibility, but theme variables handled by JS */
 .dark {
-    /* Stark Minimalist Dark Theme */
-    --color-bg-base: #000000;          /* Absolute pure black */
-    --color-bg-card: #0A0A0A;          /* Very dark neutral gray */
-    --color-bg-elevated: #141414;      /* Elevated dark gray */
-    
-    --color-text-main: #FFFFFF;        /* Pure white */
-    --color-text-muted: #888888;       /* Neutral gray */
-    
-    --color-border: #222222;           /* Clean, neutral dark gray border */
-    --color-border-hover: #FFFFFF;     /* Stark white on hover */
-    
-    --color-gold-bg: rgba(212, 175, 55, 0.15);
+    /* Theme variables are now set via JavaScript in ThemeContext.jsx */
 }
 
 /* Base body styling based on variables */
@@ -229,8 +226,12 @@ body {
 }
 
 @keyframes metallic-sweep {
-    0% { transform: translate(-30%, -30%) rotate(25deg); }
-    100% { transform: translate(30%, 30%) rotate(25deg); }
+    0% {
+        transform: translate(-30%, -30%) rotate(25deg);
+    }
+    100% {
+        transform: translate(30%, 30%) rotate(25deg);
+    }
 }
 
 .gold-glow-focus:focus-within {
@@ -240,16 +241,16 @@ body {
 }
 
 .text-gold-gradient {
-    background: linear-gradient(to bottom, #FFD700, #D4AF37);
+    background: linear-gradient(to bottom, #ffd700, #d4af37);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
 }
 
 .executive-button {
     background: linear-gradient(135deg, #1a1a1a, #000);
     border: 1px solid rgba(212, 175, 55, 0.3);
-    color: #D4AF37;
+    color: #d4af37;
     position: relative;
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -265,7 +266,7 @@ body {
 }
 
 .executive-button:hover {
-    border-color: #D4AF37;
+    border-color: #d4af37;
     box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
     transform: translateY(-1px);
 }
@@ -280,7 +281,7 @@ body {
 }
 
 .scanline-anim::after {
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
@@ -292,8 +293,12 @@ body {
 }
 
 @keyframes scanline {
-    0% { top: 0; }
-    100% { top: 100%; }
+    0% {
+        top: 0;
+    }
+    100% {
+        top: 100%;
+    }
 }
 
 /* View Transition API Animations */
@@ -318,13 +323,12 @@ body {
 }
 
 /* Prevent icons from flipping/rotating in RTL mode */
-[dir="rtl"] svg,
-[dir="rtl"] .lucide {
+[dir='rtl'] svg,
+[dir='rtl'] .lucide {
     transform: none !important;
 }
 
-[dir="rtl"] [style*="transform"] svg,
-[dir="rtl"] [style*="transform"] {
+[dir='rtl'] [style*='transform'] svg,
+[dir='rtl'] [style*='transform'] {
     transform: scaleX(1) !important;
 }
-

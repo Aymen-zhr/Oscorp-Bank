@@ -10,7 +10,9 @@ class TransactionSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('transactions')->truncate();
+        $adminUser = \App\Models\User::where('is_admin', true)->first();
+        $demoUser = \App\Models\User::where('is_admin', false)->first();
+        $targetUserId = $demoUser?->id ?? $adminUser?->id ?? 1;
 
         $transactions = [];
         $startDate = Carbon::now()->subMonths(8)->startOfMonth();
@@ -75,6 +77,7 @@ class TransactionSeeder extends Seeder
             if ($txDate <= $endDate) {
                 $source = $creditSources[0];
                 $transactions[] = [
+                    'user_id' => $targetUserId,
                     'merchant' => $source['merchant'],
                     'logo_color' => $source['color'],
                     'card_last4' => null,
@@ -94,6 +97,7 @@ class TransactionSeeder extends Seeder
                 if ($txDate <= $endDate) {
                     $source = $creditSources[1];
                     $transactions[] = [
+                        'user_id' => $targetUserId,
                         'merchant' => $source['merchant'],
                         'logo_color' => $source['color'],
                         'card_last4' => null,
@@ -111,6 +115,7 @@ class TransactionSeeder extends Seeder
             $txDate = $currentDate->copy()->setDay(3)->setHour(10)->setMinute(15);
             if ($txDate <= $endDate) {
                 $transactions[] = [
+                    'user_id' => $targetUserId,
                     'merchant' => 'Property Management',
                     'logo_color' => '#4B5563',
                     'card_last4' => '9984',
@@ -130,6 +135,7 @@ class TransactionSeeder extends Seeder
                 if ($txDate <= $endDate) {
                     $categoryData = $merchants['Utilities'][array_search($utility, array_column($merchants['Utilities'], 'name'))] ?? $merchants['Utilities'][0];
                     $transactions[] = [
+                        'user_id' => $targetUserId,
                         'merchant' => $categoryData['name'],
                         'logo_color' => $categoryData['color'],
                         'card_last4' => '9984',
@@ -173,6 +179,7 @@ class TransactionSeeder extends Seeder
                 }
 
                 $transactions[] = [
+                    'user_id' => $targetUserId,
                     'merchant' => $merchantData['name'],
                     'logo_color' => $merchantData['color'],
                     'card_last4' => '9984',

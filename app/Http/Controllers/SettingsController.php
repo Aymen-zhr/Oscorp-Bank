@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon;
 use App\Traits\HasOscorpBalance;
 use Inertia\Inertia;
 
@@ -36,6 +35,11 @@ class SettingsController extends Controller
                 'tag' => $user->tag,
                 'job_title' => $user->job_title,
                 'address' => $user->address,
+                'cin' => $user->cin,
+                'date_of_birth' => $user->date_of_birth,
+                'place_of_birth' => $user->place_of_birth,
+                'nationality' => $user->nationality,
+                'gender' => $user->gender,
             ],
             'preferences' => $preferences,
             'security' => [
@@ -51,11 +55,16 @@ class SettingsController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,'.$user->id,
-            'avatar' => 'nullable', // Can be string (DiceBear) or File
+            'avatar' => 'nullable',
             'phone' => 'nullable|string|max:20',
             'tag' => 'nullable|string|max:50',
             'job_title' => 'nullable|string|max:100',
             'address' => 'nullable|string|max:500',
+            'cin' => 'nullable|string|max:20|unique:users,cin,'.$user->id,
+            'date_of_birth' => 'nullable|date',
+            'place_of_birth' => 'nullable|string|max:100',
+            'nationality' => 'nullable|string|max:50',
+            'gender' => 'nullable|in:male,female',
         ]);
 
         $user->name = $request->name;
@@ -64,6 +73,11 @@ class SettingsController extends Controller
         $user->tag = $request->tag;
         $user->job_title = $request->job_title;
         $user->address = $request->address;
+        $user->cin = $request->cin;
+        $user->date_of_birth = $request->date_of_birth;
+        $user->place_of_birth = $request->place_of_birth;
+        $user->nationality = $request->nationality;
+        $user->gender = $request->gender;
 
         if ($request->hasFile('avatar')) {
             $file = $request->file('avatar');
@@ -113,11 +127,12 @@ class SettingsController extends Controller
         ]);
 
         $user = Auth::user();
-        $user->preferences = [
+        $existingPreferences = $user->preferences ?? [];
+        $user->preferences = array_merge($existingPreferences, [
             'currency' => $request->currency,
             'timezone' => $request->timezone,
             'notifications' => $request->notifications,
-        ];
+        ]);
         $user->save();
 
         return redirect()->back()->with('success', 'Preferences saved successfully.');

@@ -6,7 +6,9 @@ use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use App\Traits\HasOscorpBalance;
+use App\Models\Loan;
 
 class LoansController extends Controller
 {
@@ -16,6 +18,52 @@ class LoansController extends Controller
     {
         $userId = Auth::id();
         $stats = $this->getFinancialStats();
+
+        // Get real loans from database
+        $activeLoans = Loan::where('user_id', $userId)
+            ->whereIn('status', ['approved', 'active'])
+            ->get()
+            ->map(function ($loan) {
+                $paidAmount = $loan->paid_amount ?? 0;
+                $remainingBalance = max(0, $loan->total_repayment - $paidAmount);
+                $progress = $loan->total_repayment > 0 ? round(($paidAmount / $loan->total_repayment) * 100, 1) : 0;
+
+                return [
+                    'id' => $loan->id,
+                    'type' => $loan->type,
+                    'principal' => $loan->amount,
+                    'balance' => $remainingBalance,
+                    'rate' => $loan->rate,
+                    'monthlyPayment' => $loan->monthly_payment,
+                    'nextPayment' => $loan->approved_at ? Carbon::parse($loan->approved_at)->addMonth()->format('Y-m-d') : null,
+                    'status' => $loan->status,
+                    'progress' => $progress,
+                    'term' => $loan->term_months . ' months',
+                    'icon' => $this->getIconForType($loan->type),
+                    'purpose' => $loan->purpose,
+                ];
+            });
+
+        // If no real loans, show demo loans
+        if ($activeLoans->isEmpty()) {
+            $demoLoans = config('loans.demo_loans', []);
+            $activeLoans = collect();
+            foreach ($demoLoans as $loan) {
+                $activeLoans->push([
+                    'id' => $loan['id'],
+                    'type' => $loan['type'],
+                    'principal' => $loan['principal'],
+                    'balance' => $loan['balance'],
+                    'rate' => $loan['rate'],
+                    'monthlyPayment' => $loan['monthly_payment'],
+                    'nextPayment' => Carbon::now()->addDays($loan['next_payment_days'])->format('Y-m-d'),
+                    'status' => Loan::STATUS_ACTIVE,
+                    'progress' => round((($loan['principal'] - $loan['balance']) / $loan['principal']) * 100),
+                    'term' => $loan['term'],
+                    'icon' => $loan['icon'],
+                ]);
+            }
+        }
 
         // Calculate payments made this year from transactions
         $paidOffThisYear = DB::table('transactions')
@@ -31,38 +79,22 @@ class LoansController extends Controller
             ->sum('amount');
 
         if ($paidOffThisYear == 0) {
-            // Estimate based on total debits
             $paidOffThisYear = round($stats['total_debits'] * config('loans.estimation_multiplier', 0.15));
         }
 
-        // Active loans (pre-populated for demo)
-        $demoLoans = config('loans.demo_loans', []);
-        $activeLoans = [];
-        foreach ($demoLoans as $loan) {
-            $activeLoans[] = [
-                'id' => $loan['id'],
-                'type' => $loan['type'],
-                'principal' => $loan['principal'],
-                'balance' => round($stats['live_balance'], 2),
-                'rate' => $loan['rate'],
-                'monthlyPayment' => $loan['monthly_payment'],
-                'nextPayment' => Carbon::now()->addDays($loan['next_payment_days'])->format('Y-m-d'),
-                'status' => 'Active',
-                'progress' => round((($loan['principal'] - $loan['balance']) / $loan['principal']) * 100),
-                'term' => $loan['term'],
-                'icon' => $loan['icon'],
-            ];
+        // Generate amortization schedule for first loan
+        $firstLoan = $activeLoans->first();
+        $amortizationSchedule = [];
+        if ($firstLoan) {
+            $amortizationSchedule = $this->generateAmortization(
+                $firstLoan['balance'],
+                $firstLoan['rate'],
+                $firstLoan['monthlyPayment'],
+                config('loans.amortization_months', 12)
+            );
         }
 
-        // Generate amortization schedule for the first loan
-        $amortizationSchedule = $this->generateAmortization(
-            $activeLoans[0]['balance'],
-            $activeLoans[0]['rate'],
-            $activeLoans[0]['monthlyPayment'],
-            config('loans.amortization_months', 12)
-        );
-
-        // Pre-approved loan offers based on user's financial profile
+        // Pre-approved loan offers
         $preApprovedLimit = round($stats['live_balance'] * config('loans.pre_approved_multiplier', 3));
         $loanOffersConfig = config('loans.offers', []);
         $loanOffers = [];
@@ -78,14 +110,31 @@ class LoansController extends Controller
             ];
         }
 
-        $totalOutstanding = collect($activeLoans)->sum('balance');
-        $monthlyPayments = collect($activeLoans)->sum('monthlyPayment');
-        $averageRate = collect($activeLoans)->avg('rate');
+        $totalOutstanding = $activeLoans->sum('balance');
+        $monthlyPayments = $activeLoans->sum('monthlyPayment');
+        $averageRate = $activeLoans->avg('rate');
+
+        // Get pending applications for current user
+        $pendingApplications = Loan::where('user_id', $userId)
+            ->where('status', 'pending')
+            ->get()
+            ->map(function ($loan) {
+                return [
+                    'id' => $loan->id,
+                    'type' => $loan->type,
+                    'amount' => $loan->amount,
+                    'rate' => $loan->rate,
+                    'term' => $loan->term_months . ' months',
+                    'purpose' => $loan->purpose,
+                    'created_at' => $loan->created_at->format('Y-m-d'),
+                ];
+            });
 
         return Inertia::render('loans', [
             'activeLoans' => $activeLoans,
             'loanOffers' => $loanOffers,
             'amortizationSchedule' => $amortizationSchedule,
+            'pendingApplications' => $pendingApplications,
             'stats' => [
                 'totalOutstanding' => round($totalOutstanding, 2),
                 'monthlyPayments' => round($monthlyPayments, 2),
@@ -93,6 +142,69 @@ class LoansController extends Controller
                 'paidOffThisYear' => round($paidOffThisYear, 2),
             ]
         ]);
+    }
+
+    public function apply(Request $request)
+    {
+        $validated = $request->validate([
+            'type' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:10000|max:2000000',
+            'rate' => 'nullable|numeric|min:1|max:15',
+            'term_months' => 'required|integer|min:1|max:360',
+            'purpose' => 'nullable|string|max:500',
+        ]);
+
+        // Look up rate from config if not provided
+        $rate = $validated['rate'];
+        if (is_null($rate)) {
+            $rate = collect(config('loans.offers', []))
+                ->firstWhere('type', $validated['type'])['rate'] ?? 5.5;
+        }
+        $monthlyPayment = $this->calculateMonthlyPayment(
+            $validated['amount'],
+            $rate,
+            $validated['term_months']
+        );
+        $totalRepayment = $monthlyPayment * $validated['term_months'];
+
+        $loan = Loan::create([
+            'user_id' => Auth::id(),
+            'type' => $validated['type'],
+            'amount' => $validated['amount'],
+            'rate' => $rate,
+            'term_months' => $validated['term_months'],
+            'monthly_payment' => $monthlyPayment,
+            'total_repayment' => $totalRepayment,
+            'paid_amount' => 0,
+            'status' => Loan::STATUS_PENDING,
+            'purpose' => $validated['purpose'],
+        ]);
+
+        return redirect()->back()->with('success', 'Loan application submitted. Waiting for admin approval.');
+    }
+
+    private function calculateMonthlyPayment($principal, $annualRate, $termMonths)
+    {
+        $monthlyRate = $annualRate / 100 / 12;
+        if ($monthlyRate == 0) return round($principal / $termMonths, 2);
+        
+        $payment = ($principal * $monthlyRate * pow(1 + $monthlyRate, $termMonths)) 
+                  / (pow(1 + $monthlyRate, $termMonths) - 1);
+        
+        return round($payment, 2);
+    }
+
+    private function getIconForType($type)
+    {
+        $iconMap = [
+            'Home Mortgage' => 'Home',
+            'Auto Loan' => 'Car',
+            'Personal Loan' => 'User',
+            'Business Loan' => 'Briefcase',
+            'Education Loan' => 'GraduationCap',
+        ];
+
+        return $iconMap[$type] ?? 'Landmark';
     }
 
     /**
@@ -110,7 +222,7 @@ class LoansController extends Controller
             $remainingBalance -= $principalPayment;
 
             $schedule[] = [
-                'month' => Carbon::now()->addMonths($i)->format('M Y'),
+                'month' => Carbon::now()->addMonths($i)->format(config('oscorp.date_formats.month_year', 'M Y')),
                 'payment' => round($monthlyPayment, 2),
                 'principal' => round($principalPayment, 2),
                 'interest' => round($interestPayment, 2),

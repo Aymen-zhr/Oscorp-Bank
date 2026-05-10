@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Traits\HasOscorpBalance;
+use App\Models\Transaction;
 
 class AIController extends Controller
 {
@@ -42,31 +43,28 @@ class AIController extends Controller
                 'card_number_last4' => config('oscorp.card.last4'),
             ],
             'financial_summary' => [
-                'live_balance_MAD' => round($stats['live_balance'], 2),
-                'total_spending_MAD' => round($stats['total_spending'], 2),
-                'total_credits_MAD' => round($stats['total_credits'], 2),
-                'total_debits_MAD' => round($stats['total_debits'], 2),
-                'base_balance_MAD' => $stats['base_balance'],
+                'live_balance_' . config('oscorp.currency', 'MAD') => round($stats['live_balance'], 2),
+                'total_spending_' . config('oscorp.currency', 'MAD') => round($stats['total_spending'], 2),
+                'total_credits_' . config('oscorp.currency', 'MAD') => round($stats['total_credits'], 2),
+                'total_debits_' . config('oscorp.currency', 'MAD') => round($stats['total_debits'], 2),
+                'base_balance_' . config('oscorp.currency', 'MAD') => $stats['base_balance'],
             ],
-            'recent_transactions' => array_slice(
-                DB::table('transactions')
-                    ->where('user_id', $user->id)
-                    ->orderBy('transacted_at', 'desc')
-                    ->take(config('ai.transaction_context_limit', 50))
-                    ->get()
-                    ->toArray(),
-                0, 50
-            ),
+            'recent_transactions' => DB::table('transactions')
+                ->where('user_id', $user->id)
+                ->orderBy('transacted_at', 'desc')
+                ->take(config('ai.transaction_context_limit', 50))
+                ->get()
+                ->toArray(),
         ];
 
-        $systemPrompt = <<<'PROMPT'
-You are Oscar, an elite financial advisor for OSCORP Bank. You help clients with their personal finances in Morocco (MAD currency).
+        $currency = config('oscorp.currency', 'MAD');
+        $systemPrompt = "You are Oscar, an elite financial advisor for OSCORP Bank. You help clients with their personal finances in Morocco ({$currency} currency).
 
 ## YOUR STYLE
 - Speak with confidence and authority
 - Keep responses short and actionable
 - Use **bold** for important numbers
-- Address the client as "Executive" or by name
+- Address the client as \"Executive\" or by name
 
 ## WHAT YOU KNOW
 - Client's name and financial situation
@@ -75,14 +73,14 @@ You are Oscar, an elite financial advisor for OSCORP Bank. You help clients with
 
 ## HOW TO HELP
 1. Answer questions about their balance and transactions
-2. Provide spending insights and recommendations  
+2. Provide spending insights and recommendations
 3. Create budgets and financial plans
 4. Explain fees, charges, or account details
 
 Never say you can't do something — instead offer what you CAN do.
 
 If asked about transfers or transactions, confirm before executing.
-PROMPT . json_encode($fullContext);
+" . json_encode($fullContext);
 
         $tools = [
             [
@@ -93,7 +91,7 @@ PROMPT . json_encode($fullContext);
                         'parameters' => [
                             'type' => 'OBJECT',
                             'properties' => [
-                                'amount' => ['type' => 'NUMBER', 'description' => 'Amount in MAD'],
+                                'amount' => ['type' => 'NUMBER', 'description' => 'Amount in ' . config('oscorp.currency', 'MAD')],
                                 'merchant' => ['type' => 'STRING', 'description' => 'Recipient or source name'],
                                 'category' => ['type' => 'STRING', 'description' => 'Category like Food, Transport, Bills, etc'],
                                 'type' => ['type' => 'STRING', 'description' => 'Use "credit" for deposits, "debit" for payments']
@@ -157,13 +155,12 @@ PROMPT . json_encode($fullContext);
 
         try {
             $response = Http::withHeaders(['Content-Type' => 'application/json'])
-                ->withoutVerifying()
-                ->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}", $payload);
+                ->post(config('services.gemini.api_url', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent') . "?key={$apiKey}", $payload);
 
             if (!$response->successful()) {
                 Log::error('Gemini API Error', ['response' => $response->body()]);
                 $balance = number_format($stats['live_balance']);
-                return response()->json(['reply' => "At your service, Executive. Your current balance stands at **$balance MAD**. How may I assist you further?"]);
+                return response()->json(['reply' => "At your service, Executive. Your current balance stands at **$balance " . config('oscorp.currency', 'MAD') . "**. How may I assist you further?"]);
             }
 
             $data = $response->json();
@@ -190,22 +187,28 @@ PROMPT . json_encode($fullContext);
                 $args = $functionCall['args'];
 
                 if ($name === 'execute_capital_transfer') {
+                    $amount = $args['amount'] ?? 0;
+                    $type = $args['type'] ?? Transaction::TYPE_DEBIT;
+                    
+                    if ($type === Transaction::TYPE_DEBIT && $amount > $liveBalance) {
+                        return response()->json(['reply' => 'Insufficient funds for this transaction. Your available balance is **' . number_format($liveBalance) . ' ' . config('oscorp.currency', 'MAD') . '**.']);
+                    }
+                    
                     DB::table('transactions')->insert([
                         'user_id' => $userId,
                         'merchant' => $args['merchant'] ?? 'Unknown',
                         'amount' => $args['amount'] ?? 0,
-                        'type' => $args['type'] ?? 'debit',
+                        'type' => $args['type'] ?? Transaction::TYPE_DEBIT,
                         'category' => $args['category'] ?? 'Transfer',
-                        'logo_color' => '#' . substr(md5(rand()), 0, 6),
+                        'logo_color' => collect(config('oscorp.colors.chart_palette'))->random(),
                         'card_last4' => config('oscorp.card.last4'),
                         'transacted_at' => Carbon::now(),
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now()
                     ]);
-                    $amount = $args['amount'] ?? 0;
                     $merchant = $args['merchant'] ?? 'Unknown';
-                    $typeLabel = ($args['type'] ?? 'debit') === 'credit' ? 'received from' : 'transferred to';
-                    $result['reply'] = "✓ Transfer of **" . number_format($amount) . " MAD** $typeLabel **$merchant** has been executed. Your transaction history has been updated.";
+                    $typeLabel = ($args['type'] ?? Transaction::TYPE_DEBIT) === Transaction::TYPE_CREDIT ? 'received from' : 'transferred to';
+                    $result['reply'] = "✓ Transfer of **" . number_format($amount) . " " . config('oscorp.currency', 'MAD') . "** $typeLabel **$merchant** has been executed. Your transaction history has been updated.";
                     $result['data_updated'] = true;
                 } elseif ($name === 'render_financial_chart') {
                     $chartType = $args['chart_type'] ?? 'spending_breakdown';
@@ -253,14 +256,14 @@ PROMPT . json_encode($fullContext);
 
         } catch (\Exception $e) {
             Log::error('Gemini Exception', ['message' => $e->getMessage()]);
-            return response()->json(['reply' => "System operational. Your balance is **" . number_format($stats['live_balance']) . " MAD**. How may I assist?"]);
+            return response()->json(['reply' => "System operational. Your balance is **" . number_format($stats['live_balance']) . " " . config('oscorp.currency', 'MAD') . "**. How may I assist?"]);
         }
     }
 
     private function getSpendingBreakdown($period, $transactions)
     {
         $categoryTotals = collect($transactions)
-            ->where('type', 'debit')
+            ->where('type', Transaction::TYPE_DEBIT)
             ->groupBy('category')
             ->map(function($group) {
                 return $group->sum('amount');
@@ -270,11 +273,11 @@ PROMPT . json_encode($fullContext);
         if ($categoryTotals->isEmpty()) {
             return [
                 'labels' => ['No Data'],
-                'datasets' => [['name' => 'Spending', 'data' => [0], 'colors' => ['#64748B']]]
+                'datasets' => [['name' => 'Spending', 'data' => [0], 'colors' => [config('oscorp.colors.default_avatar', '#64748B')]]]
             ];
         }
 
-        $colors = ['#D4AF37', '#10B981', '#6366F1', '#F59E0B', '#EC4899', '#8B5CF6', '#06B6D4', '#EF4444', '#3B82F6', '#84CC16'];
+        $colors = config('oscorp.colors.chart_palette', ['#D4AF37', '#10B981', '#6366F1', '#F59E0B', '#EC4899', '#8B5CF6', '#06B6D4', '#EF4444', '#3B82F6', '#84CC16']);
         $labels = $categoryTotals->keys()->toArray();
         $values = $categoryTotals->values()->map(fn($v) => round($v, 2))->toArray();
         $assignedColors = [];
@@ -300,11 +303,11 @@ PROMPT . json_encode($fullContext);
             $monthNames[] = $date->format('M');
 
             $monthIncome = $txCollection->filter(function($tx) use ($date) {
-                return $tx->type === 'credit' && Carbon::parse($tx->transacted_at)->format('Y-m') === $date->format('Y-m');
+                return $tx->type === Transaction::TYPE_CREDIT && Carbon::parse($tx->transacted_at)->format('Y-m') === $date->format('Y-m');
             })->sum('amount');
 
             $monthExpenses = $txCollection->filter(function($tx) use ($date) {
-                return $tx->type === 'debit' && Carbon::parse($tx->transacted_at)->format('Y-m') === $date->format('Y-m');
+                return $tx->type === Transaction::TYPE_DEBIT && Carbon::parse($tx->transacted_at)->format('Y-m') === $date->format('Y-m');
             })->sum('amount');
 
             $income[] = round($monthIncome, 2);
@@ -314,8 +317,8 @@ PROMPT . json_encode($fullContext);
         return [
             'labels' => $monthNames,
             'datasets' => [
-                ['name' => 'Income', 'data' => $income, 'color' => '#10B981'],
-                ['name' => 'Expenses', 'data' => $expenses, 'color' => '#EF4444']
+                ['name' => 'Income', 'data' => $income, 'color' => config('oscorp.colors.credit', '#10B981')],
+                ['name' => 'Expenses', 'data' => $expenses, 'color' => config('oscorp.colors.debit', '#EF4444')]
             ]
         ];
     }
@@ -331,7 +334,7 @@ PROMPT . json_encode($fullContext);
         }
         return [
             'labels' => $monthNames,
-            'datasets' => [['name' => 'Projected Balance', 'data' => $projected, 'color' => '#D4AF37']]
+            'datasets' => [['name' => 'Projected Balance', 'data' => $projected, 'color' => config('oscorp.colors.deposit', '#D4AF37')]]
         ];
     }
 
@@ -383,8 +386,8 @@ PROMPT . json_encode($fullContext);
                 'title' => 'Investment Strategy',
                 'risk_profile' => 'Moderate Growth',
                 'allocation' => [
-                    ['asset' => 'Stocks/ETFs', 'percentage' => 60, 'color' => '#D4AF37'],
-                    ['asset' => 'Bonds', 'percentage' => 25, 'color' => '#10B981'],
+                    ['asset' => 'Stocks/ETFs', 'percentage' => 60, 'color' => config('oscorp.colors.deposit', '#D4AF37')],
+                    ['asset' => 'Bonds', 'percentage' => 25, 'color' => config('oscorp.colors.credit', '#10B981')],
                     ['asset' => 'Cash', 'percentage' => 15, 'color' => '#6366F1']
                 ],
                 'projected_returns' => [

@@ -12,12 +12,6 @@ trait HasOscorpBalance
         return config('oscorp.balance.base', 12500.00);
     }
 
-    protected function getLiveBalance(): float
-    {
-        $stats = $this->getTransactionSummary();
-        return $this->getBaseBalance() + $stats['credits'] - $stats['debits'];
-    }
-
     protected function getFinancialStats(): array
     {
         $baseBalance = $this->getBaseBalance();
@@ -43,9 +37,9 @@ trait HasOscorpBalance
             'monthly_categories' => $categories,
             'goal_savings' => (float) $goalSavings,
             'capital_allocation' => [
-                ['name' => 'Liquid Reserves', 'amount' => (float) $liveBalance, 'color' => '#D4AF37'],
-                ['name' => 'Strategic Goals', 'amount' => (float) $goalSavings, 'color' => '#E5E4E2'],
-                ['name' => 'Operating Flow', 'amount' => (float) $monthly['debits'], 'color' => '#8B5CF6'],
+                ['name' => 'Liquid Reserves', 'amount' => (float) $liveBalance, 'color' => config('oscorp.colors.deposit', '#D4AF37')],
+                ['name' => 'Strategic Goals', 'amount' => (float) $goalSavings, 'color' => config('oscorp.colors.default', '#E5E4E2')],
+                ['name' => 'Operating Flow', 'amount' => (float) $monthly['debits'], 'color' => config('oscorp.colors.chart_palette.2', '#8B5CF6')],
             ]
         ];
     }
@@ -63,7 +57,7 @@ trait HasOscorpBalance
             ->take(5)
             ->get()
             ->map(fn($item) => [
-                'name' => $item->category ?: 'Other',
+                'name' => $item->category ?? 'Other',
                 'amount' => (float) $item->total,
             ])
             ->toArray();
@@ -81,10 +75,10 @@ trait HasOscorpBalance
                   ->whereYear('transacted_at', now()->year);
         }
 
-        $result = $query->selectRaw('
-                SUM(CASE WHEN type = "credit" THEN amount ELSE 0 END) as credits,
-                SUM(CASE WHEN type = "debit" THEN amount ELSE 0 END) as debits
-            ')
+        $result = $query->selectRaw("
+                SUM(CASE WHEN type = 'credit' THEN amount ELSE 0 END) as credits,
+                SUM(CASE WHEN type = 'debit' THEN amount ELSE 0 END) as debits
+            ")
             ->first();
 
         return [

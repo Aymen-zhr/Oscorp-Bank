@@ -3,51 +3,31 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SystemNotification extends Notification
+class SystemNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    protected $data;
+    protected array $data;
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(array $data)
     {
         $this->data = $data;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
-    public function via(object $notifiable): array
+    public function via($notifiable): array
     {
         return ['database'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
-    public function toMail(object $notifiable): MailMessage
+    public function toDatabase($notifiable): array
     {
-        return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+        return $this->data;
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(object $notifiable): array
+    public function toArray($notifiable): array
     {
         return $this->data;
     }

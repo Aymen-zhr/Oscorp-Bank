@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use App\Traits\HasOscorpBalance;
 use Inertia\Inertia;
 
@@ -54,7 +55,7 @@ class AccountController extends Controller
                 'rib_key' => $ribConfig['rib_key'],
             ],
             'account' => [
-                'number' => '0000 1234 5678 9012',
+                'number' => implode(' ', str_split($ribConfig['account_number'], 4)),
                 'type' => $accountConfig['type'],
                 'opened' => $user->created_at->format('d M Y'),
                 'branch' => $accountConfig['branch'],
@@ -89,8 +90,15 @@ class AccountController extends Controller
                 'phone' => $user->phone ?? 'Not provided',
                 'avatar' => $user->avatar,
                 'created_at' => $user->created_at->format('M Y'),
-                'last_login' => now()->format('d M Y, H:i'),
+                'last_login' => $user->last_login_at ? \Carbon\Carbon::parse($user->last_login_at)->format('d M Y, H:i') : 'First login',
                 'preferences' => $preferences,
+                'job_title' => $user->job_title ?? 'Not provided',
+                'address' => $user->address ?? 'Not provided',
+                'cin' => $user->cin ?? 'Not provided',
+                'date_of_birth' => $user->date_of_birth ? \Carbon\Carbon::parse($user->date_of_birth)->format('d M Y') : 'Not provided',
+                'place_of_birth' => $user->place_of_birth ?? 'Not provided',
+                'nationality' => $user->nationality ?? 'Not provided',
+                'gender' => $user->gender ? ucfirst($user->gender) : 'Not provided',
             ],
             'security' => [
                 'two_factor_enabled' => !!$user->two_factor_secret,
@@ -108,7 +116,7 @@ class AccountController extends Controller
     public function updateCurrency(Request $request)
     {
         $validated = $request->validate([
-            'currency' => ['required', 'string', 'in:MAD,USD,EUR,GBP,AED,SAR,JPY,CNY'],
+            'currency' => ['required', 'string', Rule::in(array_keys(config('currencies.currencies', ['MAD' => []])))],
         ]);
 
         $user = Auth::user();
@@ -118,7 +126,7 @@ class AccountController extends Controller
         }
 
         $preferences['currency'] = $validated['currency'];
-        $user->preferences = json_encode($preferences);
+        $user->preferences = $preferences;
         $user->save();
 
         return redirect()->back()->with('success', 'Currency updated to ' . $validated['currency'] . '.');

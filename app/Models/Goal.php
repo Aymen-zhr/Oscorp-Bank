@@ -7,6 +7,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Goal extends Model
 {
+    const STATUS_ACTIVE = 'active';
+    const STATUS_COMPLETED = 'completed';
+    const STATUS_UNLOCKED = 'unlocked';
+
+    public static function statuses(): array
+    {
+        return [
+            self::STATUS_ACTIVE,
+            self::STATUS_COMPLETED,
+            self::STATUS_UNLOCKED,
+        ];
+    }
+
     protected $fillable = [
         'user_id',
         'name',

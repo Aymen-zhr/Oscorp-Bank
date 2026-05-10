@@ -15,77 +15,117 @@ const cardVariants = {
     visible: (i) => ({
         opacity: 1,
         y: 0,
-        transition: { duration: 0.45, delay: i * 0.07, ease: 'easeOut' }
-    })
+        transition: { duration: 0.45, delay: i * 0.07, ease: 'easeOut' },
+    }),
 };
 
 export default function Dashboard({ transactions, activeGoal }) {
     const { t } = useTranslation();
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-[var(--color-bg-base)] text-[var(--color-text-main)] font-sans antialiased">
+        <div className="flex h-screen w-full overflow-hidden bg-[var(--color-bg-base)] font-sans text-[var(--color-text-main)] antialiased">
             <Head title={t('dashboard.title')} />
 
             {/* Ambient glows */}
-            <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-                <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[60%] bg-[var(--color-gold)] opacity-[0.025] rounded-full blur-[140px]" />
-                <div className="absolute -bottom-[20%] -left-[10%] w-[40%] h-[50%] bg-blue-600 opacity-[0.02] rounded-full blur-[120px]" />
+            <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+                <div className="absolute -top-[20%] -right-[10%] h-[60%] w-[50%] rounded-full bg-[var(--color-gold)] opacity-[0.025] blur-[140px]" />
+                <div className="absolute -bottom-[20%] -left-[10%] h-[50%] w-[40%] rounded-full bg-blue-600 opacity-[0.02] blur-[120px]" />
             </div>
 
             <Sidebar active="dashboard" />
 
-            <div className="flex-1 flex flex-col overflow-hidden min-w-0 relative z-10">
+            <div className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden">
                 <Topbar />
 
                 {/* ── Desktop: strict 2-row grid, no page scroll ─────────── */}
-                <div className="hidden lg:flex flex-1 overflow-hidden p-4 min-h-0">
+                <div className="hidden min-h-0 flex-1 overflow-hidden p-4 lg:flex">
                     <motion.div
                         initial="hidden"
                         animate="visible"
-                        className="w-full h-full grid gap-4"
+                        className="grid h-full w-full gap-4"
                         style={{
                             gridTemplateColumns: '1fr 1fr 1fr',
                             gridTemplateRows: '1fr 1.55fr',
                         }}
                     >
-                        <motion.div custom={0} variants={cardVariants} className="min-h-0 overflow-hidden">
+                        <motion.div
+                            custom={0}
+                            variants={cardVariants}
+                            className="min-h-0 overflow-hidden"
+                        >
                             <AIInsightsCard />
                         </motion.div>
-                        <motion.div custom={1} variants={cardVariants} className="min-h-0 overflow-hidden">
+                        <motion.div
+                            custom={1}
+                            variants={cardVariants}
+                            className="min-h-0 overflow-hidden"
+                        >
                             <BalanceCard />
                         </motion.div>
-                        <motion.div custom={2} variants={cardVariants} className="min-h-0 overflow-hidden">
+                        <motion.div
+                            custom={2}
+                            variants={cardVariants}
+                            className="min-h-0 overflow-hidden"
+                        >
                             <EarningsCard goal={activeGoal} />
                         </motion.div>
-                        <motion.div custom={3} variants={cardVariants} className="col-span-2 min-h-0 overflow-hidden">
+                        <motion.div
+                            custom={3}
+                            variants={cardVariants}
+                            className="col-span-2 min-h-0 overflow-hidden"
+                        >
                             <TransactionsCard transactions={transactions} />
                         </motion.div>
-                        <motion.div custom={4} variants={cardVariants} className="min-h-0 overflow-hidden">
+                        <motion.div
+                            custom={4}
+                            variants={cardVariants}
+                            className="min-h-0 overflow-hidden"
+                        >
                             <CapitalAllocationCard />
                         </motion.div>
                     </motion.div>
                 </div>
 
                 {/* ── Mobile / Tablet: scrollable single column ───────────── */}
-                <div className="flex lg:hidden flex-1 overflow-y-auto p-3 pb-24 custom-scrollbar">
+                <div className="custom-scrollbar flex flex-1 overflow-y-auto p-3 pb-24 lg:hidden">
                     <motion.div
                         initial="hidden"
                         animate="visible"
-                        className="w-full flex flex-col gap-3"
+                        className="flex w-full flex-col gap-3"
                     >
-                        <motion.div custom={0} variants={cardVariants} className="h-[200px]">
+                        <motion.div
+                            custom={0}
+                            variants={cardVariants}
+                            className="h-[200px]"
+                        >
                             <BalanceCard />
                         </motion.div>
-                        <motion.div custom={1} variants={cardVariants} className="h-[180px]">
+                        <motion.div
+                            custom={1}
+                            variants={cardVariants}
+                            className="h-[180px]"
+                        >
                             <AIInsightsCard />
                         </motion.div>
-                        <motion.div custom={2} variants={cardVariants} className="h-[220px]">
+                        <motion.div
+                            custom={2}
+                            variants={cardVariants}
+                            className="h-[220px]"
+                        >
                             <EarningsCard goal={activeGoal} />
                         </motion.div>
-                        <motion.div custom={3} variants={cardVariants} className="h-[380px]">
+                        <motion.div
+                            custom={3}
+                            variants={cardVariants}
+                            className="h-[380px]"
+                        >
                             <TransactionsCard transactions={transactions} />
                         </motion.div>
-                        <motion.div custom={4} variants={cardVariants} className="h-[340px]">
+                        <motion.div
+                            custom={4}
+                            variants={cardVariants}
+                            className="h-[340px]"
+                        >
                             <CapitalAllocationCard />
                         </motion.div>
                     </motion.div>

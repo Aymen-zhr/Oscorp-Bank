@@ -13,15 +13,28 @@ function CinematicGauge({ pct, color = 'var(--color-gold)' }) {
     const offset = circumference * (1 - pct);
 
     return (
-        <svg viewBox="0 0 100 55" className="w-full drop-shadow-[0_0_8px_rgba(212,175,55,0.2)]">
+        <svg
+            viewBox="0 0 100 55"
+            className="w-full drop-shadow-[0_0_8px_rgba(212,175,55,0.2)]"
+        >
             <defs>
-                <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <linearGradient
+                    id="gaugeGradient"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="0%"
+                >
                     <stop offset="0%" stopColor={color} stopOpacity="0.6" />
                     <stop offset="100%" stopColor={color} />
                 </linearGradient>
                 <filter id="gaugeGlow">
                     <feGaussianBlur stdDeviation="1.5" result="blur" />
-                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    <feComposite
+                        in="SourceGraphic"
+                        in2="blur"
+                        operator="over"
+                    />
                 </filter>
             </defs>
             {/* Background Track */}
@@ -34,7 +47,7 @@ function CinematicGauge({ pct, color = 'var(--color-gold)' }) {
             />
             {/* Tick Marks */}
             {[...Array(9)].map((_, i) => {
-                const angle = (i * 22.5) * (Math.PI / 180);
+                const angle = i * 22.5 * (Math.PI / 180);
                 const x1 = cx - Math.cos(angle) * 48;
                 const y1 = cy - Math.sin(angle) * 48;
                 const x2 = cx - Math.cos(angle) * 42;
@@ -42,7 +55,10 @@ function CinematicGauge({ pct, color = 'var(--color-gold)' }) {
                 return (
                     <line
                         key={i}
-                        x1={x1} y1={y1} x2={x2} y2={y2}
+                        x1={x1}
+                        y1={y1}
+                        x2={x2}
+                        y2={y2}
                         stroke="rgba(255,255,255,0.2)"
                         strokeWidth="1"
                     />
@@ -58,7 +74,7 @@ function CinematicGauge({ pct, color = 'var(--color-gold)' }) {
                 strokeDasharray={circumference}
                 initial={{ strokeDashoffset: circumference }}
                 animate={{ strokeDashoffset: offset }}
-                transition={{ duration: 1.5, ease: "easeOut" }}
+                transition={{ duration: 1.5, ease: 'easeOut' }}
                 filter="url(#gaugeGlow)"
             />
         </svg>
@@ -71,81 +87,110 @@ export default function EarningsCard({ goal }) {
     const pct = goal ? Math.min(1, Math.max(0, goal.progress / 100)) : 0;
 
     return (
-        <div className="h-full w-full rounded-2xl p-4 relative overflow-hidden flex flex-col justify-between"
-            style={{ background: 'linear-gradient(160deg, #0D0D0D 0%, #050505 100%)', border: '1px solid var(--color-border)' }}
+        <div
+            className="relative flex h-full w-full flex-col justify-between overflow-hidden rounded-2xl p-4"
+            style={{
+                background:
+                    'linear-gradient(160deg, var(--color-card-gradient-from) 0%, var(--color-card-gradient-to) 100%)',
+                border: '1px solid var(--color-border)',
+            }}
         >
             {/* Top Accent */}
-            <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[var(--color-gold)]/40 to-transparent" />
-            
+            <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[var(--color-gold)]/40 to-transparent" />
+
             {/* Ambient Background Light */}
-            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-[var(--color-gold)] opacity-[0.03] rounded-full blur-[40px] pointer-events-none" />
+            <div className="pointer-events-none absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-[var(--color-gold)] opacity-[0.03] blur-[40px]" />
 
             {/* Header */}
-            <div className="flex items-center justify-between shrink-0 mb-2">
+            <div className="mb-2 flex shrink-0 items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-[var(--color-gold-bg)] border border-[var(--color-gold)]/20 flex items-center justify-center shadow-inner">
-                        <Target className="w-4 h-4 text-[var(--color-gold)]" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--color-gold)]/20 bg-[var(--color-gold-bg)] shadow-inner">
+                        <Target className="h-4 w-4 text-[var(--color-gold)]" />
                     </div>
                     <div>
-                        <div className="text-[13px] font-black text-white tracking-tight leading-tight">
+                        <div className="text-[13px] leading-tight font-black tracking-tight text-[var(--color-text-main)]">
                             {goal ? goal.name : t('dashboard.wealth_goal')}
                         </div>
-                        <div className="text-[9px] text-[var(--color-text-muted)] uppercase tracking-widest font-bold">Strategic Reserve</div>
+                        <div className="text-[9px] font-bold tracking-widest text-[var(--color-text-muted)] uppercase">
+                            Strategic Reserve
+                        </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[var(--color-gold)]/10 border border-[var(--color-gold)]/20">
-                    <Sparkles className="w-2.5 h-2.5 text-[var(--color-gold)]" />
-                    <span className="text-[8px] font-black text-[var(--color-gold)] uppercase">Priority</span>
+                <div className="flex items-center gap-1.5 rounded-full border border-[var(--color-gold)]/20 bg-[var(--color-gold)]/10 px-2 py-0.5">
+                    <Sparkles className="h-2.5 w-2.5 text-[var(--color-gold)]" />
+                    <span className="text-[8px] font-black text-[var(--color-gold)] uppercase">
+                        Priority
+                    </span>
                 </div>
             </div>
 
             {/* Gauge Display */}
-            <div className="relative flex-1 flex flex-col items-center justify-center min-h-0 py-2">
+            <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center py-2">
                 <div className="w-full max-w-[140px]">
                     <CinematicGauge pct={pct} />
                 </div>
                 <div className="absolute bottom-2 text-center">
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="text-[28px] font-black text-white tracking-tighter leading-none"
+                        className="text-[28px] leading-none font-black tracking-tighter text-[var(--color-text-main)]"
                     >
-                        {Math.round(pct * 100)}<span className="text-[14px] text-[var(--color-gold)] ml-0.5">%</span>
+                        {Math.round(pct * 100)}
+                        <span className="ml-0.5 text-[14px] text-[var(--color-gold)]">
+                            %
+                        </span>
                     </motion.div>
-                    <div className="text-[8px] text-[var(--color-text-muted)] uppercase tracking-[0.2em] font-bold mt-1">Acquisition Meta</div>
+                    <div className="mt-1 text-[8px] font-bold tracking-[0.2em] text-[var(--color-text-muted)] uppercase">
+                        Acquisition Meta
+                    </div>
                 </div>
             </div>
 
             {/* Info Grid */}
-            <div className="grid grid-cols-2 gap-2 shrink-0 mb-3">
-                <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-sm">
-                    <div className="text-[8px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Current Yield</div>
-                    <div className="text-[13px] font-black text-white truncate">{goal ? format(goal.current_savings) : format(0)}</div>
+            <div className="mb-3 grid shrink-0 grid-cols-2 gap-2">
+                <div className="rounded-xl border border-[var(--color-border)]/30 bg-[var(--color-bg-elevated)]/30 p-2.5 backdrop-blur-sm">
+                    <div className="mb-1 text-[8px] font-bold tracking-wider text-[var(--color-text-muted)] uppercase">
+                        Current Yield
+                    </div>
+                    <div className="truncate text-[13px] font-black text-[var(--color-text-main)]">
+                        {goal ? format(goal.current_savings) : format(0)}
+                    </div>
                 </div>
-                <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] backdrop-blur-sm">
-                    <div className="text-[8px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Threshold</div>
-                    <div className="text-[13px] font-black text-[var(--color-gold)] truncate">{goal ? format(goal.target_amount) : format(100000)}</div>
+                <div className="rounded-xl border border-[var(--color-border)]/30 bg-[var(--color-bg-elevated)]/30 p-2.5 backdrop-blur-sm">
+                    <div className="mb-1 text-[8px] font-bold tracking-wider text-[var(--color-text-muted)] uppercase">
+                        Threshold
+                    </div>
+                    <div className="truncate text-[13px] font-black text-[var(--color-gold)]">
+                        {goal ? format(goal.target_amount) : format(100000)}
+                    </div>
                 </div>
             </div>
 
             {/* Action Area */}
             <div className="shrink-0">
                 {goal ? (
-                    <motion.button 
-                        whileHover={{ scale: 1.02, backgroundColor: 'var(--color-gold-hover)' }} 
+                    <motion.button
+                        whileHover={{
+                            scale: 1.02,
+                            backgroundColor: 'var(--color-gold-hover)',
+                        }}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full py-2.5 rounded-xl bg-[var(--color-gold)] text-black text-[11px] font-black uppercase tracking-[0.1em] flex items-center justify-center gap-2 shadow-lg shadow-[var(--color-gold)]/10"
+                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-gold)] py-2.5 text-[11px] font-black tracking-[0.1em] text-[var(--color-gold-fg)] uppercase shadow-[var(--color-gold)]/10 shadow-lg"
                     >
-                        Optimize Allocation <TrendingUp className="w-3.5 h-3.5 stroke-[3]" />
+                        Optimize Allocation{' '}
+                        <TrendingUp className="h-3.5 w-3.5 stroke-[3]" />
                     </motion.button>
                 ) : (
-                    <Link href="/goals" className="w-full block">
-                        <motion.button 
-                            whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.08)' }} 
+                    <Link href="/goals" className="block w-full">
+                        <motion.button
+                            whileHover={{
+                                scale: 1.02,
+                                backgroundColor: 'var(--color-bg-elevated)',
+                            }}
                             whileTap={{ scale: 0.98 }}
-                            className="w-full py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-[11px] font-black uppercase tracking-[0.1em] flex items-center justify-center gap-2"
+                            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--color-border)]/30 bg-[var(--color-bg-elevated)]/20 py-2.5 text-[11px] font-black tracking-[0.1em] text-[var(--color-text-main)] uppercase"
                         >
-                            <Plus className="w-4 h-4" /> Initialize Goal
+                            <Plus className="h-4 w-4" /> Initialize Goal
                         </motion.button>
                     </Link>
                 )}

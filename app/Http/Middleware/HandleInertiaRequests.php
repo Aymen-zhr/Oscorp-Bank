@@ -66,6 +66,13 @@ class HandleInertiaRequests extends Middleware
             'total_capital' => $stats ? ($stats['live_balance'] + $stats['goal_savings']) : 0,
             'currency' => $currency,
             'rib' => config('oscorp.rib'),
+            'admin' => [
+                'name' => config('oscorp.admin.name'),
+                'status_colors' => config('oscorp.admin.status_colors'),
+                'stats_colors' => config('oscorp.admin.stats_colors'),
+                'date_format_short' => config('oscorp.admin.date_format_short'),
+                'date_format_long' => config('oscorp.admin.date_format_long'),
+            ],
         ];
     }
 }

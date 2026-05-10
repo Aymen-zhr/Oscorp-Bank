@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/useTranslation';
 import HomeNav from '@/components/home/HomeNav';
 import HeroSection from '@/components/home/HeroSection';
 import PartnersLoop from '@/components/home/PartnersLoop';
@@ -8,12 +9,19 @@ import StatsSection from '@/components/home/StatsSection';
 import ContactSection from '@/components/home/ContactSection';
 
 export default function Home({ canRegister }) {
+    const { t } = useTranslation();
+
     return (
-        <div className="min-h-screen w-full bg-[var(--color-bg-base)] text-[var(--color-text-main)] font-sans antialiased selection:bg-[var(--color-gold)] selection:text-white transition-colors duration-300">
-            <Head title="OSCORP | Private Banking Built for the Elite" />
-            
+        <div className="min-h-screen w-full bg-[var(--color-bg-base)] font-sans text-[var(--color-text-main)] antialiased transition-colors duration-300 selection:bg-[var(--color-gold)] selection:text-[var(--color-gold-fg)]">
+            <Head
+                title={t(
+                    'home.page_title',
+                    'OSCORP | Private Banking Built for the Elite',
+                )}
+            />
+
             <HomeNav canRegister={canRegister} />
-            
+
             <main>
                 <HeroSection canRegister={canRegister} />
                 <PartnersLoop />

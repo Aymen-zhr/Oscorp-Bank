@@ -6,6 +6,9 @@ use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use App\Models\Notification;
 use App\Traits\HasOscorpBalance;
 
 class SubscriptionsController extends Controller
@@ -15,7 +18,6 @@ class SubscriptionsController extends Controller
     public function page()
     {
         $userId = Auth::id();
-        $user = Auth::user();
         $stats = $this->getFinancialStats();
 
         // Find recurring subscription transactions from the database
@@ -43,7 +45,7 @@ class SubscriptionsController extends Controller
         // Use known subscriptions for showcase, but calculate prices from real transactions if available
         $knownSubs = config('subscriptions.demo_subscriptions', []);
 
-        foreach ($knownSubs as $idx => $sub) {
+        foreach ($knownSubs as $sub) {
             // Check if we have real transaction data for this merchant
             $realTx = $recurringMerchants->first(function($tx) use ($sub) {
                 return stripos($tx->merchant, explode(' ', $sub['name'])[0]) !== false;
@@ -57,12 +59,12 @@ class SubscriptionsController extends Controller
                 'domain' => $sub['domain'],
                 'plan' => $sub['plan'],
                 'price' => $price,
-                'status' => $idx === 5 ? 'Paused' : 'Active',
+                'status' => $sub['status'] ?? 'Active',
                 'billingCycle' => $sub['billingCycle'],
                 'nextBilling' => isset($sub['monthsAhead'])
-                    ? Carbon::now()->addMonths($sub['monthsAhead'])->format('Y-m-d')
-                    : Carbon::now()->addDays($sub['daysOffset'])->format('Y-m-d'),
-                'startedAt' => Carbon::now()->subMonths($sub['monthsAgo'])->format('Y-m-d'),
+                    ? Carbon::now()->addMonths($sub['monthsAhead'])->format(config('oscorp.date_formats.default', 'Y-m-d'))
+                    : Carbon::now()->addDays($sub['daysOffset'])->format(config('oscorp.date_formats.default', 'Y-m-d')),
+                'startedAt' => Carbon::now()->subMonths($sub['monthsAgo'])->format(config('oscorp.date_formats.default', 'Y-m-d')),
             ];
         }
 
@@ -88,9 +90,18 @@ class SubscriptionsController extends Controller
                     'domain' => $domain,
                     'amount' => round($tx->amount, 2),
                     'status' => 'Paid',
-                    'date' => Carbon::parse($tx->transacted_at)->format('Y-m-d'),
+                    'date' => Carbon::parse($tx->transacted_at)->format(config('oscorp.date_formats.default', 'Y-m-d')),
                 ];
             })->toArray();
+
+        // Apply session-stored paused states
+        $pausedIds = session('paused_subscriptions', []);
+        $activeSubscriptions = array_map(function ($sub) use ($pausedIds) {
+            if (in_array($sub['id'], $pausedIds)) {
+                $sub['status'] = 'Paused';
+            }
+            return $sub;
+        }, $activeSubscriptions);
 
         // Calculate stats
         $activeCount = count(array_filter($activeSubscriptions, fn($s) => $s['status'] === 'Active'));
@@ -113,5 +124,55 @@ class SubscriptionsController extends Controller
                 'yearlySpend' => round($estimatedMonthly * 12, 2),
             ]
         ]);
+    }
+
+    public function pause($id, Request $request)
+    {
+        $userId = Auth::id();
+        $name = $request->input('name', "Subscription {$id}");
+
+        $pausedIds = session('paused_subscriptions', []);
+        if (!in_array($id, $pausedIds)) {
+            $pausedIds[] = $id;
+            session(['paused_subscriptions' => $pausedIds]);
+        }
+
+        Notification::create([
+            'id' => (string) Str::uuid(),
+            'type' => 'subscription_paused',
+            'notifiable_type' => 'App\Models\User',
+            'notifiable_id' => $userId,
+            'data' => [
+                'type' => 'info',
+                'title' => 'Subscription Paused',
+                'message' => "{$name} has been paused. You will not be charged for this cycle.",
+            ],
+        ]);
+
+        return redirect()->back()->with('success', "{$name} paused successfully.");
+    }
+
+    public function resume($id, Request $request)
+    {
+        $userId = Auth::id();
+        $name = $request->input('name', "Subscription {$id}");
+
+        $pausedIds = session('paused_subscriptions', []);
+        $pausedIds = array_values(array_filter($pausedIds, fn($pausedId) => $pausedId !== $id));
+        session(['paused_subscriptions' => $pausedIds]);
+
+        Notification::create([
+            'id' => (string) Str::uuid(),
+            'type' => 'subscription_resumed',
+            'notifiable_type' => 'App\Models\User',
+            'notifiable_id' => $userId,
+            'data' => [
+                'type' => 'success',
+                'title' => 'Subscription Resumed',
+                'message' => "{$name} has been resumed. Your next billing will proceed as normal.",
+            ],
+        ]);
+
+        return redirect()->back()->with('success', "{$name} resumed successfully.");
     }
 }

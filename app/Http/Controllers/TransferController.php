@@ -9,6 +9,7 @@ use App\Services\TransactionService;
 use App\Services\NotificationService;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Transaction;
 
 class TransferController extends Controller
 {
@@ -24,8 +25,8 @@ class TransferController extends Controller
         $stats = $this->getFinancialStats();
 
         return Inertia::render('transfer', [
-            'recentTransfers' => $this->transactionService->getLatestByCategory('Transfer', 10),
-            'beneficiaries' => $this->transactionService->getBeneficiaries(8),
+            'recentTransfers' => $this->transactionService->getLatestByCategory('Transfer', config('oscorp.limits.recent_transfers', 10)),
+            'beneficiaries' => $this->transactionService->getBeneficiaries(config('oscorp.limits.beneficiaries', 8)),
         ]);
     }
 
@@ -44,7 +45,7 @@ class TransferController extends Controller
 
         if ($validated['amount'] > $liveBalance) {
             return back()->withErrors([
-                'amount' => 'Insufficient funds. Available balance: ' . number_format($liveBalance, 2) . ' MAD',
+                'amount' => 'Insufficient funds. Available balance: ' . number_format($liveBalance, 2) . ' ' . config('oscorp.currency', 'MAD'),
             ]);
         }
 
@@ -59,7 +60,7 @@ class TransferController extends Controller
                 'category' => 'Transfer',
                 'amount' => $validated['amount'],
                 'note' => $validated['note'] ?? null,
-                'status' => 'completed',
+                'status' => Transaction::STATUS_COMPLETED,
                 'logo_color' => $colors[array_rand($colors)],
                 'card_last4' => config('oscorp.card.last4'),
                 'transacted_at' => now(),
@@ -67,15 +68,13 @@ class TransferController extends Controller
                 'updated_at' => now(),
             ]);
 
-            if ($user) {
-                $this->notificationService->createTransferNotification(
-                    $user->id,
-                    $validated['amount'],
-                    $validated['recipient']
-                );
-            }
+            $this->notificationService->createTransferNotification(
+                $user->id,
+                $validated['amount'],
+                $validated['recipient']
+            );
         });
 
-        return redirect()->route('transfer')->with('success', 'Transfer of ' . number_format($validated['amount'], 2) . ' MAD to ' . $validated['recipient'] . ' completed successfully.');
+        return redirect()->route('transfer')->with('success', 'Transfer of ' . number_format($validated['amount'], 2) . ' ' . config('oscorp.currency', 'MAD') . ' to ' . $validated['recipient'] . ' completed successfully.');
     }
 }

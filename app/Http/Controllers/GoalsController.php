@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Goal;
+use App\Traits\HasOscorpBalance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class GoalsController extends Controller
 {
+    use HasOscorpBalance;
+
     public function page()
     {
         $goals = Goal::where('user_id', Auth::id())
@@ -63,7 +66,7 @@ class GoalsController extends Controller
             'current_savings' => 0,
             'start_date' => $startDate,
             'target_date' => $targetDate,
-            'status' => 'active',
+            'status' => Goal::STATUS_ACTIVE,
             'is_automatic' => $request->boolean('is_automatic'),
         ]);
 
@@ -80,12 +83,19 @@ class GoalsController extends Controller
             'amount' => 'required|numeric|min:0.01',
         ]);
 
+        $stats = $this->getFinancialStats();
+        if ($validated['amount'] > $stats['live_balance']) {
+            return redirect()->back()->withErrors([
+                'amount' => 'Insufficient balance. Available: ' . number_format($stats['live_balance'], 2) . ' ' . config('oscorp.currency', 'MAD'),
+            ]);
+        }
+
         $wasCompleted = $goal->is_completed;
 
         $goal->current_savings += $validated['amount'];
 
         if ($goal->is_completed && !$wasCompleted) {
-            $goal->status = 'completed';
+            $goal->status = Goal::STATUS_COMPLETED;
             $goal->completed_at = now();
         }
 
@@ -104,7 +114,7 @@ class GoalsController extends Controller
             return redirect()->route('goals');
         }
 
-        $goal->status = 'unlocked';
+        $goal->status = Goal::STATUS_UNLOCKED;
         $goal->save();
 
         return redirect()->route('goals');

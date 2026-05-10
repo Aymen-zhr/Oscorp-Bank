@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Goal;
 use App\Traits\HasOscorpBalance;
 
 class DashboardController extends Controller
@@ -13,20 +14,18 @@ class DashboardController extends Controller
 
     public function index()
     {
-        $userId = \Illuminate\Support\Facades\Auth::id();
-        $baseBalance = $this->getBaseBalance();
-        
+        $userId = Auth::id();
+
         $transactions = DB::table('transactions')
             ->where('user_id', $userId)
             ->orderBy('transacted_at', 'desc')
-            ->take(8)
+            ->take(config('oscorp.limits.recent_transactions', 8))
             ->get();
             
         $stats = $this->getFinancialStats();
         
-        // Fetch the user's most relevant active goal
-        $activeGoal = \App\Models\Goal::where('user_id', \Illuminate\Support\Facades\Auth::id())
-            ->where('status', 'active')
+        $activeGoal = Goal::where('user_id', $userId)
+            ->where('status', Goal::STATUS_ACTIVE)
             ->orderBy('target_date', 'asc')
             ->first();
 

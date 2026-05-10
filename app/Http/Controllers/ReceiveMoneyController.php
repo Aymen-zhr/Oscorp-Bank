@@ -15,7 +15,6 @@ class ReceiveMoneyController extends Controller
 
     public function page()
     {
-        $stats = $this->getFinancialStats();
         $userId = Auth::id();
 
         $recentReceives = DB::table('transactions')
@@ -63,7 +62,7 @@ class ReceiveMoneyController extends Controller
         $requester->notify(new \App\Notifications\SystemNotification([
             'type' => 'warning',
             'title' => 'Payment Request',
-            'message' => $user->name . ' requested ' . number_format($validated['amount'], 2) . ' MAD' . ($validated['note'] ? ' - ' . $validated['note'] : ''),
+            'message' => $user->name . ' requested ' . number_format($validated['amount'], 2) . ' ' . config('oscorp.currency', 'MAD') . ($validated['note'] ? ' - ' . $validated['note'] : ''),
             'action_type' => 'request',
             'user_name' => $user->name,
         ]));

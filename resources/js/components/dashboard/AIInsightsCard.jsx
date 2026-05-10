@@ -33,7 +33,10 @@ function LiveWave({ color = '#D4AF37', amplitude = 8, speed = 1.4 }) {
 
             for (let x = 0; x <= W; x++) {
                 const t = (x / W) * Math.PI * 4 + frame.current;
-                const y = H / 2 + Math.sin(t) * amplitude + Math.sin(t * 1.7 + 1) * (amplitude * 0.4);
+                const y =
+                    H / 2 +
+                    Math.sin(t) * amplitude +
+                    Math.sin(t * 1.7 + 1) * (amplitude * 0.4);
                 x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
             }
             ctx.stroke();
@@ -62,10 +65,13 @@ function LiveWave({ color = '#D4AF37', amplitude = 8, speed = 1.4 }) {
 
         const ro = new ResizeObserver(resize);
         ro.observe(canvas);
-        return () => { cancelAnimationFrame(raf.current); ro.disconnect(); };
+        return () => {
+            cancelAnimationFrame(raf.current);
+            ro.disconnect();
+        };
     }, [color, amplitude, speed]);
 
-    return <canvas ref={canvasRef} className="w-full h-full" />;
+    return <canvas ref={canvasRef} className="h-full w-full" />;
 }
 
 const INTEL = (balance, spending, txCount, format) => [
@@ -103,7 +109,12 @@ const INTEL = (balance, spending, txCount, format) => [
     },
 ];
 
-const STATUS_DOT = { nominal: '#F59E0B', optimal: '#34D399', elevated: '#60A5FA', secure: '#34D399' };
+const STATUS_DOT = {
+    nominal: '#F59E0B',
+    optimal: '#34D399',
+    elevated: '#60A5FA',
+    secure: '#34D399',
+};
 
 export default function AIInsightsCard() {
     const { t } = useTranslation();
@@ -114,13 +125,19 @@ export default function AIInsightsCard() {
     const spending = Number(props.monthly_debits ?? 0);
     const txCount = props.transactions?.length ?? 0;
 
-    const slides = useMemo(() => INTEL(balance, spending, txCount, format), [balance, spending, txCount, format]);
+    const slides = useMemo(
+        () => INTEL(balance, spending, txCount, format),
+        [balance, spending, txCount, format],
+    );
     const [idx, setIdx] = useState(0);
     const [paused, setPaused] = useState(false);
 
     useEffect(() => {
         if (paused) return;
-        const id = setInterval(() => setIdx(i => (i + 1) % slides.length), 4000);
+        const id = setInterval(
+            () => setIdx((i) => (i + 1) % slides.length),
+            4000,
+        );
         return () => clearInterval(id);
     }, [paused]);
 
@@ -128,26 +145,30 @@ export default function AIInsightsCard() {
 
     return (
         <div
-            className="h-full w-full rounded-2xl relative overflow-hidden flex flex-col select-none"
-            style={{ background: 'linear-gradient(160deg, #0A0A0A 0%, #040404 100%)', border: '1px solid rgba(255,255,255,0.07)' }}
+            className="relative flex h-full w-full flex-col overflow-hidden rounded-2xl select-none"
+            style={{
+                background:
+                    'linear-gradient(160deg, var(--color-card-gradient-ai-from) 0%, var(--color-card-gradient-ai-to) 100%)',
+                border: '1px solid var(--color-border)',
+            }}
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
         >
             {/* ── Gold accent line top ── */}
-            <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[var(--color-gold)]/60 to-transparent z-10" />
+            <div className="absolute inset-x-0 top-0 z-10 h-[1px] bg-gradient-to-r from-transparent via-[var(--color-gold)]/60 to-transparent" />
 
             {/* ── Ambient radial glow that follows active color ── */}
             <motion.div
-                className="absolute -top-8 -right-8 w-40 h-40 rounded-full blur-[60px] pointer-events-none"
+                className="pointer-events-none absolute -top-8 -right-8 h-40 w-40 rounded-full blur-[60px]"
                 animate={{ backgroundColor: cur.color + '20' }}
                 transition={{ duration: 0.8 }}
             />
 
             {/* ── HEADER ── */}
-            <div className="flex items-center justify-between px-4 pt-4 shrink-0 relative z-10">
+            <div className="relative z-10 flex shrink-0 items-center justify-between px-4 pt-4">
                 <div className="flex items-center gap-2">
                     {/* Live indicator */}
-                    <div className="relative w-2 h-2">
+                    <div className="relative h-2 w-2">
                         <div className="absolute inset-0 rounded-full bg-emerald-500" />
                         <motion.div
                             className="absolute inset-0 rounded-full bg-emerald-500"
@@ -155,42 +176,80 @@ export default function AIInsightsCard() {
                             transition={{ duration: 1.8, repeat: Infinity }}
                         />
                     </div>
-                    <span className="text-[9px] font-black text-[var(--color-gold)] uppercase tracking-[0.25em]">
+                    <span className="text-[9px] font-black tracking-[0.25em] text-[var(--color-gold)] uppercase">
                         Private Intel
                     </span>
                 </div>
-                <div className="text-[8px] font-mono text-white/20 uppercase tracking-widest">
+                <div className="font-mono text-[8px] tracking-widest text-[var(--color-text-muted)]/30 uppercase">
                     OIS · {idx + 1}/{slides.length}
                 </div>
             </div>
 
             {/* ── CENTRAL DISPLAY ── */}
-            <div className="flex-1 flex flex-col items-center justify-center px-4 relative z-10 min-h-0 py-1">
+            <div className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center px-4 py-1">
                 {/* Oscorp Logo */}
-                <div className="relative flex items-center justify-center mb-3">
-                    <div className="relative w-12 h-12">
+                <div className="relative mb-3 flex items-center justify-center">
+                    <div className="relative h-12 w-12">
                         {/* Subtle pulse behind logo */}
                         <motion.div
                             className="absolute inset-0 rounded-xl"
-                            animate={{ opacity: [0.15, 0.35, 0.15], scale: [0.9, 1.05, 0.9] }}
-                            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                            style={{ background: `radial-gradient(circle, ${cur.color}40 0%, transparent 70%)` }}
+                            animate={{
+                                opacity: [0.15, 0.35, 0.15],
+                                scale: [0.9, 1.05, 0.9],
+                            }}
+                            transition={{
+                                duration: 3,
+                                repeat: Infinity,
+                                ease: 'easeInOut',
+                            }}
+                            style={{
+                                background: `radial-gradient(circle, ${cur.color}40 0%, transparent 70%)`,
+                            }}
                         />
                         <motion.div
-                            className="w-12 h-12 rounded-xl flex items-center justify-center relative"
+                            className="relative flex h-12 w-12 items-center justify-center rounded-xl"
                             animate={{ borderColor: cur.color + '50' }}
                             transition={{ duration: 0.6 }}
-                            style={{ background: 'linear-gradient(135deg, #1a1a1a, #000)', border: '1px solid', boxShadow: `0 0 18px ${cur.color}20` }}
+                            style={{
+                                background:
+                                    'linear-gradient(135deg, var(--color-bg-elevated), var(--color-bg-base))',
+                                border: '1px solid',
+                                boxShadow: `0 0 18px ${cur.color}20`,
+                            }}
                         >
-                            <svg width="22" height="22" viewBox="0 0 100 100" fill="none">
-                                <path d="M50 10L15 32V68L50 90L85 68V32L50 10Z"
-                                    stroke="url(#lgLogo)" strokeWidth="6" strokeLinejoin="round" />
-                                <path d="M50 30L35 39V61L50 70L65 61V39L50 30Z"
-                                    fill="url(#lgLogo)" fillOpacity="0.2" stroke="url(#lgLogo)" strokeWidth="2" />
+                            <svg
+                                width="22"
+                                height="22"
+                                viewBox="0 0 100 100"
+                                fill="none"
+                            >
+                                <path
+                                    d="M50 10L15 32V68L50 90L85 68V32L50 10Z"
+                                    stroke="url(#lgLogo)"
+                                    strokeWidth="6"
+                                    strokeLinejoin="round"
+                                />
+                                <path
+                                    d="M50 30L35 39V61L50 70L65 61V39L50 30Z"
+                                    fill="url(#lgLogo)"
+                                    fillOpacity="0.2"
+                                    stroke="url(#lgLogo)"
+                                    strokeWidth="2"
+                                />
                                 <defs>
-                                    <linearGradient id="lgLogo" x1="15" y1="10" x2="85" y2="90" gradientUnits="userSpaceOnUse">
+                                    <linearGradient
+                                        id="lgLogo"
+                                        x1="15"
+                                        y1="10"
+                                        x2="85"
+                                        y2="90"
+                                        gradientUnits="userSpaceOnUse"
+                                    >
                                         <stop stopColor="#D4AF37" />
-                                        <stop offset="0.5" stopColor="#FFD700" />
+                                        <stop
+                                            offset="0.5"
+                                            stopColor="#FFD700"
+                                        />
                                         <stop offset="1" stopColor="#B8860B" />
                                     </linearGradient>
                                 </defs>
@@ -209,18 +268,27 @@ export default function AIInsightsCard() {
                         transition={{ duration: 0.3 }}
                         className="text-center"
                     >
-                        <div className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] mb-0.5">
+                        <div className="mb-0.5 text-[9px] font-black tracking-[0.2em] text-[var(--color-text-muted)]/30 uppercase">
                             {cur.label}
                         </div>
                         <div
-                            className="text-[20px] font-black leading-none tracking-tighter"
-                            style={{ color: cur.color, textShadow: `0 0 20px ${cur.color}60` }}
+                            className="text-[20px] leading-none font-black tracking-tighter"
+                            style={{
+                                color: cur.color,
+                                textShadow: `0 0 20px ${cur.color}60`,
+                            }}
                         >
                             {cur.value}
                         </div>
-                        <div className="flex items-center justify-center gap-1.5 mt-1">
-                            <div className="w-1 h-1 rounded-full" style={{ background: STATUS_DOT[cur.status] }} />
-                            <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: STATUS_DOT[cur.status] }}>
+                        <div className="mt-1 flex items-center justify-center gap-1.5">
+                            <div
+                                className="h-1 w-1 rounded-full"
+                                style={{ background: STATUS_DOT[cur.status] }}
+                            />
+                            <span
+                                className="text-[9px] font-bold tracking-wider uppercase"
+                                style={{ color: STATUS_DOT[cur.status] }}
+                            >
                                 {cur.sub}
                             </span>
                         </div>
@@ -229,33 +297,71 @@ export default function AIInsightsCard() {
             </div>
 
             {/* ── LIVE WAVE ── */}
-            <div className="h-8 w-full shrink-0 px-4 relative z-10">
+            <div className="relative z-10 h-8 w-full shrink-0 px-4">
                 <AnimatePresence mode="wait">
-                    <motion.div key={idx} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full">
-                        <LiveWave color={cur.color} amplitude={6} speed={1 + idx * 0.3} />
+                    <motion.div
+                        key={idx}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="h-full"
+                    >
+                        <LiveWave
+                            color={cur.color}
+                            amplitude={6}
+                            speed={1 + idx * 0.3}
+                        />
                     </motion.div>
                 </AnimatePresence>
             </div>
 
             {/* ── METRIC STRIP ── */}
-            <div className="grid grid-cols-4 border-t shrink-0 relative z-10" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+            <div className="relative z-10 grid shrink-0 grid-cols-4 border-t border-[var(--color-border)]/20">
                 {slides.map((s, i) => (
                     <motion.button
                         key={s.id}
                         onClick={() => setIdx(i)}
-                        className="flex flex-col items-center py-2.5 gap-0.5 relative transition-all"
+                        className="relative flex flex-col items-center gap-0.5 py-2.5 transition-all"
                         whileTap={{ scale: 0.95 }}
-                        style={{ borderRight: i < 3 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}
+                        style={{
+                            borderRight:
+                                i < 3
+                                    ? '1px solid var(--color-border)'
+                                    : 'none',
+                        }}
                     >
                         {i === idx && (
-                            <motion.div layoutId="activeTab"
+                            <motion.div
+                                layoutId="activeTab"
                                 className="absolute inset-0 opacity-100"
-                                style={{ background: s.color + '10', borderTop: `1px solid ${s.color}40` }}
+                                style={{
+                                    background: s.color + '10',
+                                    borderTop: `1px solid ${s.color}40`,
+                                }}
                             />
                         )}
-                        <div className="w-1 h-1 rounded-full relative z-10" style={{ background: i === idx ? s.color : 'rgba(255,255,255,0.15)', boxShadow: i === idx ? `0 0 6px ${s.color}` : 'none' }} />
-                        <span className="text-[7.5px] font-black uppercase tracking-wider relative z-10 leading-none"
-                            style={{ color: i === idx ? s.color : 'rgba(255,255,255,0.2)' }}>
+                        <div
+                            className="relative z-10 h-1 w-1 rounded-full"
+                            style={{
+                                background:
+                                    i === idx
+                                        ? s.color
+                                        : 'var(--color-text-muted)',
+                                opacity: i === idx ? 1 : 0.2,
+                                boxShadow:
+                                    i === idx ? `0 0 6px ${s.color}` : 'none',
+                            }}
+                        />
+                        <span
+                            className="relative z-10 text-[7.5px] leading-none font-black tracking-wider uppercase"
+                            style={{
+                                color:
+                                    i === idx
+                                        ? s.color
+                                        : 'var(--color-text-muted)',
+                                opacity: i === idx ? 1 : 0.3,
+                            }}
+                        >
                             {s.label.split(' ')[0]}
                         </span>
                     </motion.button>

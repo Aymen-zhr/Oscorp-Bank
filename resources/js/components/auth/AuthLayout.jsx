@@ -19,12 +19,13 @@ function MagneticLogo({ children }) {
 
     const handleMouseMove = (e) => {
         const { clientX, clientY } = e;
-        const { left, top, width, height } = ref.current.getBoundingClientRect();
+        const { left, top, width, height } =
+            ref.current.getBoundingClientRect();
         const centerX = left + width / 2;
         const centerY = top + height / 2;
         const distanceX = clientX - centerX;
         const distanceY = clientY - centerY;
-        
+
         // Only attract if within range
         if (Math.abs(distanceX) < 150 && Math.abs(distanceY) < 150) {
             setPosition({ x: distanceX * 0.25, y: distanceY * 0.25 });
@@ -41,7 +42,12 @@ function MagneticLogo({ children }) {
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             animate={{ x: position.x, y: position.y }}
-            transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+            transition={{
+                type: 'spring',
+                stiffness: 150,
+                damping: 15,
+                mass: 0.1,
+            }}
             className="cursor-pointer"
         >
             {children}
@@ -59,7 +65,10 @@ export default function AuthLayout({ activeTab, children, title, subtitle }) {
             if (leftContainerRef.current) {
                 const rect = leftContainerRef.current.getBoundingClientRect();
                 if (e.clientX <= rect.width) {
-                    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+                    setMousePos({
+                        x: e.clientX - rect.left,
+                        y: e.clientY - rect.top,
+                    });
                 }
             }
         };
@@ -68,23 +77,32 @@ export default function AuthLayout({ activeTab, children, title, subtitle }) {
     }, []);
 
     return (
-        <div className="min-h-screen w-full flex relative overflow-hidden selection:bg-[var(--color-gold)] selection:text-white" style={{ background: 'var(--color-bg-base)', color: 'var(--color-text-main)' }}>
-            
+        <div
+            className="relative flex min-h-screen w-full overflow-hidden selection:bg-[var(--color-gold)] selection:text-[var(--color-gold-fg)]"
+            style={{
+                background: 'var(--color-bg-base)',
+                color: 'var(--color-text-main)',
+            }}
+        >
             {/* Left Column: Atmospheric Branding */}
-             <div ref={leftContainerRef} className="hidden lg:flex lg:w-1/2 relative items-center justify-center overflow-hidden" style={{ background: '#0A0908' }}>
-                
+            <div
+                ref={leftContainerRef}
+                className="relative hidden items-center justify-center overflow-hidden lg:flex lg:w-1/2"
+                style={{ background: '#0A0908' }}
+            >
                 {/* Dynamic Mouse Glow */}
                 <motion.div
-                    className="absolute w-[800px] h-[800px] rounded-full pointer-events-none z-0 opacity-40"
+                    className="pointer-events-none absolute z-0 h-[800px] w-[800px] rounded-full opacity-40"
                     style={{
-                        background: 'radial-gradient(circle, rgba(212,175,55,0.12), transparent 70%)',
+                        background:
+                            'radial-gradient(circle, rgba(212,175,55,0.12), transparent 70%)',
                         left: mousePos.x - 400,
                         top: mousePos.y - 400,
                     }}
                 />
 
                 {/* Particles */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+                <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
                     {particles.map((p) => (
                         <motion.div
                             key={p.id}
@@ -98,7 +116,11 @@ export default function AuthLayout({ activeTab, children, title, subtitle }) {
                             }}
                             animate={{
                                 y: [0, -100, 0],
-                                opacity: [p.opacity, p.opacity * 0.2, p.opacity],
+                                opacity: [
+                                    p.opacity,
+                                    p.opacity * 0.2,
+                                    p.opacity,
+                                ],
                             }}
                             transition={{
                                 duration: p.duration,
@@ -114,22 +136,50 @@ export default function AuthLayout({ activeTab, children, title, subtitle }) {
                 <div className="relative z-10 flex flex-col items-center">
                     <MagneticLogo>
                         <motion.div
-                            className="w-24 h-24 rounded-3xl flex items-center justify-center mb-8 relative group overflow-hidden"
-                            style={{ 
-                                background: 'var(--color-bg-elevated)', 
+                            className="group relative mb-8 flex h-24 w-24 items-center justify-center overflow-hidden rounded-3xl"
+                            style={{
+                                background: 'var(--color-bg-elevated)',
                                 border: '1px solid var(--color-border)',
-                                boxShadow: '0 20px 50px rgba(0,0,0,0.3)' 
+                                boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
                             }}
                         >
-                            <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-gold)]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            <svg width="56" height="56" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
-                                <path d="M50 10L15 32V68L50 90L85 68V32L50 10Z" stroke="url(#goldGradAuth)" strokeWidth="6" strokeLinejoin="round"/>
-                                <path d="M50 30L35 39V61L50 70L65 61V39L50 30Z" fill="url(#goldGradAuth)" fillOpacity="0.2" stroke="url(#goldGradAuth)" strokeWidth="2"/>
+                            <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-gold)]/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                            <svg
+                                width="56"
+                                height="56"
+                                viewBox="0 0 100 100"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="relative z-10"
+                            >
+                                <path
+                                    d="M50 10L15 32V68L50 90L85 68V32L50 10Z"
+                                    stroke="url(#goldGradAuth)"
+                                    strokeWidth="6"
+                                    strokeLinejoin="round"
+                                />
+                                <path
+                                    d="M50 30L35 39V61L50 70L65 61V39L50 30Z"
+                                    fill="url(#goldGradAuth)"
+                                    fillOpacity="0.2"
+                                    stroke="url(#goldGradAuth)"
+                                    strokeWidth="2"
+                                />
                                 <defs>
-                                    <linearGradient id="goldGradAuth" x1="15" y1="10" x2="85" y2="90" gradientUnits="userSpaceOnUse">
-                                        <stop stopColor="#D4AF37"/>
-                                        <stop offset="0.5" stopColor="#FFD700"/>
-                                        <stop offset="1" stopColor="#B8860B"/>
+                                    <linearGradient
+                                        id="goldGradAuth"
+                                        x1="15"
+                                        y1="10"
+                                        x2="85"
+                                        y2="90"
+                                        gradientUnits="userSpaceOnUse"
+                                    >
+                                        <stop stopColor="#D4AF37" />
+                                        <stop
+                                            offset="0.5"
+                                            stopColor="#FFD700"
+                                        />
+                                        <stop offset="1" stopColor="#B8860B" />
                                     </linearGradient>
                                 </defs>
                             </svg>
@@ -137,18 +187,18 @@ export default function AuthLayout({ activeTab, children, title, subtitle }) {
                     </MagneticLogo>
 
                     <div className="text-center">
-                        <motion.h1 
+                        <motion.h1
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-6xl font-black tracking-tighter text-white mb-2"
+                            className="mb-2 text-6xl font-black tracking-tighter text-white"
                         >
                             OSCORP
                         </motion.h1>
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.3 }}
-                            className="text-[14px] text-[var(--color-gold)] uppercase tracking-[0.5em] font-bold"
+                            className="text-[14px] font-bold tracking-[0.5em] text-[var(--color-gold)] uppercase"
                         >
                             Private Banking
                         </motion.div>
@@ -157,57 +207,86 @@ export default function AuthLayout({ activeTab, children, title, subtitle }) {
             </div>
 
             {/* Right Column: Form */}
-             <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-12 relative z-10">
-
-                 {/* Mobile Header */}
-                 <div className="flex lg:hidden items-center gap-3 mb-8 sm:mb-12">
-                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--color-gold), var(--color-gold-dark))' }}>
-                         <Shield className="text-white w-5 h-5 sm:w-6 sm:h-6" />
-                     </div>
-                     <span className="text-2xl sm:text-3xl font-black tracking-tighter">OSCORP</span>
-                 </div>
+            <div className="relative z-10 flex w-full flex-col items-center justify-center p-4 sm:p-6 lg:w-1/2 lg:p-12">
+                {/* Mobile Header */}
+                <div className="mb-8 flex items-center gap-3 sm:mb-12 lg:hidden">
+                    <div
+                        className="flex h-10 w-10 items-center justify-center rounded-2xl sm:h-12 sm:w-12"
+                        style={{
+                            background:
+                                'linear-gradient(135deg, var(--color-gold), var(--color-gold-dark))',
+                        }}
+                    >
+                        <Shield className="h-5 w-5 text-white sm:h-6 sm:w-6" />
+                    </div>
+                    <span className="text-2xl font-black tracking-tighter sm:text-3xl">
+                        OSCORP
+                    </span>
+                </div>
 
                 {/* Tab Switcher */}
-                <div className="w-full max-w-[460px] mb-10 p-1.5 rounded-2xl bg-[var(--color-bg-card)] border border-[var(--color-border)] shadow-2xl relative">
-                    <div className="flex relative">
+                <div className="relative mb-10 w-full max-w-[460px] rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-card)] p-1.5 shadow-2xl">
+                    <div className="relative flex">
                         <motion.div
                             layoutId="auth-pill"
                             className="absolute top-0 bottom-0 rounded-xl shadow-lg"
-                            style={{ 
-                                left: isLogin ? '0%' : '50%', 
+                            style={{
+                                left: isLogin ? '0%' : '50%',
                                 width: '50%',
-                                background: 'linear-gradient(to right, var(--color-gold), var(--color-gold-dark))' 
+                                background:
+                                    'linear-gradient(to right, var(--color-gold), var(--color-gold-dark))',
                             }}
-                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                            transition={{
+                                type: 'spring',
+                                stiffness: 400,
+                                damping: 30,
+                            }}
                         />
-                        <Link href="/login" className={`relative z-10 w-1/2 py-3.5 text-center text-[13px] font-black uppercase tracking-widest transition-colors duration-300 ${isLogin ? 'text-black' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'}`}>
+                        <Link
+                            href="/login"
+                            className={`relative z-10 w-1/2 py-3.5 text-center text-[13px] font-black tracking-widest uppercase transition-colors duration-300 ${isLogin ? 'text-[var(--color-gold-fg)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'}`}
+                        >
                             Log In
                         </Link>
-                        <Link href="/register" className={`relative z-10 w-1/2 py-3.5 text-center text-[13px] font-black uppercase tracking-widest transition-colors duration-300 ${!isLogin ? 'text-black' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'}`}>
+                        <Link
+                            href="/register"
+                            className={`relative z-10 w-1/2 py-3.5 text-center text-[13px] font-black tracking-widest uppercase transition-colors duration-300 ${!isLogin ? 'text-[var(--color-gold-fg)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'}`}
+                        >
                             Sign Up
                         </Link>
                     </div>
                 </div>
 
-                <div className="w-full max-w-[460px] relative">
+                <div className="relative w-full max-w-[460px]">
                     <AnimatePresence mode="wait" initial={false}>
                         <motion.div
                             key={activeTab}
-                            initial={{ opacity: 0, x: isLogin ? -20 : 20, filter: 'blur(10px)' }}
+                            initial={{
+                                opacity: 0,
+                                x: isLogin ? -20 : 20,
+                                filter: 'blur(10px)',
+                            }}
                             animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-                            exit={{ opacity: 0, x: isLogin ? 20 : -20, filter: 'blur(10px)' }}
-                            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                            exit={{
+                                opacity: 0,
+                                x: isLogin ? 20 : -20,
+                                filter: 'blur(10px)',
+                            }}
+                            transition={{
+                                duration: 0.4,
+                                ease: [0.22, 1, 0.36, 1],
+                            }}
                         >
                             <div className="mb-10 text-center lg:text-left">
-                                <motion.h2 
+                                <motion.h2
                                     layoutId="auth-title"
-                                    className="text-4xl lg:text-5xl font-black tracking-tight text-[var(--color-text-main)] mb-3"
+                                    className="mb-3 text-4xl font-black tracking-tight text-[var(--color-text-main)] lg:text-5xl"
                                 >
                                     {title}
                                 </motion.h2>
-                                <motion.p 
+                                <motion.p
                                     layoutId="auth-subtitle"
-                                    className="text-[16px] text-[var(--color-text-muted)] font-medium leading-relaxed"
+                                    className="text-[16px] leading-relaxed font-medium text-[var(--color-text-muted)]"
                                 >
                                     {subtitle}
                                 </motion.p>

@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Traits\HasOscorpBalance;
 use Inertia\Inertia;
+use App\Models\BillSplit;
+use App\Models\BillParticipant;
+use App\Models\Transaction;
 
 class BillSplitController extends Controller
 {
@@ -58,15 +61,15 @@ class BillSplitController extends Controller
             });
 
         $summary = [
-            'total_you_owe' => $splits->filter(fn($s) => $s['you_owe'] && $s['status'] === 'active')->sum('your_share'),
-            'total_owed_to_you' => $splits->filter(fn($s) => !$s['you_owe'] && $s['status'] === 'active')->sum('your_share'),
-            'active_count' => $splits->filter(fn($s) => $s['status'] === 'active')->count(),
-            'active_total' => $splits->filter(fn($s) => $s['status'] === 'active')->sum('total_amount'),
-            'pending_count' => $splits->filter(fn($s) => $s['status'] === 'pending')->count(),
-            'pending_total' => $splits->filter(fn($s) => $s['status'] === 'pending')->sum('total_amount'),
-            'declined_count' => $splits->filter(fn($s) => $s['status'] === 'declined')->count(),
-            'declined_total' => $splits->filter(fn($s) => $s['status'] === 'declined')->sum('total_amount'),
-            'paid_count' => $splits->filter(fn($s) => $s['status'] === 'paid')->count(),
+            'total_you_owe' => $splits->filter(fn($s) => $s['you_owe'] && $s['status'] === BillSplit::STATUS_ACTIVE)->sum('your_share'),
+            'total_owed_to_you' => $splits->filter(fn($s) => !$s['you_owe'] && $s['status'] === BillSplit::STATUS_ACTIVE)->sum('your_share'),
+            'active_count' => $splits->filter(fn($s) => $s['status'] === BillSplit::STATUS_ACTIVE)->count(),
+            'active_total' => $splits->filter(fn($s) => $s['status'] === BillSplit::STATUS_ACTIVE)->sum('total_amount'),
+            'pending_count' => $splits->filter(fn($s) => $s['status'] === BillSplit::STATUS_PENDING)->count(),
+            'pending_total' => $splits->filter(fn($s) => $s['status'] === BillSplit::STATUS_PENDING)->sum('total_amount'),
+            'declined_count' => $splits->filter(fn($s) => $s['status'] === BillSplit::STATUS_DECLINED)->count(),
+            'declined_total' => $splits->filter(fn($s) => $s['status'] === BillSplit::STATUS_DECLINED)->sum('total_amount'),
+            'paid_count' => $splits->filter(fn($s) => $s['status'] === BillSplit::STATUS_PAID)->count(),
         ];
 
         $contacts = DB::table('contacts')
@@ -178,35 +181,7 @@ class BillSplitController extends Controller
             $totalAmount = (float) $validated['total_amount'];
             $participantCount = count($validated['participants']);
 
-            if ($validated['split_type'] === 'equal') {
-                $sharePerPerson = round($totalAmount / $participantCount, 2);
-
-                $yourShare = 0;
-                foreach ($validated['participants'] as $p) {
-                    if (!empty($p['is_you'])) {
-                        $yourShare = $sharePerPerson;
-                        break;
-                    }
-                }
-            } else {
-                $yourShare = 0;
-                foreach ($validated['participants'] as $p) {
-                    if (!empty($p['is_you'])) {
-                        $yourShare = (float) ($p['share_amount'] ?? 0);
-                        break;
-                    }
-                }
-            }
-
-            $youOwe = true;
-            foreach ($validated['participants'] as $p) {
-                if (!empty($p['is_you'])) {
-                    $youOwe = !(bool) ($p['has_paid'] ?? false);
-                    break;
-                }
-            }
-
-            $colors = ['#D4AF37', '#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EC4899'];
+            $colors = config('oscorp.colors.transfer', ['#D4AF37', '#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EC4899']);
 
             $billSplitId = DB::table('bill_splits')->insertGetId([
                 'creator_id' => $user->id,
@@ -215,10 +190,8 @@ class BillSplitController extends Controller
                 'total_amount' => $totalAmount,
                 'icon' => $validated['icon'] ?? 'receipt',
                 'logo_color' => $validated['logo_color'] ?? $colors[array_rand($colors)],
-                'status' => 'pending',
+                'status' => BillSplit::STATUS_PENDING,
                 'split_type' => $validated['split_type'],
-                'your_share' => $yourShare,
-                'you_owe' => $youOwe,
                 'due_date' => $validated['due_date'] ?? null,
                 'is_recurring' => $validated['is_recurring'] ?? false,
                 'recurring_period' => $validated['is_recurring'] ? ($validated['recurring_period'] ?? 'monthly') : null,
@@ -245,7 +218,7 @@ class BillSplitController extends Controller
                     'name' => $p['name'],
                     'phone_number' => $p['phone_number'] ?? null,
                     'tag' => $p['tag'] ?? null,
-                    'acceptance_status' => !empty($p['is_you']) ? 'accepted' : 'pending',
+                    'acceptance_status' => !empty($p['is_you']) ? BillParticipant::STATUS_ACCEPTED : BillParticipant::STATUS_PENDING,
                     'avatar_color' => $p['avatar_color'] ?? $colors[array_rand($colors)],
                     'share_amount' => $shareAmount,
                     'is_you' => !empty($p['is_you']),
@@ -269,7 +242,7 @@ class BillSplitController extends Controller
 
         DB::transaction(function () use ($id, $validated, $userId) {
             $split = DB::table('bill_splits')->find($id);
-            if (!$split || $split->status !== 'active') {
+            if (!$split || $split->status !== BillSplit::STATUS_ACTIVE) {
                 return;
             }
 
@@ -296,7 +269,7 @@ class BillSplitController extends Controller
                     DB::table('bill_splits')
                         ->where('id', $id)
                         ->update([
-                            'status' => 'paid',
+                            'status' => BillSplit::STATUS_PAID,
                             'updated_at' => now(),
                         ]);
                 }
@@ -319,7 +292,7 @@ class BillSplitController extends Controller
                     'notifiable_id' => $user->id,
                     'data' => json_encode([
                         'title' => $isPartial ? 'Partial Payment' : 'Bill Paid',
-                        'message' => ($isPartial ? 'You paid MAD ' . number_format($paymentAmount, 2) . ' towards "' : 'You paid your share of "') . $split->title . '"',
+                        'message' => ($isPartial ? 'You paid ' . config('oscorp.currency', 'MAD') . ' ' . number_format($paymentAmount, 2) . ' towards "' : 'You paid your share of "') . $split->title . '"',
                         'type' => 'bill_paid',
                         'amount' => $paymentAmount,
                         'icon' => 'credit',
@@ -331,10 +304,10 @@ class BillSplitController extends Controller
                 DB::table('transactions')->insert([
                     'user_id' => $user->id,
                     'merchant' => $split->title,
-                    'type' => 'debit',
+                    'type' => Transaction::TYPE_DEBIT,
                     'category' => 'Bill Split',
                     'amount' => $paymentAmount,
-                    'status' => 'completed',
+                    'status' => Transaction::STATUS_COMPLETED,
                     'logo_color' => $split->logo_color,
                     'transacted_at' => now(),
                     'created_at' => now(),
@@ -349,10 +322,15 @@ class BillSplitController extends Controller
     public function respond(Request $request, $id)
     {
         $validated = $request->validate([
-            'status' => ['required', 'in:accepted,declined'],
+            'status' => ['required', 'in:' . BillParticipant::STATUS_ACCEPTED . ',' . BillParticipant::STATUS_DECLINED],
         ]);
 
         DB::transaction(function () use ($id, $validated) {
+            $split = DB::table('bill_splits')->find($id);
+            if (!$split || !in_array($split->status, [BillSplit::STATUS_PENDING, BillSplit::STATUS_ACTIVE])) {
+                return;
+            }
+
             $participant = DB::table('bill_participants')
                 ->where('bill_split_id', $id)
                 ->where('user_id', Auth::id())
@@ -366,19 +344,19 @@ class BillSplitController extends Controller
                 // Check if everyone has accepted
                 $pendingCount = DB::table('bill_participants')
                     ->where('bill_split_id', $id)
-                    ->where('acceptance_status', 'pending')
+                    ->where('acceptance_status', BillParticipant::STATUS_PENDING)
                     ->count();
 
                 if ($pendingCount === 0) {
                     $hasDecline = DB::table('bill_participants')
                         ->where('bill_split_id', $id)
-                        ->where('acceptance_status', 'declined')
+                        ->where('acceptance_status', BillParticipant::STATUS_DECLINED)
                         ->exists();
 
                     DB::table('bill_splits')
                         ->where('id', $id)
                         ->update([
-                            'status' => $hasDecline ? 'declined' : 'active',
+                            'status' => $hasDecline ? BillSplit::STATUS_DECLINED : BillSplit::STATUS_ACTIVE,
                             'updated_at' => now()
                         ]);
                 }
@@ -430,8 +408,8 @@ class BillSplitController extends Controller
 
         DB::table('bill_splits')
             ->where('id', $id)
-            ->where('status', 'active')
-            ->update(['status' => 'paid', 'updated_at' => now()]);
+            ->where('status', BillSplit::STATUS_ACTIVE)
+            ->update(['status' => BillSplit::STATUS_PAID, 'updated_at' => now()]);
 
         return redirect()->route('split-bills')->with('success', 'Bill settled successfully.');
     }
@@ -465,7 +443,7 @@ class BillSplitController extends Controller
                     'notifiable_id' => $participant->user_id,
                     'data' => json_encode([
                         'title' => 'Payment Reminder',
-                        'message' => 'You have an unpaid share of "' . $split->title . '" (MAD ' . number_format($participant->share_amount, 2) . ')',
+                        'message' => 'You have an unpaid share of "' . $split->title . '" (' . config('oscorp.currency', 'MAD') . ' ' . number_format($participant->share_amount, 2) . ')',
                         'type' => 'payment_reminder',
                         'amount' => $participant->share_amount,
                         'icon' => 'bell',
@@ -532,6 +510,6 @@ class BillSplitController extends Controller
 
         return response($csv)
             ->header('Content-Type', 'text/csv')
-            ->header('Content-Disposition', 'attachment; filename="split-bills-' . date('Y-m-d') . '.csv"');
+            ->header('Content-Disposition', 'attachment; filename="split-bills-' . date(config('oscorp.date_formats.default', 'Y-m-d')) . '.csv"');
     }
 }

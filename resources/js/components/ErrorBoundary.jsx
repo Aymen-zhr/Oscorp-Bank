@@ -24,26 +24,45 @@ export default class ErrorBoundary extends Component {
     render() {
         if (this.state.hasError) {
             return (
-                <div className="flex items-center justify-center min-h-screen" style={{ background: 'var(--color-bg-base)' }}>
+                <div
+                    className="flex min-h-screen items-center justify-center"
+                    style={{ background: 'var(--color-bg-base)' }}
+                >
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="max-w-md mx-4 p-8 rounded-2xl text-center"
-                        style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}
+                        className="mx-4 max-w-md rounded-2xl p-8 text-center"
+                        style={{
+                            background: 'var(--color-bg-card)',
+                            border: '1px solid var(--color-border)',
+                        }}
                     >
-                        <AlertTriangle className="w-12 h-12 mx-auto mb-4" style={{ color: '#F59E0B' }} />
-                        <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-main)' }}>
+                        <AlertTriangle
+                            className="mx-auto mb-4 h-12 w-12"
+                            style={{ color: '#F59E0B' }}
+                        />
+                        <h2
+                            className="mb-2 text-xl font-bold"
+                            style={{ color: 'var(--color-text-main)' }}
+                        >
                             Something went wrong
                         </h2>
-                        <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>
-                            An unexpected error occurred. Please try refreshing the page.
+                        <p
+                            className="mb-6 text-sm"
+                            style={{ color: 'var(--color-text-muted)' }}
+                        >
+                            An unexpected error occurred. Please try refreshing
+                            the page.
                         </p>
                         <button
                             onClick={this.handleReset}
-                            className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold mx-auto transition-all hover:opacity-80"
-                            style={{ background: 'var(--color-gold)', color: '#000' }}
+                            className="mx-auto flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all hover:opacity-80"
+                            style={{
+                                background: 'var(--color-gold)',
+                                color: '#000',
+                            }}
                         >
-                            <RefreshCw className="w-4 h-4" /> Return Home
+                            <RefreshCw className="h-4 w-4" /> Return Home
                         </button>
                     </motion.div>
                 </div>

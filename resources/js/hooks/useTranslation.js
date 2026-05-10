@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
 import { usePage } from '@inertiajs/react';
+import { useMemo } from 'react';
+import ar from '../translations/ar.json';
 import en from '../translations/en.json';
 import fr from '../translations/fr.json';
-import ar from '../translations/ar.json';
 
 const dictionaries = { en, fr, ar };
 
@@ -19,7 +19,10 @@ export function useTranslation() {
     }, [locale]);
 
     const t = (key, params = {}) => {
-        let str = getNestedValue(dict, key) || getNestedValue(dictionaries.en, key) || key;
+        let str =
+            getNestedValue(dict, key) ||
+            getNestedValue(dictionaries.en, key) ||
+            key;
 
         Object.entries(params).forEach(([paramKey, value]) => {
             str = str.replace(`{${paramKey}}`, String(value));

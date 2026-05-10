@@ -10,7 +10,10 @@ class CurrencyService
     {
         $user = Auth::user();
         if ($user && $user->preferences) {
-            $prefs = is_string($user->preferences) ? json_decode($user->preferences, true) : $user->preferences;
+            $prefs = $user->preferences;
+            if (is_string($prefs)) {
+                $prefs = json_decode($prefs, true) ?: [];
+            }
             if (isset($prefs['currency'])) {
                 return $prefs['currency'];
             }
@@ -40,7 +43,9 @@ class CurrencyService
         $rates = config('currencies.currencies', []);
 
         if (!isset($rates[$currency])) {
-            return number_format($amountMAD, 2) . ' MAD';
+            $defaultCode = config('currencies.default', 'MAD');
+            $symbol = $rates[$defaultCode]['symbol'] ?? 'MAD';
+            return number_format($amountMAD, 2) . ' ' . $symbol;
         }
 
         $converted = $this->convert($amountMAD, $currency);

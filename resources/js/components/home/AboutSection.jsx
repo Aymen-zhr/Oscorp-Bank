@@ -1,50 +1,90 @@
 import { motion } from 'framer-motion';
 import { Shield, Brain, Award } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
-const pillars = [
-    { icon: Shield, title: 'Absolute Privacy', desc: 'End-to-end encryption. Zero data sharing. Complete financial sovereignty.' },
-    { icon: Brain, title: 'Cognitive Engine', desc: 'Real-time portfolio intelligence previously reserved for top-tier hedge funds.' },
-    { icon: Award, title: 'Platinum Standard', desc: 'White-glove architecture and zero compromise on execution quality.' },
-];
+const pillarIcons = [Shield, Brain, Award];
 
 export default function AboutSection() {
+    const { t } = useTranslation();
+
+    const pillars = [
+        {
+            icon: pillarIcons[0],
+            title: t('home.about.pillars.0.title'),
+            desc: t('home.about.pillars.0.desc'),
+        },
+        {
+            icon: pillarIcons[1],
+            title: t('home.about.pillars.1.title'),
+            desc: t('home.about.pillars.1.desc'),
+        },
+        {
+            icon: pillarIcons[2],
+            title: t('home.about.pillars.2.title'),
+            desc: t('home.about.pillars.2.desc'),
+        },
+    ];
     return (
-        <section id="about" className="py-32 px-6 border-t border-[var(--color-border)] relative overflow-hidden">
-            <div className="max-w-7xl mx-auto relative z-10">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-                    <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
-                        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full mb-8 text-[10px] font-bold uppercase tracking-[0.2em] border border-[var(--color-border)] bg-[var(--color-bg-card)]">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-text-muted)]" />
-                            <span className="text-[var(--color-text-main)]">The Oscorp Standard</span>
+        <section
+            id="about"
+            className="relative overflow-hidden border-t border-[var(--color-border)] px-6 py-32"
+        >
+            <div className="relative z-10 mx-auto max-w-7xl">
+                <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2 lg:gap-24">
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8 }}
+                    >
+                        <div className="mb-8 inline-flex items-center gap-3 rounded-full border border-[var(--color-border)] bg-[var(--color-bg-card)] px-4 py-2 text-[10px] font-bold tracking-[0.2em] uppercase">
+                            <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-text-muted)]" />
+                            <span className="text-[var(--color-text-main)]">
+                                {t('home.about.badge')}
+                            </span>
                         </div>
-                        <h2 className="text-[40px] md:text-[56px] font-semibold tracking-tight text-[var(--color-text-main)] mb-8 leading-[1.1]">
-                            Banking,<br />
-                            <span className="text-[var(--color-text-muted)] italic font-light">
-                                Elevated.
+                        <h2 className="mb-8 text-[40px] leading-[1.1] font-semibold tracking-tight text-[var(--color-text-main)] md:text-[56px]">
+                            {t('home.about.title1')}
+                            <br />
+                            <span className="font-light text-[var(--color-text-muted)] italic">
+                                {t('home.about.title2')}
                             </span>
                         </h2>
-                        <p className="text-[15px] text-[var(--color-text-muted)] leading-relaxed mb-6 font-medium max-w-md">
-                            Oscorp Private Bank operates on a singular mandate: uncompromising excellence. We merge traditional Swiss banking discretion with the sheer power of advanced algorithmic intelligence.
+                        <p className="mb-6 max-w-md text-[15px] leading-relaxed font-medium text-[var(--color-text-muted)]">
+                            {t('home.about.paragraph1')}
                         </p>
-                        <p className="text-[15px] text-[var(--color-text-muted)] leading-relaxed font-medium max-w-md">
-                            Your capital is not merely stored; it is strategically positioned, relentlessly monitored, and instantly accessible.
+                        <p className="max-w-md text-[15px] leading-relaxed font-medium text-[var(--color-text-muted)]">
+                            {t('home.about.paragraph2')}
                         </p>
 
-                        <div className="mt-8 md:mt-12 grid grid-cols-3 gap-4 sm:gap-8 border-t border-[var(--color-border)] pt-6 md:pt-8">
+                        <div className="mt-8 grid grid-cols-3 gap-4 border-t border-[var(--color-border)] pt-6 sm:gap-8 md:mt-12 md:pt-8">
                             {[
-                                { value: '12K+', label: 'Elite Clients' },
-                                { value: '$4.2B', label: 'Assets Managed' },
-                                { value: '99.9%', label: 'Uptime SLA' },
-                            ].map(s => (
+                                {
+                                    value: t('home.about.stats.0.value'),
+                                    label: t('home.about.stats.0.label'),
+                                },
+                                {
+                                    value: t('home.about.stats.1.value'),
+                                    label: t('home.about.stats.1.label'),
+                                },
+                                {
+                                    value: t('home.about.stats.2.value'),
+                                    label: t('home.about.stats.2.label'),
+                                },
+                            ].map((s) => (
                                 <div key={s.label}>
-                                    <div className="text-[24px] font-semibold text-[var(--color-text-main)] tracking-tight">{s.value}</div>
-                                    <div className="text-[11px] text-[var(--color-text-muted)] font-bold uppercase tracking-wider mt-1">{s.label}</div>
+                                    <div className="text-[24px] font-semibold tracking-tight text-[var(--color-text-main)]">
+                                        {s.value}
+                                    </div>
+                                    <div className="mt-1 text-[11px] font-bold tracking-wider text-[var(--color-text-muted)] uppercase">
+                                        {s.label}
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     </motion.div>
 
-                    <div className="flex flex-col gap-px bg-[var(--color-border)] border border-[var(--color-border)] rounded-[24px] overflow-hidden">
+                    <div className="flex flex-col gap-px overflow-hidden rounded-[24px] border border-[var(--color-border)] bg-[var(--color-border)]">
                         {pillars.map((p, i) => (
                             <motion.div
                                 key={p.title}
@@ -52,16 +92,18 @@ export default function AboutSection() {
                                 whileInView={{ opacity: 1 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: i * 0.1, duration: 0.8 }}
-                                className="flex gap-6 p-8 bg-[var(--color-bg-card)] hover:bg-[var(--color-bg-elevated)] transition-colors duration-500 group"
+                                className="group flex gap-6 bg-[var(--color-bg-card)] p-8 transition-colors duration-500 hover:bg-[var(--color-bg-elevated)]"
                             >
-                                <div
-                                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-[var(--color-border)] bg-[var(--color-bg-base)] group-hover:border-[var(--color-gold)] transition-colors duration-500"
-                                >
-                                    <p.icon className="w-4 h-4 text-[var(--color-text-main)] group-hover:text-[var(--color-gold)] transition-colors duration-500" />
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-base)] transition-colors duration-500 group-hover:border-[var(--color-gold)]">
+                                    <p.icon className="h-4 w-4 text-[var(--color-text-main)] transition-colors duration-500 group-hover:text-[var(--color-gold)]" />
                                 </div>
                                 <div>
-                                    <div className="text-[14px] font-bold text-[var(--color-text-main)] mb-2 tracking-tight">{p.title}</div>
-                                    <div className="text-[13px] text-[var(--color-text-muted)] leading-relaxed font-medium">{p.desc}</div>
+                                    <div className="mb-2 text-[14px] font-bold tracking-tight text-[var(--color-text-main)]">
+                                        {p.title}
+                                    </div>
+                                    <div className="text-[13px] leading-relaxed font-medium text-[var(--color-text-muted)]">
+                                        {p.desc}
+                                    </div>
                                 </div>
                             </motion.div>
                         ))}
