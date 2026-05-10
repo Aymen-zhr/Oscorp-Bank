@@ -3,7 +3,6 @@
   "deploy": {
     "numReplicas": 1,
     "sleepApplication": false,
-    "restartPolicyType": "ON_FAILURE",
-    "startCommand": "mkdir -p /data/database && touch /data/database/database.sqlite && php artisan migrate --force && php artisan config:cache && php artisan view:cache && php artisan storage:link"
+    "restartPolicyType": "ON_FAILURE"
   }
 }
