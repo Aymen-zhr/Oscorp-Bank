@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
-#[Fillable(['name', 'email', 'password', 'avatar', 'phone', 'tag', 'preferences', 'role', 'job_title', 'address', 'cin', 'date_of_birth', 'place_of_birth', 'nationality', 'gender', 'oauth_id', 'oauth_provider', 'oauth_avatar'])]
+#[Fillable(['name', 'email', 'password', 'avatar', 'phone', 'tag', 'preferences', 'job_title', 'address', 'cin', 'date_of_birth', 'place_of_birth', 'nationality', 'gender', 'is_admin', 'oauth_id', 'oauth_provider', 'oauth_avatar'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -33,7 +33,7 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return (bool) $this->is_admin;
     }
 
     /**

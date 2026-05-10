@@ -262,7 +262,7 @@ function SidebarContent({
                 className="custom-scrollbar flex-1 space-y-1 overflow-y-auto px-3"
             >
                 <div className="mb-2 px-3 text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)] uppercase">{t('common.menu')}</div>
-                {navItems.filter(item => !item.adminOnly || user?.role === 'admin').map((item, index) => {
+                {navItems.filter(item => !item.adminOnly || user?.is_admin).map((item, index) => {
                     const isActive = index === activeItem;
                     return (
                         <Link
@@ -315,7 +315,7 @@ function SidebarContent({
                     );
                 })}
 
-                {user?.role === 'admin' && (
+                {user?.is_admin && (
                     <>
                         <div className="mt-6 mb-2 px-3 text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)] uppercase">
                             Administration
