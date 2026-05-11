@@ -1,5 +1,5 @@
 /* ── Logo.dev config ───────────────────────────────────────── */
-export const LOGO_KEY = import.meta.env.VITE_LOGO_DEV_KEY || '';
+export const LOGO_KEY = 'pk_binMfKfXSiOiYpfo3CyL2w';
 export const LOGO_BASE_URL = 'https://img.logo.dev';
 
 /* ── Dicebear avatar config ─────────────────────────────────── */

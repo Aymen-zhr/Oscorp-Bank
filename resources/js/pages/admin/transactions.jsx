@@ -310,7 +310,7 @@ export default function AdminTransactions({
                                     flexShrink: 0,
                                 }}
                             >
-                                {selectedUser.name.charAt(0).toUpperCase()}
+                                {(selectedUser.name?.charAt(0) || '?').toUpperCase()}
                             </div>
                             <div style={{ flex: 1 }}>
                                 <div
@@ -320,7 +320,7 @@ export default function AdminTransactions({
                                         color: 'var(--color-text-main)',
                                     }}
                                 >
-                                    {selectedUser.name}
+                                    {selectedUser.name || `User #${selectedUser.id}`}
                                 </div>
                                 <div
                                     style={{

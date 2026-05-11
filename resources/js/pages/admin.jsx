@@ -81,10 +81,10 @@ export default function AdminDashboard({ stats }) {
                                         <div key={user.id} className="flex items-center justify-between p-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)]/50">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-xl bg-[var(--color-gold-bg)] flex items-center justify-center text-[var(--color-gold)] font-bold">
-                                                    {user.name.charAt(0)}
+                                                    {(user.name?.charAt(0) || '?')}
                                                 </div>
                                                 <div>
-                                                    <div className="text-[14px] font-bold text-[var(--color-text-main)]">{user.name}</div>
+                                                    <div className="text-[14px] font-bold text-[var(--color-text-main)]">{user.name || `User #${user.id}`}</div>
                                                     <div className="text-[12px] text-[var(--color-text-muted)]">{user.email}</div>
                                                 </div>
                                             </div>

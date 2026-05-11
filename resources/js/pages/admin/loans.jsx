@@ -289,7 +289,7 @@ export default function AdminLoans({ loans, stats, filters, selectedUser }) {
                                     flexShrink: 0,
                                 }}
                             >
-                                {selectedUser.name.charAt(0).toUpperCase()}
+                                {(selectedUser.name?.charAt(0) || '?').toUpperCase()}
                             </div>
                             <div style={{ flex: 1 }}>
                                 <div
@@ -299,7 +299,7 @@ export default function AdminLoans({ loans, stats, filters, selectedUser }) {
                                         color: 'var(--color-text-main)',
                                     }}
                                 >
-                                    {selectedUser.name}
+                                    {selectedUser.name || `User #${selectedUser.id}`}
                                 </div>
                                 <div
                                     style={{

@@ -58,6 +58,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('loans', [\App\Http\Controllers\LoansController::class, 'page'])->name('loans');
     Route::get('taxes', [\App\Http\Controllers\TaxesController::class, 'page'])->name('taxes');
     Route::get('subscriptions', [\App\Http\Controllers\SubscriptionsController::class, 'page'])->name('subscriptions');
+    Route::post('subscriptions/{id}/pause', [\App\Http\Controllers\SubscriptionsController::class, 'pause'])->name('subscriptions.pause');
+    Route::post('subscriptions/{id}/resume', [\App\Http\Controllers\SubscriptionsController::class, 'resume'])->name('subscriptions.resume');
     
     Route::get('goals', [\App\Http\Controllers\GoalsController::class, 'page'])->name('goals');
     Route::post('goals', [\App\Http\Controllers\GoalsController::class, 'store'])->name('goals.store');

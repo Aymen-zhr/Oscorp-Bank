@@ -484,7 +484,7 @@ export default function AdminReports({
                                             flexShrink: 0,
                                         }}
                                     >
-                                        {user.name.charAt(0).toUpperCase()}
+                                        {(user.name?.charAt(0) || '?').toUpperCase()}
                                     </div>
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <div
@@ -497,7 +497,7 @@ export default function AdminReports({
                                                 whiteSpace: 'nowrap',
                                             }}
                                         >
-                                            {user.name}
+                                            {user.name || `User #${user.id}`}
                                         </div>
                                         <div
                                             style={{

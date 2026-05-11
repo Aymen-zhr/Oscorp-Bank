@@ -59,6 +59,6 @@ class OAuthController extends Controller
 
         Auth::login($user);
 
-        return redirect()->intended($user->isAdmin() ? '/admin' : '/setup-account');
+        return redirect()->to($user->isAdmin() ? '/admin' : '/setup-account');
     }
 }

@@ -2345,7 +2345,7 @@ export default function SplitBills({
                                                                     color: 'var(--color-text-main)',
                                                                 }}
                                                             >
-                                                                {user.name}
+                                                                {user.name || `User #${user.id}`}
                                                             </div>
                                                             <div
                                                                 className="text-[10px]"
@@ -2452,7 +2452,7 @@ export default function SplitBills({
                                                             border: `1.5px solid ${contact.color}40`,
                                                         }}
                                                     >
-                                                        {contact.name.charAt(0)}
+                                                        {(contact.name?.charAt(0) || '?')}
                                                     </div>
                                                     <div className="min-w-0 flex-1">
                                                         <div

@@ -14,17 +14,17 @@ use Illuminate\Support\Str;
 
 class SeedDemoData extends Command
 {
-    protected $signature = 'demo:seed';
+    protected $signature = 'demo:seed {--force : Skip confirmation}';
     protected $description = 'Seed demo accounts with fake data';
 
     public function handle(): int
     {
-        if ($this->confirm('This will create/overwrite demo accounts. Continue?')) {
+        if (!$this->option('force') && !$this->confirm('This will create/overwrite demo accounts. Continue?')) {
             $this->seedAdmin();
             $this->seedUser();
             $this->info('Done!');
             $this->info('Admin: admin@oscorp.ma / password123');
-            $this->info('User: youssef@email.com / password123');
+            $this->info(            'User: aymen@email.com / password123');
             return 0;
         }
         return 1;
@@ -56,11 +56,11 @@ class SeedDemoData extends Command
     private function seedUser(): void
     {
         $user = User::updateOrCreate(
-            ['email' => 'youssef@email.com'],
+            ['email' => 'aymen@email.com'],
             [
-                'name' => 'Youssef El Amrani',
+                'name' => 'Aymen',
                 'password' => bcrypt('password123'),
-                'tag' => '@youssef',
+                'tag' => '@aymen',
                 'email_verified_at' => now(),
                 'is_admin' => false,
                 'phone' => '+212 6 12 34 56 78',
@@ -84,7 +84,7 @@ class SeedDemoData extends Command
         $this->seedLoan($user);
         $this->seedContacts($user);
 
-        $this->info('User Youssef created with 5 years of data.');
+        $this->info('User Aymen created with 5 years of data.');
     }
 
     private function seedTransactions(User $user): void

@@ -227,7 +227,7 @@ export default function AdminUserDetail({ userData, flash }) {
                                     flexShrink: 0,
                                 }}
                             >
-                                {userData.name.charAt(0).toUpperCase()}
+                                {(userData.name?.charAt(0) || '?').toUpperCase()}
                             </div>
                             <div>
                                 <div
@@ -245,7 +245,7 @@ export default function AdminUserDetail({ userData, flash }) {
                                             letterSpacing: '-0.02em',
                                         }}
                                     >
-                                        {userData.name}
+                                        {userData.name || `User #${userData.id}`}
                                     </h1>
                                     {userData.is_admin && (
                                         <Crown

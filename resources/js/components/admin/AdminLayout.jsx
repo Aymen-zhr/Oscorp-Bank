@@ -77,12 +77,6 @@ const navGroups = [
                 href: '/admin/audit-logs',
             },
             {
-                id: 'notifications',
-                label: 'Notifications',
-                icon: Bell,
-                href: '/admin/notifications',
-            },
-            {
                 id: 'settings',
                 label: 'Settings',
                 icon: Settings,
@@ -1088,7 +1082,7 @@ export default function AdminLayout({ children, active = 'dashboard' }) {
                                             color: 'var(--color-text-main)',
                                         }}
                                     >
-                                        {user.name}
+                                        {user.name || `Admin #${user.id}`}
                                     </div>
                                     <div
                                         style={{
@@ -1120,7 +1114,7 @@ export default function AdminLayout({ children, active = 'dashboard' }) {
                                             '0 2px 8px rgba(212,175,55,0.3)',
                                     }}
                                 >
-                                    {user.name.charAt(0).toUpperCase()}
+                                    {(user.name?.charAt(0) || '?').toUpperCase()}
                                 </motion.div>
                             </div>
                         )}

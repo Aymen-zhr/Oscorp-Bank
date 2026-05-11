@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
+use App\Models\Notification;
 use App\Traits\HasOscorpBalance;
 use Illuminate\Support\Facades\Auth;
 
@@ -47,11 +48,24 @@ class HandleInertiaRequests extends Middleware
         $preferences = $user ? ($user->preferences ?? []) : [];
         $currency = $preferences['currency'] ?? 'MAD';
 
+        $userData = null;
+        if ($user) {
+            $userData = $user->toArray();
+            $recentNotifications = Notification::where('notifiable_id', $user->id)
+                ->where('notifiable_type', 'App\Models\User')
+                ->whereNull('read_at')
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get();
+            $userData['unreadNotificationsCount'] = $recentNotifications->count();
+            $userData['recentNotifications'] = $recentNotifications->toArray();
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $user ? $user->toArray() : null,
+                'user' => $userData,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'locale' => $locale,

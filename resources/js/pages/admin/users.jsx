@@ -224,9 +224,7 @@ export default function AdminUsers({ users, filters, flash }) {
                                                     border: '1px solid var(--color-border)',
                                                 }}
                                             >
-                                                {user.name
-                                                    .charAt(0)
-                                                    .toUpperCase()}
+                                                {(user.name?.charAt(0) || '?').toUpperCase()}
                                             </div>
                                             <div>
                                                 <div
@@ -239,7 +237,7 @@ export default function AdminUsers({ users, filters, flash }) {
                                                         gap: '0.375rem',
                                                     }}
                                                 >
-                                                    {user.name}
+                                                    {user.name || `User #${user.id}`}
                                                     {user.is_admin && (
                                                         <Crown
                                                             style={{

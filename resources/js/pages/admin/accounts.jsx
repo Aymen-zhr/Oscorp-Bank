@@ -330,9 +330,7 @@ export default function AdminAccounts({ accounts, stats, filters, flash }) {
                                                     border: '1px solid var(--color-border)',
                                                 }}
                                             >
-                                                {account.name
-                                                    .charAt(0)
-                                                    .toUpperCase()}
+                                                {(account.name?.charAt(0) || '?').toUpperCase()}
                                             </div>
                                             <div>
                                                 <div
@@ -397,7 +395,7 @@ export default function AdminAccounts({ accounts, stats, filters, flash }) {
                                                     height: '0.75rem',
                                                 }}
                                             />
-                                            {account.transactions_count}
+                                            {account.transactions_count || '—'}
                                         </div>
                                     </td>
                                     <td
@@ -419,7 +417,7 @@ export default function AdminAccounts({ accounts, stats, filters, flash }) {
                                                     height: '0.75rem',
                                                 }}
                                             />
-                                            {account.loans_count}
+                                            {account.loans_count || '—'}
                                         </div>
                                     </td>
                                     <td style={{ padding: '0.75rem 1rem' }}>

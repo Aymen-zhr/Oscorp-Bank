@@ -315,7 +315,7 @@ function SidebarContent({
                     );
                 })}
 
-                {user?.is_admin && (
+                {user?.is_admin === true && (
                     <>
                         <div className="mt-6 mb-2 px-3 text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)] uppercase">
                             Administration

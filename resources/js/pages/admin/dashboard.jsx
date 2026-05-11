@@ -358,7 +358,7 @@ export default function AdminDashboard({ stats }) {
                                                 flexShrink: 0,
                                             }}
                                         >
-                                            {user.name.charAt(0).toUpperCase()}
+                                            {(user.name?.charAt(0) || '?').toUpperCase()}
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div
@@ -371,11 +371,11 @@ export default function AdminDashboard({ stats }) {
                                                     whiteSpace: 'nowrap',
                                                 }}
                                             >
-                                                {user.name}
+                                                {user.name || `User #${user.id}`}
                                             </div>
                                             <div
                                                 style={{
-                                                    fontSize: '0.6875rem',
+                                                    fontSize: '0.75rem',
                                                     color: 'var(--color-text-muted)',
                                                     overflow: 'hidden',
                                                     textOverflow: 'ellipsis',

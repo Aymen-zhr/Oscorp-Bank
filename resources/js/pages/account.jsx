@@ -99,7 +99,7 @@ export default function Account({
                                             color: 'var(--color-text-main)',
                                         }}
                                     >
-                                        {user.name}
+                                        {user.name || 'Account Holder'}
                                     </h1>
                                     <div className="mt-1 flex items-center gap-3">
                                         <button

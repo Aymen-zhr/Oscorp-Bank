@@ -155,12 +155,14 @@ If asked about transfers or transactions, confirm before executing.
 
         try {
             $response = Http::withHeaders(['Content-Type' => 'application/json'])
+                ->withOptions(['verify' => false])
                 ->post(config('services.gemini.api_url', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent') . "?key={$apiKey}", $payload);
 
             if (!$response->successful()) {
+                $geminiError = $response->json();
                 Log::error('Gemini API Error', ['response' => $response->body()]);
-                $balance = number_format($stats['live_balance']);
-                return response()->json(['reply' => "At your service, Executive. Your current balance stands at **$balance " . config('oscorp.currency', 'MAD') . "**. How may I assist you further?"]);
+                $errorMsg = $geminiError['error']['message'] ?? 'Unknown API error';
+                return response()->json(['reply' => "⚠️ System error: {$errorMsg}. Please check your API configuration."], 500);
             }
 
             $data = $response->json();
@@ -256,7 +258,7 @@ If asked about transfers or transactions, confirm before executing.
 
         } catch (\Exception $e) {
             Log::error('Gemini Exception', ['message' => $e->getMessage()]);
-            return response()->json(['reply' => "System operational. Your balance is **" . number_format($stats['live_balance']) . " " . config('oscorp.currency', 'MAD') . "**. How may I assist?"]);
+            return response()->json(['reply' => '⚠️ System error: ' . $e->getMessage()], 500);
         }
     }
 
