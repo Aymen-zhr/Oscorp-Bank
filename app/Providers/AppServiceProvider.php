@@ -11,7 +11,6 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Notifications\DatabaseNotification;
 use Inertia\Inertia;
-use Symfony\Component\Console\Output\NullOutput;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -68,9 +67,8 @@ class AppServiceProvider extends ServiceProvider
                 @touch($dbPath);
             }
 
-            if (app()->isProduction() && !$this->migrationsHaveRun()) {
-                Artisan::call('migrate', ['--force' => true], new NullOutput());
-            }
+            // Do not run migrations automatically during each production request.
+            // Running migrations should happen separately during deployment.
         } catch (\Throwable $e) {
             report($e);
         }
