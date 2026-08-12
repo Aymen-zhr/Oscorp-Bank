@@ -4,7 +4,6 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "vercel-build": "npm run build",
         "postinstall": "npm run build",
         "build:ssr": "vite build && vite build --ssr",
         "dev": "vite",
