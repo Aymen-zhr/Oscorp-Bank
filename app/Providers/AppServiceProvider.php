@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -71,16 +70,6 @@ class AppServiceProvider extends ServiceProvider
             // Running migrations should happen separately during deployment.
         } catch (\Throwable $e) {
             report($e);
-        }
-    }
-
-    protected function migrationsHaveRun(): bool
-    {
-        try {
-            DB::select('select 1 from migrations limit 1');
-            return true;
-        } catch (\Throwable) {
-            return false;
         }
     }
 
